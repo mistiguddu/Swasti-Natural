@@ -7,33 +7,46 @@ Versioned REST API for user registration, login, and JWT-protected account acces
 
 ```text
 swasti_natureal_api_server/
-|-- config/              Environment, MongoDB, OpenAPI, and security setup
-|-- controllers/         Authentication request handlers
-|-- middlewares/         Authentication, request schemas, and errors
-|-- models/              User Mongoose model
-|-- routes/              Authentication REST routes
-|-- utils/               Shared errors, JWT, and async helpers
+|-- config/              Environment, MongoDB, OpenAPI, security, roles/permissions, image uploads
+|-- controllers/         Thin HTTP handlers (auth, category, product, order, user, analytics)
+|-- middlewares/         Authentication/permissions, Zod request schemas, validation, errors
+|-- models/              User, Category, Product, Order, Counter, Marketing (coupons, discounts,
+|                        banners/sliders, shipping, reviews, notifications, settings)
+|-- routes/              auth, catalog (categories/products), sales (orders, customers, users,
+|                        dashboard, reports), store (marketing, shipping, reviews, notifications, settings)
+|-- services/            Business logic (catalog, orders, users/customers, analytics, files, ...)
+|-- utils/               Errors, JWT, async helper, pagination/query, date ranges, slugs, CRUD factory
+|-- uploads/             Uploaded images (ignored by Git; created automatically)
 |-- auth.service.js      Authentication business logic
 |-- app.js               Express application
 |-- server.js            HTTP and MongoDB startup
-|-- create-admin.js      Superadmin/admin seed command
-|-- .env.example         Safe local configuration template
-|-- .gitignore
-|-- package.json
-|-- package-lock.json
-`-- README.md
+`-- create-admin.js      Superadmin/admin seed command
 ```
 
-### MVC Responsibilities
+REST flow: `route -> authenticate + requirePermission -> validate (Zod) -> controller -> service -> Mongoose model -> MongoDB`.
 
-- **Models** define the user document and indexes.
-- **Routes** map versioned HTTP paths to middleware and controllers.
-- **Controllers** handle authentication HTTP input/output and delegate work to `auth.service.js`.
-- **Authentication service** handles registration and login using the User model.
-- **Views** are not a separate folder because this server returns JSON API responses rather than rendered HTML pages.
-- **Security configuration** in `config/security.js` applies Helmet, CORS allowlisting, trusted-proxy settings, and API rate limits.
+## E-commerce Admin API
 
-REST flow: `auth route -> middleware -> auth controller -> auth service -> User model -> MongoDB`.
+All endpoints below require a Bearer token from an admin or super admin (customers get `403`), except `POST /orders` and `POST /reviews`, which customers may also call. Full list: `http://localhost:4000/api/docs`.
+
+| Area | Endpoints |
+| --- | --- |
+| Categories | `GET/POST /categories`, `GET/PUT/DELETE /categories/:id`, `PATCH /categories/:id/status`, `PATCH /categories/:id/featured`, `POST /categories/bulk-delete`, `PATCH /categories/bulk-status`, `GET /categories/:categoryId/products` |
+| Products | `GET/POST /products`, `GET/PUT/DELETE /products/:id`, `POST /products/:id/duplicate`, `PATCH /products/:id/status`, `/featured`, `/stock`, `POST /products/bulk-delete`, `PATCH /products/bulk-status`, `PATCH /products/bulk-category` |
+| Orders & payments | `GET/POST /orders`, `GET /orders/:id`, `PATCH /orders/:id/status`, `PATCH /orders/:id/payment` |
+| Customers & users | `GET /customers`, `GET /customers/:id`, `GET/POST /users`, `GET /users/roles`, `GET/PUT/DELETE /users/:id`, `PATCH /users/:id/status` |
+| Dashboard | `GET /dashboard/overview`, `/sales`, `/revenue`, `/top-products`, `/top-categories`, `/order-stats`, `/customer-growth`, `/recent-orders`, `/activities` |
+| Reports | `GET /reports/sales`, `/revenue`, `/products`, `/categories`, `/customers`, `/orders`, `/inventory` |
+| Marketing & store | CRUD for `/coupons`, `/discounts`, `/banners`, `/sliders`, `/shipping-methods`; `/reviews`; `/notifications`; `GET /settings`, `PUT /settings/general`, `PUT /settings/store` |
+| Profile | `PUT /auth/me`, `PUT /auth/password` |
+
+List endpoints accept `page`, `limit`, `search`, `sortBy`, `sortOrder`, `status` and resource filters (for example `category`, `stock`, `minPrice`, `maxPrice`). Analytics accept `range=today|7d|30d|month|year|custom` with `from`/`to` (`YYYY-MM-DD`). Responses use `{ data }` and errors `{ error: { message, details? } }`.
+
+Category, product, banner and slider create/update requests are `multipart/form-data`: a `data` field holding the JSON body plus image files (`image`, `thumbnail`, `gallery`). JPG, JPEG, PNG and WEBP up to 5 MB are accepted. Replaced or removed images are deleted from `uploads/` only when no other record still uses them.
+
+Order creation calculates prices server-side (sale prices, automatic discounts, coupon, shipping method, tax), reserves stock atomically, and returns stock when an order is cancelled or returned.
+
+**Roles:** `superadmin` has every permission; `admin` has everything except managing administrator accounts; `user` (customer) has no dashboard access. See `config/roles.js`.
 
 ## Requirements
 

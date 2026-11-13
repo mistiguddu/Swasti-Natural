@@ -172,7 +172,7 @@ export default function ProductListPage({ preset }) {
         </div>
       ),
     },
-    { key: 'sku', header: 'SKU', sortKey: 'sku', render: (row) => <code className="text-xs text-slate-600">{row.sku}</code> },
+    { key: 'sku', header: 'SKU', sortKey: 'sku', className: 'whitespace-nowrap', render: (row) => <code className="text-xs text-slate-600">{row.sku}</code> },
     {
       key: 'category', header: 'Category', render: (row) => (
         <div className="text-xs leading-tight">

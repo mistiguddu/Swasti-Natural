@@ -4,6 +4,14 @@ import { setCurrency } from '../lib/format.js';
 
 const AuthContext = createContext(null);
 
+const OUTDATED_API = 'The API server is running an older version. Restart it (stop it, then run "npm run dev" in swasti_natureal_api_server) and try again.';
+
+/** Older API builds don't send `permissions`; never let that crash the app. */
+function sessionFrom({ user, permissions }) {
+  if (!Array.isArray(permissions)) return { status: 'error', user: null, permissions: [], error: OUTDATED_API };
+  return { status: 'signed-in', user, permissions, error: '' };
+}
+
 export function AuthProvider({ children }) {
   const [state, setState] = useState({ status: 'loading', user: null, permissions: [], error: '' });
   const [settings, setSettings] = useState(null);
@@ -24,7 +32,7 @@ export function AuthProvider({ children }) {
     let active = true;
     setState((current) => ({ ...current, status: 'loading', error: '' }));
     getCurrentUser()
-      .then(({ user, permissions }) => active && setState({ status: 'signed-in', user, permissions, error: '' }))
+      .then((me) => active && setState(sessionFrom(me)))
       .catch((error) => {
         if (!active) return;
         // Only an invalid/expired token (401) signs the user out; other errors can be retried.
@@ -50,12 +58,12 @@ export function AuthProvider({ children }) {
     settings,
     refreshSettings,
     retry: () => setAttempt((count) => count + 1),
-    can: (permission) => state.permissions.includes(permission),
+    can: (permission) => (state.permissions ?? []).includes(permission),
     async signIn(credentials) {
       const { accessToken, user } = await loginRequest(credentials);
       sessionStorage.setItem(SESSION_KEY, accessToken);
       const me = await getCurrentUser();
-      setState({ status: 'signed-in', user: me.user ?? user, permissions: me.permissions ?? [], error: '' });
+      setState(sessionFrom({ ...me, user: me.user ?? user }));
     },
     signOut,
     setUser: (user) => setState((current) => ({ ...current, user })),

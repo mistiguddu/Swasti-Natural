@@ -9,7 +9,8 @@ import { useAuth } from '../../context/AuthContext.jsx';
 export default function AdminLayout() {
   const { can } = useAuth();
   const { pathname } = useLocation();
-  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('swasti_sidebar_collapsed') === '1');
+  // Collapsed (icons only) by default; expanding is remembered per browser.
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('swasti_sidebar_collapsed') !== '0');
   const [mobileOpen, setMobileOpen] = useState(false);
   const [badges, setBadges] = useState({ notifications: 0, pendingOrders: 0 });
   const [categories, setCategories] = useState([]);

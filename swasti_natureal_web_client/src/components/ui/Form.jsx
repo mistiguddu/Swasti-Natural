@@ -67,7 +67,7 @@ export function Toggle({ checked, onChange, label, description, disabled, size =
   const track = size === 'sm' ? 'h-5 w-9' : 'h-6 w-11';
   const knob = size === 'sm' ? 'h-4 w-4 peer-checked:translate-x-4' : 'h-5 w-5 peer-checked:translate-x-5';
   return (
-    <label htmlFor={id} className={`inline-flex items-start gap-3 ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}>
+    <label htmlFor={id} className={`flex w-fit items-start gap-3 ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}>
       <span className={`relative mt-0.5 inline-flex shrink-0 ${track}`}>
         <input id={id} type="checkbox" role="switch" className="peer sr-only" checked={Boolean(checked)} disabled={disabled} onChange={(event) => onChange(event.target.checked)} />
         <span className={`absolute inset-0 rounded-full bg-slate-200 transition peer-checked:bg-teal-600 peer-focus-visible:ring-4 peer-focus-visible:ring-teal-500/25 ${track}`} />

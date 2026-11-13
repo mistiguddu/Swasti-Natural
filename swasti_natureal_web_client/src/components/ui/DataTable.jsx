@@ -3,6 +3,10 @@ import { Checkbox } from './Form.jsx';
 import { TableSkeleton } from './Skeleton.jsx';
 import { EmptyState, ErrorState } from './EmptyState.jsx';
 
+// The actions column stays visible at the right edge when a wide table scrolls.
+const STICKY_HEAD = 'sticky right-0 z-10 bg-slate-50 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.12)]';
+const STICKY_CELL = 'sticky right-0 z-10 bg-white group-hover:bg-slate-50 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.12)]';
+
 /**
  * columns: [{ key, header, render?(row, index), sortKey?, className?, headerClassName? }]
  * selection: { selected: Set<id>, onChange(Set) } enables the checkbox column.
@@ -44,7 +48,7 @@ export default function DataTable({
               const active = sort && column.sortKey && sort.sortBy === column.sortKey;
               const SortIcon = active ? (sort.sortOrder === 'asc' ? ArrowUp : ArrowDown) : ArrowUpDown;
               return (
-                <th key={column.key} scope="col" aria-sort={active ? (sort.sortOrder === 'asc' ? 'ascending' : 'descending') : undefined} className={`px-4 py-3 whitespace-nowrap ${column.headerClassName ?? ''}`}>
+                <th key={column.key} scope="col" aria-sort={active ? (sort.sortOrder === 'asc' ? 'ascending' : 'descending') : undefined} className={`px-3 py-3 whitespace-nowrap ${column.key === 'actions' ? STICKY_HEAD : ''} ${column.headerClassName ?? ''}`}>
                   {sort && column.sortKey ? (
                     <button type="button" onClick={() => sort.onSort(column.sortKey)} className={`inline-flex cursor-pointer items-center gap-1 uppercase hover:text-slate-800 ${active ? 'text-teal-700' : ''}`}>
                       {column.header}<SortIcon size={12} className={active ? '' : 'opacity-40'} />
@@ -60,14 +64,14 @@ export default function DataTable({
             const id = rowKey(row);
             const selected = selection?.selected.has(id);
             return (
-              <tr key={id} onClick={onRowClick ? () => onRowClick(row) : undefined} className={`transition-colors ${selected ? 'bg-teal-50/50' : 'hover:bg-slate-50/70'} ${onRowClick ? 'cursor-pointer' : ''}`}>
+              <tr key={id} onClick={onRowClick ? () => onRowClick(row) : undefined} className={`group transition-colors ${selected ? 'bg-teal-50/50' : 'hover:bg-slate-50/70'} ${onRowClick ? 'cursor-pointer' : ''}`}>
                 {selection && (
                   <td className="py-3 pl-4" onClick={(event) => event.stopPropagation()}>
                     <Checkbox checked={selected} onChange={(checked) => toggleOne(id, checked)} label={`Select row ${startIndex + index + 1}`} />
                   </td>
                 )}
                 {columns.map((column) => (
-                  <td key={column.key} className={`px-4 py-3 align-middle text-slate-700 ${column.className ?? ''}`}>
+                  <td key={column.key} className={`px-3 py-3 align-middle text-slate-700 ${column.key === 'actions' ? `${STICKY_CELL} ${selected ? 'bg-teal-50' : ''}` : ''} ${column.className ?? ''}`}>
                     {column.render ? column.render(row, startIndex + index) : row[column.key]}
                   </td>
                 ))}

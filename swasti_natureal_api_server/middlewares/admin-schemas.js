@@ -11,6 +11,8 @@ const number = ({ min = 0, max = 1e12, int = false, fallback = 0 } = {}) => z.pr
   int ? z.number().int().min(min).max(max) : z.number().min(min).max(max),
 );
 const bool = z.preprocess((value) => value === true || value === 'true' || value === 1 || value === '1' || value === 'on', z.boolean());
+/** Like `bool`, but a missing value falls back to `fallback` (keeps model defaults for API clients). */
+const boolDefault = (fallback) => z.preprocess((value) => (value === undefined ? fallback : value), bool);
 const objectId = z.string().regex(/^[a-f\d]{24}$/i, 'Invalid id');
 const optionalId = z.preprocess((value) => (value === '' || value == null ? null : value), objectId.nullable());
 const list = (max = 60) => z.preprocess(
@@ -63,7 +65,7 @@ export const productSchema = body({
   stockQuantity: number({ min: -1e6, max: 1e9, int: true }),
   lowStockThreshold: number({ min: 0, max: 1e9, int: true, fallback: 5 }),
   stockStatus: z.enum(STOCK_STATUS).default('in_stock'),
-  manageStock: bool,
+  manageStock: boolDefault(true),
   allowBackorders: bool,
   weight: number({ min: 0 }),
   dimensions: z.object({ length: number(), width: number(), height: number() }).default({ length: 0, width: 0, height: 0 }),
@@ -103,7 +105,7 @@ export const createOrderSchema = body({
   items: z.array(z.object({ product: objectId, quantity: number({ min: 1, max: 10000, int: true, fallback: 1 }) })).min(1).max(100),
   shippingAddress: address,
   billingAddress: address,
-  sameAsShipping: z.preprocess((value) => (value === undefined ? true : value), bool),
+  sameAsShipping: boolDefault(true),
   shippingMethod: optionalId,
   paymentMethod: z.enum(PAYMENT_METHODS).default('cash_on_delivery'),
   paymentStatus: z.enum(PAYMENT_STATUS).default('pending'),
@@ -119,7 +121,7 @@ const userFields = {
   email: z.string().trim().toLowerCase().email().max(254),
   role: z.enum(ROLES).default('user'),
   phone: text(30),
-  isActive: z.preprocess((value) => (value === undefined ? true : value), bool),
+  isActive: boolDefault(true),
   address: address.optional(),
 };
 export const createUserSchema = body({ ...userFields, password: z.string().min(8).max(128) });

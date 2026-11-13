@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useMemo, useState } from 'react
 import { CheckCircle2, AlertTriangle, Info, X } from 'lucide-react';
 
 const ToastContext = createContext(null);
+let nextId = 0; // crypto.randomUUID() is unavailable on plain-http LAN addresses
 const ICONS = { success: CheckCircle2, error: AlertTriangle, info: Info };
 const STYLES = {
   success: 'border-emerald-200 bg-white text-slate-800 [&_svg.icon]:text-emerald-600',
@@ -14,7 +15,8 @@ export function ToastProvider({ children }) {
 
   const dismiss = useCallback((id) => setToasts((items) => items.filter((toast) => toast.id !== id)), []);
   const push = useCallback((type, message) => {
-    const id = crypto.randomUUID();
+    nextId += 1;
+    const id = nextId;
     setToasts((items) => [...items.slice(-3), { id, type, message }]);
     setTimeout(() => dismiss(id), type === 'error' ? 6000 : 3500);
   }, [dismiss]);

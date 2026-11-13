@@ -93,8 +93,8 @@ export default function CategoryListPage() {
         </div>
       ),
     },
-    { key: 'code', header: 'Code', sortKey: 'code', render: (row) => <code className="rounded-md bg-slate-100 px-1.5 py-0.5 text-xs text-slate-700">{row.code}</code> },
-    { key: 'parent', header: 'Parent', render: (row) => (row.parent ? <Link to={`/categories/${row.parent.id}`} className="text-slate-600 hover:text-teal-700">{row.parent.name}</Link> : <span className="text-xs text-slate-400">Top level</span>) },
+    { key: 'code', header: 'Code', sortKey: 'code', className: 'whitespace-nowrap', render: (row) => <code className="rounded-md bg-slate-100 px-1.5 py-0.5 text-xs text-slate-700">{row.code}</code> },
+    { key: 'parent', header: 'Parent', render: (row) => (row.parent ? <Link to={`/categories/${row.parent.id}`} className="text-slate-600 hover:text-teal-700">{row.parent.name}</Link> : <span className="text-xs whitespace-nowrap text-slate-400">Top level</span>) },
     {
       key: 'products', header: 'Products', className: 'text-center', headerClassName: 'text-center', render: (row) => (
         <Link to={`/categories/${row.id}/products`} title="View products in this category" className="inline-flex min-w-9 justify-center rounded-lg bg-teal-50 px-2 py-1 text-xs font-bold text-teal-700 ring-1 ring-teal-100 hover:bg-teal-100">{row.productCount}</Link>

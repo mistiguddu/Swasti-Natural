@@ -3,6 +3,15 @@
  * Missing keys fall back to English automatically.
  */
 const bn = {
+  // ── Role switching (super admin "view as") ──
+  'Switch dashboard': 'ড্যাশবোর্ড পরিবর্তন করুন',
+  'Full access, including administrator accounts': 'অ্যাডমিন অ্যাকাউন্টসহ সম্পূর্ণ অ্যাক্সেস',
+  'Day-to-day store management only': 'শুধু দৈনন্দিন স্টোর ব্যবস্থাপনা',
+  'Viewing as': 'দেখছেন হিসেবে',
+  'Now viewing as': 'এখন দেখছেন হিসেবে',
+  'Back to Super Admin mode': 'সুপার অ্যাডমিন মোডে ফিরে এসেছেন',
+  'Return to Super Admin': 'সুপার অ্যাডমিনে ফিরে যান',
+  'Super-admin-only tools are hidden and blocked until you switch back.': 'ফিরে না যাওয়া পর্যন্ত শুধু সুপার অ্যাডমিনের টুলগুলো লুকানো ও বন্ধ থাকবে।',
   // ── General ──
   'Dashboard': 'ড্যাশবোর্ড',
   'Overview': 'সারসংক্ষেপ',

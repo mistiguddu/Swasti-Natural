@@ -1,5 +1,5 @@
 import * as authService from '../auth.service.js';
-import { ROLE_DEFINITIONS } from '../config/roles.js';
+import { effectiveRole, permissionsFor, VIEW_AS_ROLES } from '../config/roles.js';
 
 export async function register(req, res) {
   const result = await authService.register(req.validated.body);
@@ -12,7 +12,14 @@ export async function login(req, res) {
 }
 
 export async function getCurrentUser(req, res) {
-  res.json({ data: { user: req.user, permissions: ROLE_DEFINITIONS[req.user.role]?.permissions ?? [] } });
+  res.json({
+    data: {
+      user: req.user,
+      permissions: permissionsFor(req.user),
+      activeRole: effectiveRole(req.user),
+      switchableRoles: VIEW_AS_ROLES[req.user.role] ?? [],
+    },
+  });
 }
 
 export async function updateProfile(req, res) {

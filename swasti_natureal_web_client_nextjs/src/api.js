@@ -1,6 +1,8 @@
 import axios from 'axios';
 
 export const SESSION_KEY = 'swasti_access_token';
+/** Role a super admin is currently "viewing as" (per tab). Sent as `X-View-As` on every request. */
+export const VIEW_AS_KEY = 'swasti_view_as';
 
 export class ApiError extends Error {
   constructor(message, status, details) {
@@ -22,6 +24,8 @@ export const http = axios.create({ baseURL: '/api/v1', timeout: 30000 });
 http.interceptors.request.use((config) => {
   const token = sessionStorage.getItem(SESSION_KEY);
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  const viewAs = sessionStorage.getItem(VIEW_AS_KEY);
+  if (token && viewAs) config.headers['X-View-As'] = viewAs;
   return config;
 });
 

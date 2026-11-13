@@ -34,8 +34,23 @@ export const ROLE_DEFINITIONS = {
   },
 };
 
+/** Roles a super admin may temporarily act as ("view as") without signing out. */
+export const VIEW_AS_ROLES = { superadmin: ['admin'] };
+
+/**
+ * The role a request acts with. A super admin in "view as admin" mode has
+ * `user.$locals.viewAs` set by `authenticate`, and is then treated exactly like an admin.
+ */
+export function effectiveRole(user) {
+  return user?.$locals?.viewAs ?? user?.role;
+}
+
+export function permissionsFor(user) {
+  return ROLE_DEFINITIONS[effectiveRole(user)]?.permissions ?? [];
+}
+
 export function hasPermission(user, permission) {
-  return Boolean(user && ROLE_DEFINITIONS[user.role]?.permissions.includes(permission));
+  return Boolean(user && permissionsFor(user).includes(permission));
 }
 
 export function isStaff(user) {

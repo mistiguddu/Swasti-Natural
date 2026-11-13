@@ -9,6 +9,7 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import { useChatRealtime } from '../../context/ChatRealtimeContext.jsx';
 import { ACCENTS, usePreferences } from '../../context/PreferencesContext.jsx';
 import { FLAT_NAVIGATION } from './navigation.js';
+import { RoleSwitchMenu } from './RoleSwitcher.jsx';
 import { ROLE_LABELS } from '../../lib/format.js';
 import { digits, LANGUAGES, t } from '../../i18n/index.js';
 
@@ -147,7 +148,7 @@ function LanguageToggle() {
 }
 
 export default function Topbar({ onOpenMobile, unread, messages = 0 }) {
-  const { user, signOut, can } = useAuth();
+  const { user, signOut, can, activeRole, isViewingAs } = useAuth();
   const { connected } = useChatRealtime();
   const [menuOpen, setMenuOpen] = useState(false);
   const menu = useRef(null);
@@ -184,19 +185,20 @@ export default function Topbar({ onOpenMobile, unread, messages = 0 }) {
         </Link>
         <div ref={menu} className="relative">
           <button type="button" onClick={() => setMenuOpen((value) => !value)} aria-expanded={menuOpen} aria-haspopup="menu" className="flex cursor-pointer items-center gap-2.5 rounded-xl py-1 pr-2 pl-1 transition hover:bg-slate-100">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-teal-500 to-accent2-400 font-display text-sm font-bold text-white">{initial}</span>
+            <span className={`relative grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-teal-500 to-accent2-400 font-display text-sm font-bold text-white ${isViewingAs ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-surface' : ''}`}>{initial}</span>
             <span className="hidden text-left leading-tight sm:block">
               <span className="block max-w-36 truncate text-sm font-semibold text-slate-800">{user?.name}</span>
-              <span className="block text-[11px] text-slate-500">{ROLE_LABELS[user?.role]}</span>
+              <span className={`block text-[11px] ${isViewingAs ? 'font-semibold text-amber-700' : 'text-slate-500'}`}>{isViewingAs ? `${t('Viewing as')} ${ROLE_LABELS[activeRole]}` : ROLE_LABELS[user?.role]}</span>
             </span>
             <ChevronDown size={15} className="hidden text-slate-400 sm:block" />
           </button>
           {menuOpen && (
-            <div role="menu" className="absolute right-0 mt-2 w-60 overflow-hidden rounded-xl bg-surface py-1 shadow-xl ring-1 ring-slate-200 motion-safe:animate-fade-up">
+            <div role="menu" className="absolute right-0 mt-2 w-72 overflow-hidden rounded-xl bg-surface py-1 shadow-xl ring-1 ring-slate-200 motion-safe:animate-fade-up">
               <div className="border-b border-slate-100 px-4 py-3">
                 <p className="truncate text-sm font-semibold text-slate-800">{user?.name}</p>
                 <p className="truncate text-xs text-slate-500">{user?.email}</p>
               </div>
+              <RoleSwitchMenu onDone={closeMenu} />
               {[
                 { to: '/settings/profile', icon: UserRound, label: 'Profile settings' },
                 { to: '/settings/security', icon: ShieldCheck, label: 'Security' },

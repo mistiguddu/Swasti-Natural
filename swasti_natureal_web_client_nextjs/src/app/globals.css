@@ -19,6 +19,12 @@
   --animate-soft-pulse: soft-pulse 2.4s ease-in-out infinite;
   --animate-wave: wave 2s ease-in-out 1;
   --animate-slide-in: slide-in 0.25s ease-out both;
+  /* Home slider: progress bar of the active slide (its end advances the slider). */
+  --animate-slide-progress: slide-progress 6s linear both;
+  --animate-ken-burns: ken-burns 7s ease-out both;
+
+  @keyframes slide-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes ken-burns { from { transform: scale(1.08); } to { transform: scale(1); } }
 
   @keyframes slide-in { from { transform: translateX(24px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 

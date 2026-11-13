@@ -1,86 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { Link } from '@/router';
-import { ArrowRight, ChevronLeft, ChevronRight, Headset, Leaf, Quote, ShieldCheck, Sprout } from 'lucide-react';
+import { ArrowRight, Headset, Leaf, Quote, ShieldCheck, Sprout } from 'lucide-react';
 import { storeApi } from '../api.js';
 import { useApi } from '../../hooks/useApi.js';
 import { useBranding } from '../../context/BrandingContext.jsx';
-import { Container, ErrorBlock, ProductImage, SectionHeading, Skel, Stars, btn } from '../components/ui.jsx';
+import { Container, ErrorBlock, ProductImage, SectionHeading, Skel, Stars } from '../components/ui.jsx';
 import { ProductGrid } from '../components/ProductCard.jsx';
+import HeroSlider, { buildSlides } from '../components/HeroSlider.jsx';
 import { usePageMeta } from '../lib/helpers.js';
 
 const isExternal = (link) => /^https?:\/\//.test(link ?? '');
 function SmartLink({ to, className, children }) {
   if (!to) return <Link to="/products" className={className}>{children}</Link>;
   return isExternal(to) ? <a href={to} className={className} target="_blank" rel="noreferrer">{children}</a> : <Link to={to} className={className}>{children}</Link>;
-}
-
-/** Hero: admin-managed slides (Marketing → Sliders); a branded hero when none exist. */
-function Hero({ slides }) {
-  const { storeName, logoUrl } = useBranding();
-  const [index, setIndex] = useState(0);
-  useEffect(() => {
-    if (slides.length < 2) return undefined;
-    const timer = setInterval(() => setIndex((value) => (value + 1) % slides.length), 6000);
-    return () => clearInterval(timer);
-  }, [slides.length]);
-
-  if (!slides.length) {
-    return (
-      <section className="relative overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-amber-50/60">
-        <div aria-hidden="true" className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-emerald-200/40 blur-3xl" />
-        <div aria-hidden="true" className="absolute -bottom-32 left-1/3 h-80 w-80 rounded-full bg-amber-200/40 blur-3xl" />
-        <Container className="relative grid items-center gap-10 py-16 lg:grid-cols-2 lg:py-24">
-          <div>
-            <p className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-xs font-bold tracking-widest text-emerald-800 uppercase shadow-sm ring-1 ring-emerald-900/10"><Leaf size={14} /> Natural wellness</p>
-            <h1 className="mt-6 font-serif text-5xl leading-[1.05] font-semibold tracking-tight text-emerald-950 sm:text-6xl">Pure, natural care — delivered to your door.</h1>
-            <p className="mt-5 max-w-lg text-lg text-stone-600">Discover {storeName}’s collection of natural products, carefully selected for everyday wellbeing.</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link to="/products" className={`${btn.primary} h-13 text-base`}>Shop now <ArrowRight size={18} /></Link>
-              <Link to="/categories" className={`${btn.secondary} h-13 text-base`}>Browse categories</Link>
-            </div>
-          </div>
-          <div className="relative mx-auto w-full max-w-md">
-            <div className="absolute inset-6 rounded-full bg-gradient-to-br from-emerald-200/70 to-amber-100 blur-2xl" aria-hidden="true" />
-            <div className="relative grid aspect-square place-items-center rounded-full bg-white/80 p-10 shadow-xl ring-1 ring-emerald-900/5 backdrop-blur">
-              <img src={logoUrl} alt={storeName} className="max-h-full w-auto object-contain" />
-            </div>
-          </div>
-        </Container>
-      </section>
-    );
-  }
-
-  const slide = slides[index];
-  return (
-    <section className="relative" aria-roledescription="carousel" aria-label="Featured">
-      <div className="relative h-[460px] overflow-hidden bg-emerald-950 sm:h-[540px]">
-        {slides.map((item, i) => (
-          <div key={item.id} className={`absolute inset-0 transition-opacity duration-700 ${i === index ? 'opacity-100' : 'opacity-0'}`} aria-hidden={i !== index}>
-            {item.image ? <img src={item.image} alt="" className="h-full w-full object-cover" loading={i === 0 ? 'eager' : 'lazy'} /> : <div className="h-full w-full bg-gradient-to-br from-emerald-800 to-emerald-950" />}
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/85 via-emerald-950/45 to-transparent" />
-          </div>
-        ))}
-        <Container className="relative flex h-full items-center">
-          <div key={slide.id} className="max-w-xl text-white motion-safe:animate-fade-up">
-            <h1 className="font-serif text-4xl leading-tight font-semibold sm:text-6xl">{slide.title}</h1>
-            {slide.subtitle && <p className="mt-4 text-lg text-emerald-50/90">{slide.subtitle}</p>}
-            <SmartLink to={slide.link} className={`${btn.accent} mt-8 h-13 text-base`}>{slide.buttonText || 'Shop now'} <ArrowRight size={18} /></SmartLink>
-          </div>
-        </Container>
-        {slides.length > 1 && (
-          <>
-            <button type="button" aria-label="Previous slide" onClick={() => setIndex((index - 1 + slides.length) % slides.length)} className="absolute top-1/2 left-4 hidden h-11 w-11 -translate-y-1/2 cursor-pointer place-items-center rounded-full bg-white/15 text-white backdrop-blur hover:bg-white/30 sm:grid"><ChevronLeft /></button>
-            <button type="button" aria-label="Next slide" onClick={() => setIndex((index + 1) % slides.length)} className="absolute top-1/2 right-4 hidden h-11 w-11 -translate-y-1/2 cursor-pointer place-items-center rounded-full bg-white/15 text-white backdrop-blur hover:bg-white/30 sm:grid"><ChevronRight /></button>
-            <div className="absolute inset-x-0 bottom-6 flex justify-center gap-2">
-              {slides.map((item, i) => <button key={item.id} type="button" aria-label={`Slide ${i + 1}`} aria-current={i === index} onClick={() => setIndex(i)} className={`h-2 cursor-pointer rounded-full transition-all ${i === index ? 'w-8 bg-amber-300' : 'w-2 bg-white/60'}`} />)}
-            </div>
-          </>
-        )}
-      </div>
-    </section>
-  );
 }
 
 function Categories({ categories }) {
@@ -197,7 +130,7 @@ function Testimonials({ items }) {
 function HomeSkeleton() {
   return (
     <div aria-busy="true" aria-label="Loading">
-      <Skel className="h-[460px] w-full rounded-none sm:h-[540px]" />
+      <Skel className="h-[640px] w-full rounded-none sm:h-[600px] lg:h-[560px]" />
       <Container className="py-16">
         <Skel className="h-8 w-64" />
         <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">{Array.from({ length: 4 }, (_, i) => <Skel key={i} className="aspect-[4/3] rounded-3xl" />)}</div>
@@ -218,7 +151,8 @@ export default function HomePage() {
   const nothingYet = !data.featured.length && !data.newArrivals.length && !data.bestSelling.length;
   return (
     <>
-      <Hero slides={data.slides} />
+      <h1 className="sr-only">{storeName} — natural products delivered across Bangladesh</h1>
+      <HeroSlider slides={buildSlides(data)} />
       <Categories categories={data.categories} />
       <ProductSection eyebrow="Handpicked" title="Featured products" products={data.featured} link="/products?featured=true" tone="tint" />
       <ProductSection eyebrow="Just in" title="New arrivals" products={data.newArrivals} link="/products?sort=latest" />

@@ -13,9 +13,10 @@ import { EmptyState } from '../../components/ui/EmptyState.jsx';
 import { CustomerTableSkeleton } from '../../components/ui/Skeleton.jsx';
 import { date, money, number } from '../../lib/format.js';
 import { downloadCsv } from '../../lib/csv.js';
+import { t } from '../../i18n/index.js';
 
 export function Avatar({ name, size = 'h-9 w-9 text-sm' }) {
-  return <span className={`grid shrink-0 place-items-center rounded-full bg-gradient-to-br from-teal-500 to-emerald-400 font-display font-bold text-white ${size}`}>{(name ?? '?').trim().charAt(0).toUpperCase()}</span>;
+  return <span className={`grid shrink-0 place-items-center rounded-full bg-gradient-to-br from-teal-500 to-accent2-400 font-display font-bold text-white ${size}`}>{(name ?? '?').trim().charAt(0).toUpperCase()}</span>;
 }
 
 export default function CustomerListPage() {
@@ -52,8 +53,8 @@ export default function CustomerListPage() {
     { key: 'totalOrders', header: 'Orders', sortKey: 'totalOrders', className: 'tabular-nums', render: (row) => number(row.totalOrders) },
     { key: 'totalSpent', header: 'Total spent', sortKey: 'totalSpent', className: 'font-semibold tabular-nums whitespace-nowrap', render: (row) => money(row.totalSpent) },
     { key: 'createdAt', header: 'Registered', sortKey: 'createdAt', className: 'text-xs whitespace-nowrap text-slate-500', render: (row) => date(row.createdAt) },
-    { key: 'status', header: 'Status', render: (row) => <Toggle size="sm" checked={row.isActive} onChange={(value) => setActive(row, value)} label={<span className="text-xs font-medium">{row.isActive ? 'Active' : 'Inactive'}</span>} /> },
-    { key: 'actions', header: <span className="sr-only">Actions</span>, className: 'text-right', render: (row) => <IconButton icon={Eye} variant="teal" label={`View ${row.name}`} onClick={() => navigate(`/customers/${row.id}`)} /> },
+    { key: 'status', header: 'Status', render: (row) => <Toggle size="sm" checked={row.isActive} onChange={(value) => setActive(row, value)} label={<span className="text-xs font-medium">{t(row.isActive ? 'Active' : 'Inactive')}</span>} /> },
+    { key: 'actions', header: <span className="sr-only">{t('Actions')}</span>, className: 'text-right', render: (row) => <IconButton icon={Eye} variant="teal" label={`View ${row.name}`} onClick={() => navigate(`/customers/${row.id}`)} /> },
   ];
 
   return (
@@ -66,8 +67,8 @@ export default function CustomerListPage() {
             <Button variant="secondary" icon={Download} disabled={!data?.items?.length} onClick={() => downloadCsv('customers', [
               { key: 'name', label: 'Name' }, { key: 'email', label: 'Email' }, { key: 'phone', label: 'Phone' }, { key: 'totalOrders', label: 'Orders' },
               { key: 'totalSpent', label: 'Total spent' }, { label: 'Status', value: (row) => (row.isActive ? 'active' : 'inactive') }, { label: 'Registered', value: (row) => new Date(row.createdAt).toISOString() },
-            ], data.items)}>Export page</Button>
-            <LinkButton to="/users/new?role=user" icon={UserPlus}>Add customer</LinkButton>
+            ], data.items)}>{t('Export page')}</Button>
+            <LinkButton to="/users/new?role=user" icon={UserPlus}>{t('Add customer')}</LinkButton>
           </>
         )}
       />
@@ -85,7 +86,7 @@ export default function CustomerListPage() {
           columns={columns} rows={data?.items} loading={loading} error={error} onRetry={reload}
           sort={{ sortBy: params.sortBy, sortOrder: params.sortOrder, onSort: toggleSort }}
           skeleton={<CustomerTableSkeleton />}
-          empty={<EmptyState icon={Users} title={params.search || params.status ? 'No customers match' : 'No customers yet'} message="Customers appear here when they register or when you add them." action={<LinkButton variant="secondary" to="/users/new?role=user" icon={UserPlus}>Add customer</LinkButton>} />}
+          empty={<EmptyState icon={Users} title={params.search || params.status ? 'No customers match' : 'No customers yet'} message="Customers appear here when they register or when you add them." action={<LinkButton variant="secondary" to="/users/new?role=user" icon={UserPlus}>{t('Add customer')}</LinkButton>} />}
         />
         <Pagination pagination={data?.pagination} onPageChange={(page) => update({ page }, { resetPage: false })} onLimitChange={(limit) => update({ limit })} />
       </Card>

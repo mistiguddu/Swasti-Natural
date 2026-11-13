@@ -11,6 +11,7 @@ import { CategoryDetailsSkeleton } from '../../components/ui/Skeleton.jsx';
 import { EmptyState, ErrorState } from '../../components/ui/EmptyState.jsx';
 import { date, dateTime, money, number, titleCase } from '../../lib/format.js';
 import { Avatar } from './CustomerListPage.jsx';
+import { t } from '../../i18n/index.js';
 
 /** /customers/details without an id: pick a customer first. */
 function CustomerLookup() {
@@ -27,7 +28,7 @@ function CustomerLookup() {
           onSelect={(item) => navigate(`/customers/${item.id}`)}
           emptyText="No customers found"
         />
-        <EmptyState icon={Users} title="Choose a customer" message="Or browse everyone in the customer list." action={<LinkButton variant="secondary" to="/customers">Open customer list</LinkButton>} className="py-10" />
+        <EmptyState icon={Users} title="Choose a customer" message="Or browse everyone in the customer list." action={<LinkButton variant="secondary" to="/customers">{t('Open customer list')}</LinkButton>} className="py-10" />
       </Card>
     </>
   );
@@ -46,7 +47,7 @@ export default function CustomerDetailsPage() {
 
   return (
     <>
-      <PageHeader breadcrumb={breadcrumb} title={customer.name} description={`Customer since ${date(customer.createdAt)}`} actions={<LinkButton to={`/users/${customer.id}/edit`} variant="secondary" icon={Pencil}>Edit profile</LinkButton>} />
+      <PageHeader breadcrumb={breadcrumb} title={customer.name} description={`Customer since ${date(customer.createdAt)}`} actions={<LinkButton to={`/users/${customer.id}/edit`} variant="secondary" icon={Pencil}>{t('Edit profile')}</LinkButton>} />
       <div className="grid gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
         <Card className="self-start">
           <div className="flex flex-col items-center border-b border-slate-100 p-6 text-center">
@@ -76,11 +77,11 @@ export default function CustomerDetailsPage() {
             </Card>
           )}
           <Card>
-            <CardHeader title="Recent orders" icon={UserRound} actions={<Link to={`/orders?search=${encodeURIComponent(customer.email)}`} className="text-xs font-semibold text-teal-700 hover:underline">All orders</Link>} />
-            {!customer.recentOrders.length ? <EmptyState icon={ShoppingBag} title="No orders yet" action={<LinkButton size="sm" to="/orders/new">Create an order</LinkButton>} /> : (
+            <CardHeader title="Recent orders" icon={UserRound} actions={<Link to={`/orders?search=${encodeURIComponent(customer.email)}`} className="text-xs font-semibold text-teal-700 hover:underline">{t('All orders')}</Link>} />
+            {!customer.recentOrders.length ? <EmptyState icon={ShoppingBag} title="No orders yet" action={<LinkButton size="sm" to="/orders/new">{t('Create an order')}</LinkButton>} /> : (
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[520px] text-sm">
-                  <thead><tr className="border-b border-slate-100 text-left text-[11px] font-semibold tracking-wider text-slate-500 uppercase"><th className="px-5 py-2.5">Order</th><th className="px-3 py-2.5">Items</th><th className="px-3 py-2.5">Total</th><th className="px-3 py-2.5">Status</th><th className="px-5 py-2.5 text-right">Date</th></tr></thead>
+                  <thead><tr className="border-b border-slate-100 text-left text-[11px] font-semibold tracking-wider text-slate-500 uppercase"><th className="px-5 py-2.5">{t('Order')}</th><th className="px-3 py-2.5">{t('Items')}</th><th className="px-3 py-2.5">{t('Total')}</th><th className="px-3 py-2.5">{t('Status')}</th><th className="px-5 py-2.5 text-right">{t('Date')}</th></tr></thead>
                   <tbody className="divide-y divide-slate-100">
                     {customer.recentOrders.map((order) => (
                       <tr key={order.id} className="hover:bg-slate-50/70">

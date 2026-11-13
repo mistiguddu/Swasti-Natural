@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink, useParams } from 'react-router-dom';
-import { KeyRound, Save, ShieldCheck, Store, UserRound, Wrench } from 'lucide-react';
+import { KeyRound, Save, ShieldCheck, Store, UserRound, Wrench, Sparkles } from 'lucide-react';
 import { api } from '../../api.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
@@ -10,8 +10,12 @@ import { FormInput, FormSection, TextArea, Toggle, fieldErrors } from '../../com
 import { FormSkeleton } from '../../components/ui/Skeleton.jsx';
 import { dateTime, ROLE_LABELS } from '../../lib/format.js';
 import NotFoundPage from '../NotFoundPage.jsx';
+import { t } from '../../i18n/index.js';
+import BrandingSettings from './BrandingSettings.jsx';
+import { useBranding } from '../../context/BrandingContext.jsx';
 
 const SECTIONS = [
+  { key: 'branding', label: 'Branding', icon: Sparkles, permission: 'settings.manage', description: 'Project name, tagline, logo and icon used across the admin.' },
   { key: 'general', label: 'General Settings', icon: Wrench, permission: 'settings.manage', description: 'Store identity and contact details.' },
   { key: 'store', label: 'Store Settings', icon: Store, permission: 'settings.manage', description: 'Currency, tax, stock alerts, orders and reviews.' },
   { key: 'profile', label: 'Profile Settings', icon: UserRound, description: 'Your name, phone and address.' },
@@ -38,18 +42,19 @@ function useSave() {
 }
 
 function SaveBar({ saving, dirty = true }) {
-  return <div className="flex justify-end"><Button type="submit" icon={Save} busy={saving} busyLabel="Saving…" disabled={!dirty}>Save changes</Button></div>;
+  return <div className="flex justify-end"><Button type="submit" icon={Save} busy={saving} busyLabel="Saving…" disabled={!dirty}>{t('Save changes')}</Button></div>;
 }
 
 function GeneralSettings() {
   const { settings, refreshSettings } = useAuth();
+  const branding = useBranding();
   const [form, setForm] = useState(null);
   const [{ saving, errors }, save] = useSave();
   useEffect(() => { if (settings) setForm(settings.general); }, [settings]);
   if (!form) return <FormSkeleton sections={1} fields={6} />;
   const set = (field) => (event) => setForm((current) => ({ ...current, [field]: event.target.value }));
   return (
-    <form className="space-y-6" onSubmit={async (event) => { event.preventDefault(); if (await save(() => api.put('/settings/general', form), 'General settings saved')) refreshSettings(); }}>
+    <form className="space-y-6" onSubmit={async (event) => { event.preventDefault(); if (await save(() => api.put('/settings/general', form), 'General settings saved')) { refreshSettings(); branding.refresh().catch(() => {}); } }}>
       <FormSection title="Store identity">
         <div className="grid gap-5 sm:grid-cols-2">
           <FormInput label="Store name" required value={form.storeName} onChange={set('storeName')} error={errors.storeName} />
@@ -158,20 +163,20 @@ function SecuritySettings() {
             <FormInput label="Confirm new password" type="password" required autoComplete="new-password" value={form.confirm} onChange={set('confirm')} error={local.confirm} />
           </div>
         </FormSection>
-        <div className="flex justify-end"><Button type="submit" icon={KeyRound} busy={saving} busyLabel="Updating…">Update password</Button></div>
+        <div className="flex justify-end"><Button type="submit" icon={KeyRound} busy={saving} busyLabel="Updating…">{t('Update password')}</Button></div>
       </form>
       <FormSection title="Session">
         <dl className="grid gap-4 text-sm sm:grid-cols-2">
-          <div><dt className="text-xs font-semibold text-slate-400 uppercase">Last sign-in</dt><dd className="mt-1 text-slate-800">{user.lastLoginAt ? dateTime(user.lastLoginAt) : '—'}</dd></div>
-          <div><dt className="text-xs font-semibold text-slate-400 uppercase">Session storage</dt><dd className="mt-1 text-slate-800">This browser tab only; it ends when the tab closes or the token expires.</dd></div>
+          <div><dt className="text-xs font-semibold text-slate-400 uppercase">{t('Last sign-in')}</dt><dd className="mt-1 text-slate-800">{user.lastLoginAt ? dateTime(user.lastLoginAt) : '—'}</dd></div>
+          <div><dt className="text-xs font-semibold text-slate-400 uppercase">{t('Session storage')}</dt><dd className="mt-1 text-slate-800">This browser tab only; it ends when the tab closes or the token expires.</dd></div>
         </dl>
-        <Button variant="danger-ghost" className="mt-5" onClick={signOut}>Sign out now</Button>
+        <Button variant="danger-ghost" className="mt-5" onClick={signOut}>{t('Sign out now')}</Button>
       </FormSection>
     </div>
   );
 }
 
-const VIEWS = { general: GeneralSettings, store: StoreSettings, profile: ProfileSettings, security: SecuritySettings };
+const VIEWS = { branding: BrandingSettings, general: GeneralSettings, store: StoreSettings, profile: ProfileSettings, security: SecuritySettings };
 
 export default function SettingsPage() {
   const { section } = useParams();
@@ -188,8 +193,8 @@ export default function SettingsPage() {
       <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
         <nav aria-label="Settings sections" className="flex gap-1 overflow-x-auto lg:flex-col">
           {visible.map((item) => (
-            <NavLink key={item.key} to={`/settings/${item.key}`} className={({ isActive }) => `inline-flex shrink-0 items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition ${isActive ? 'bg-white text-teal-700 shadow-sm ring-1 ring-slate-200' : 'text-slate-600 hover:bg-white/70'}`}>
-              <item.icon size={16} /> {item.label}
+            <NavLink key={item.key} to={`/settings/${item.key}`} className={({ isActive }) => `inline-flex shrink-0 items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition ${isActive ? 'bg-surface text-teal-700 shadow-sm ring-1 ring-slate-200' : 'text-slate-600 hover:bg-surface/70'}`}>
+              <item.icon size={16} /> {t(item.label)}
             </NavLink>
           ))}
         </nav>

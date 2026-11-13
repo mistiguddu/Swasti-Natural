@@ -12,6 +12,7 @@ import { ProductDetailsSkeleton } from '../../components/ui/Skeleton.jsx';
 import { ErrorState } from '../../components/ui/EmptyState.jsx';
 import { dateTime, money, number, titleCase } from '../../lib/format.js';
 import { StockCell } from './ProductListPage.jsx';
+import { t } from '../../i18n/index.js';
 
 function Chips({ items }) {
   if (!items?.length) return null;
@@ -65,9 +66,9 @@ export default function ProductDetailsPage() {
         description={<span className="inline-flex flex-wrap items-center gap-2">SKU {product.sku} <StatusBadge status={product.status} /> <StatusBadge status={product.stockStatus} /></span>}
         actions={(
           <>
-            <Button variant="danger-ghost" icon={Trash2} onClick={() => setConfirm(true)}>Delete</Button>
-            <Button variant="secondary" icon={Copy} onClick={duplicate}>Duplicate</Button>
-            <LinkButton to={`/products/${id}/edit`} icon={Pencil}>Edit product</LinkButton>
+            <Button variant="danger-ghost" icon={Trash2} onClick={() => setConfirm(true)}>{t('Delete')}</Button>
+            <Button variant="secondary" icon={Copy} onClick={duplicate}>{t('Duplicate')}</Button>
+            <LinkButton to={`/products/${id}/edit`} icon={Pencil}>{t('Edit product')}</LinkButton>
           </>
         )}
       />
@@ -89,13 +90,13 @@ export default function ProductDetailsPage() {
           <Card className="p-5">
             <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
               <div>
-                <p className="text-xs font-semibold tracking-wider text-slate-400 uppercase">Price</p>
+                <p className="text-xs font-semibold tracking-wider text-slate-400 uppercase">{t('Price')}</p>
                 <p className="font-display text-3xl font-bold text-slate-900">{money(product.salePrice > 0 ? product.salePrice : product.regularPrice)}</p>
                 {product.salePrice > 0 && <p className="text-sm text-slate-500"><span className="line-through">{money(product.regularPrice)}</span> <span className="font-semibold text-emerald-600">−{product.discountPercentage}%</span></p>}
               </div>
-              <div><p className="text-xs font-semibold tracking-wider text-slate-400 uppercase">Stock</p><StockCell product={product} /></div>
-              <div><p className="text-xs font-semibold tracking-wider text-slate-400 uppercase">Sold</p><p className="font-semibold text-slate-800">{number(product.soldCount)} units</p></div>
-              <div><p className="text-xs font-semibold tracking-wider text-slate-400 uppercase">Rating</p><p className="inline-flex items-center gap-1 font-semibold text-slate-800"><Star size={14} className="fill-amber-400 text-amber-400" /> {product.ratingAverage || '—'} <span className="text-xs font-normal text-slate-400">({product.ratingCount})</span></p></div>
+              <div><p className="text-xs font-semibold tracking-wider text-slate-400 uppercase">{t('Stock')}</p><StockCell product={product} /></div>
+              <div><p className="text-xs font-semibold tracking-wider text-slate-400 uppercase">{t('Sold')}</p><p className="font-semibold text-slate-800">{number(product.soldCount)} units</p></div>
+              <div><p className="text-xs font-semibold tracking-wider text-slate-400 uppercase">{t('Rating')}</p><p className="inline-flex items-center gap-1 font-semibold text-slate-800"><Star size={14} className="fill-amber-400 text-amber-400" /> {product.ratingAverage || '—'} <span className="text-xs font-normal text-slate-400">({product.ratingCount})</span></p></div>
             </div>
             <div className="mt-4 flex flex-wrap gap-1.5">
               {product.isFeatured && <StatusBadge tone="amber" status="featured" label="Featured" />}
@@ -134,7 +135,7 @@ export default function ProductDetailsPage() {
             <CardHeader title="Description" />
             <div className="space-y-3 p-5 text-sm leading-relaxed text-slate-700">
               {product.shortDescription && <p className="font-medium text-slate-800">{product.shortDescription}</p>}
-              {product.description ? <p className="whitespace-pre-line">{product.description}</p> : !product.shortDescription && <p className="text-slate-400">No description yet.</p>}
+              {product.description ? <p className="whitespace-pre-line">{product.description}</p> : !product.shortDescription && <p className="text-slate-400">{t('No description yet.')}</p>}
             </div>
           </Card>
 

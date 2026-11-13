@@ -1,12 +1,12 @@
 /**
  * Chart colours. Categorical slots are assigned in this fixed order (never cycled) and
- * follow the entity, not its rank. Single-series charts use the brand teal.
- * Palette validated with the dataviz validator for the light surface.
+ * follow the entity, not its rank. Values are CSS variables (index.css) so charts follow
+ * the light/dark theme (validated light and dark steps) and the brand accent.
  */
-export const SERIES = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#6250d6', '#e34948'];
-export const BRAND = '#0d9488';
-export const BRAND_SOFT = '#99f6e4';
-export const MUTED_SERIES = '#94a3b8';
+export const SERIES = Array.from({ length: 8 }, (_, index) => `var(--series-${index + 1})`);
+export const BRAND = 'var(--color-teal-600)';
+export const BRAND_SOFT = 'var(--color-teal-200)';
+export const MUTED_SERIES = 'var(--color-slate-400)';
 
 /** Fixed colour per order status so it never changes with filters. */
 export const ORDER_STATUS_COLORS = {
@@ -20,9 +20,9 @@ export const ORDER_STATUS_COLORS = {
 };
 
 export const axisProps = {
-  tick: { fill: '#64748b', fontSize: 11 },
+  tick: { fill: 'var(--color-slate-500)', fontSize: 11 },
   tickLine: false,
-  axisLine: { stroke: '#e2e8f0' },
+  axisLine: { stroke: 'var(--color-slate-200)' },
 };
 
-export const gridProps = { stroke: '#f1f5f9', vertical: false };
+export const gridProps = { stroke: 'var(--color-slate-100)', vertical: false };

@@ -8,8 +8,9 @@ import { Banner, Coupon, Discount, ShippingMethod } from '../models/Marketing.js
 import * as reviews from '../services/review.service.js';
 import * as notifications from '../services/notification.service.js';
 import * as settings from '../services/setting.service.js';
+import { imageUpload, parseMultipartJson } from '../config/upload.js';
 import {
-  bannerSchema, bulkIdsSchema, couponSchema, createReviewSchema, discountSchema, generalSettingsSchema,
+  bannerSchema, brandingSchema, bulkIdsSchema, couponSchema, createReviewSchema, discountSchema, generalSettingsSchema,
   reviewModerationSchema, shippingSchema, storeSettingsSchema,
 } from '../middlewares/admin-schemas.js';
 
@@ -85,6 +86,16 @@ notificationRouter.delete('/:id', asyncHandler(async (req, res) => {
 
 /* Settings */
 export const settingRouter = Router();
+// Public: project name + logos for the login page and browser tab (no auth, no private data).
+settingRouter.get('/public', asyncHandler(async (req, res) => res.json({ data: await settings.getPublicBranding() })));
+settingRouter.put(
+  '/branding',
+  ...guard('settings.manage'),
+  imageUpload('branding', [{ name: 'logo', maxCount: 1 }, { name: 'logoMark', maxCount: 1 }]),
+  parseMultipartJson,
+  validate(brandingSchema),
+  asyncHandler(async (req, res) => res.json({ data: await settings.updateBranding(req.validated.body, req.files) })),
+);
 settingRouter.get('/', ...guard('dashboard.view'), asyncHandler(async (req, res) => res.json({ data: await settings.getSettings() })));
 settingRouter.put('/general', ...guard('settings.manage'), validate(generalSettingsSchema), asyncHandler(async (req, res) => {
   res.json({ data: await settings.updateSettings('general', req.validated.body) });

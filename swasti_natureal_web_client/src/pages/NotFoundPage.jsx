@@ -2,6 +2,7 @@ import { Compass, ShieldX } from 'lucide-react';
 import { LinkButton } from '../components/ui/Button.jsx';
 import { EmptyState } from '../components/ui/EmptyState.jsx';
 import { Card } from '../components/ui/Card.jsx';
+import { t } from '../i18n/index.js';
 
 export default function NotFoundPage({ forbidden = false }) {
   return (
@@ -10,7 +11,7 @@ export default function NotFoundPage({ forbidden = false }) {
         icon={forbidden ? ShieldX : Compass}
         title={forbidden ? 'You don’t have access to this page' : 'Page not found'}
         message={forbidden ? 'Your role doesn’t include the permission this page needs.' : 'The page you’re looking for doesn’t exist or was moved.'}
-        action={<LinkButton to="/">Back to dashboard</LinkButton>}
+        action={<LinkButton to="/">{t('Back to dashboard')}</LinkButton>}
       />
     </Card>
   );

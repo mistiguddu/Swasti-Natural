@@ -197,6 +197,12 @@ export const createReviewSchema = body({ product: objectId, rating: number({ min
 export const generalSettingsSchema = body({
   storeName: requiredText(2, 120), tagline: text(200), email: text(254), phone: text(30), address: text(300), website: text(200),
 });
+export const brandingSchema = body({
+  storeName: requiredText(2, 120),
+  tagline: text(200),
+  removeLogo: bool,
+  removeLogoMark: bool,
+});
 export const storeSettingsSchema = body({
   currency: requiredText(3, 3).transform((value) => value.toUpperCase()),
   currencySymbol: text(5),

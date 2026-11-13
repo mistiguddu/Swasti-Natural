@@ -1,13 +1,14 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { CheckCircle2, AlertTriangle, Info, X } from 'lucide-react';
+import { t } from '../i18n/index.js';
 
 const ToastContext = createContext(null);
 let nextId = 0; // crypto.randomUUID() is unavailable on plain-http LAN addresses
 const ICONS = { success: CheckCircle2, error: AlertTriangle, info: Info };
 const STYLES = {
-  success: 'border-emerald-200 bg-white text-slate-800 [&_svg.icon]:text-emerald-600',
-  error: 'border-rose-200 bg-white text-slate-800 [&_svg.icon]:text-rose-600',
-  info: 'border-sky-200 bg-white text-slate-800 [&_svg.icon]:text-sky-600',
+  success: 'border-emerald-200 bg-surface text-slate-800 [&_svg.icon]:text-emerald-600',
+  error: 'border-rose-200 bg-surface text-slate-800 [&_svg.icon]:text-rose-600',
+  info: 'border-sky-200 bg-surface text-slate-800 [&_svg.icon]:text-sky-600',
 };
 
 export function ToastProvider({ children }) {
@@ -36,7 +37,7 @@ export function ToastProvider({ children }) {
           return (
             <div key={toast.id} role={toast.type === 'error' ? 'alert' : 'status'} className={`pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-xl border px-4 py-3 text-sm shadow-lg shadow-slate-900/10 motion-safe:animate-fade-up ${STYLES[toast.type]}`}>
               <Icon size={18} className="icon mt-0.5 shrink-0" />
-              <p className="flex-1 leading-snug">{toast.message}</p>
+              <p className="flex-1 leading-snug">{t(toast.message)}</p>
               <button onClick={() => dismiss(toast.id)} className="cursor-pointer rounded-md p-0.5 text-slate-400 hover:text-slate-700" aria-label="Dismiss"><X size={15} /></button>
             </div>
           );

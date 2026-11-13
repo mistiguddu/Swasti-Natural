@@ -84,6 +84,11 @@ const settingSchema = new mongoose.Schema({
     address: { type: String, trim: true, maxlength: 300, default: '' },
     website: { type: String, trim: true, maxlength: 200, default: '' },
   },
+  /** Uploaded brand images (empty = use the logo bundled with the web client). */
+  branding: {
+    logo: { type: String, default: '' },
+    logoMark: { type: String, default: '' },
+  },
   store: {
     currency: { type: String, trim: true, uppercase: true, maxlength: 3, default: 'BDT' },
     currencySymbol: { type: String, trim: true, maxlength: 5, default: '৳' },

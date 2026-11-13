@@ -44,7 +44,7 @@ export default function AdminLayout() {
 
   return (
     <div className="flex min-h-screen bg-slate-50 font-body text-slate-800 selection:bg-teal-200">
-      <a href="#main" className="sr-only z-[80] rounded-lg bg-white px-3 py-2 focus:not-sr-only focus:fixed focus:top-3 focus:left-3">Skip to content</a>
+      <a href="#main" className="sr-only z-[80] rounded-lg bg-surface px-3 py-2 focus:not-sr-only focus:fixed focus:top-3 focus:left-3">Skip to content</a>
       <Sidebar collapsed={collapsed} onToggleCollapse={toggleCollapse} mobileOpen={mobileOpen} onCloseMobile={() => setMobileOpen(false)} badges={badges} categories={categories} />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar onOpenMobile={() => setMobileOpen(true)} unread={badges.notifications} />

@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from './context/AuthContext.jsx';
+import { useApplyTheme } from './context/PreferencesContext.jsx';
 import AdminLayout from './components/layout/AdminLayout.jsx';
 import LoginPage from './pages/auth/LoginPage.jsx';
 import { NoAccessScreen, SessionErrorScreen } from './pages/auth/SessionScreens.jsx';
@@ -53,6 +54,8 @@ const page = (element, permission) => <Guard permission={permission}>{element}</
 
 export default function App() {
   const auth = useAuth();
+  // Theme applies to the signed-in app; the login page keeps its own light design.
+  useApplyTheme(auth.status !== 'signed-out');
 
   if (auth.status === 'loading') return <AppShellSkeleton />;
   if (auth.status === 'error') return <SessionErrorScreen message={auth.error} onRetry={auth.retry} onLogout={auth.signOut} />;

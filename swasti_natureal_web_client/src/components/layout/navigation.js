@@ -82,6 +82,7 @@ export const NAVIGATION = [
   {
     label: 'Settings', icon: Settings,
     children: [
+      { label: 'Branding', to: '/settings/branding', permission: 'settings.manage' },
       { label: 'General Settings', to: '/settings/general', permission: 'settings.manage' },
       { label: 'Store Settings', to: '/settings/store', permission: 'settings.manage' },
       { label: 'Profile Settings', to: '/settings/profile' },

@@ -10,6 +10,7 @@ import { FilterDropdown } from '../components/ui/Controls.jsx';
 import { ListSkeleton } from '../components/ui/Skeleton.jsx';
 import { EmptyState, ErrorState } from '../components/ui/EmptyState.jsx';
 import { dateTime, relativeTime } from '../lib/format.js';
+import { t } from '../i18n/index.js';
 
 const ICONS = [
   ['order', ShoppingCart, 'bg-sky-50 text-sky-600'], ['payment', ShoppingCart, 'bg-sky-50 text-sky-600'], ['stock', AlertTriangle, 'bg-rose-50 text-rose-600'],
@@ -57,7 +58,7 @@ export default function NotificationsPage() {
       <PageHeader
         title="Notifications"
         description="Orders, stock alerts, reviews and other store activity."
-        actions={<Button variant="secondary" icon={CheckCheck} disabled={!data?.unread} onClick={markAll}>Mark all as read</Button>}
+        actions={<Button variant="secondary" icon={CheckCheck} disabled={!data?.unread} onClick={markAll}>{t('Mark all as read')}</Button>}
       />
       <Card>
         <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 p-4">

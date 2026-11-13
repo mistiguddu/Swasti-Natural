@@ -12,7 +12,7 @@ export function DashboardCardSkeleton({ count = 4 }) {
   return (
     <Busy label="Loading summary" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {Array.from({ length: count }, (_, index) => (
-        <div key={index} className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200/70">
+        <div key={index} className="rounded-2xl bg-surface p-5 shadow-sm ring-1 ring-slate-200/70">
           <div className="flex items-center justify-between"><Skeleton className="h-3 w-24" /><Skeleton className="h-10 w-10 rounded-xl" /></div>
           <Skeleton className="mt-4 h-7 w-32" />
           <Skeleton className="mt-3 h-3 w-40" />
@@ -24,7 +24,7 @@ export function DashboardCardSkeleton({ count = 4 }) {
 
 export function DashboardChartSkeleton({ height = 'h-72', title = true }) {
   return (
-    <Busy label="Loading chart" className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/70">
+    <Busy label="Loading chart" className="rounded-2xl bg-surface shadow-sm ring-1 ring-slate-200/70">
       {title && <div className="border-b border-slate-100 px-5 py-4"><Skeleton className="h-4 w-40" /><Skeleton className="mt-2 h-3 w-56" /></div>}
       <div className={`flex items-end gap-2 px-5 pt-6 pb-5 ${height}`}>
         {[45, 70, 55, 80, 40, 65, 90, 60, 75, 50, 85, 68].map((value, index) => (
@@ -61,7 +61,7 @@ export function FormSkeleton({ sections = 2, fields = 4 }) {
     <Busy label="Loading form" className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
       <div className="space-y-6">
         {Array.from({ length: sections }, (_, section) => (
-          <div key={section} className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200/70">
+          <div key={section} className="rounded-2xl bg-surface p-6 shadow-sm ring-1 ring-slate-200/70">
             <Skeleton className="h-4 w-40" />
             <Skeleton className="mt-2 h-3 w-64" />
             <div className="mt-6 grid gap-5 sm:grid-cols-2">
@@ -73,8 +73,8 @@ export function FormSkeleton({ sections = 2, fields = 4 }) {
         ))}
       </div>
       <div className="space-y-6">
-        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200/70"><Skeleton className="h-4 w-28" /><Skeleton className="mt-5 h-40 w-full rounded-xl" /></div>
-        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200/70"><Skeleton className="h-4 w-24" /><Skeleton className="mt-5 h-10 w-full rounded-xl" /></div>
+        <div className="rounded-2xl bg-surface p-6 shadow-sm ring-1 ring-slate-200/70"><Skeleton className="h-4 w-28" /><Skeleton className="mt-5 h-40 w-full rounded-xl" /></div>
+        <div className="rounded-2xl bg-surface p-6 shadow-sm ring-1 ring-slate-200/70"><Skeleton className="h-4 w-24" /><Skeleton className="mt-5 h-10 w-full rounded-xl" /></div>
       </div>
     </Busy>
   );
@@ -83,16 +83,16 @@ export function FormSkeleton({ sections = 2, fields = 4 }) {
 function DetailsSkeleton({ label, media }) {
   return (
     <Busy label={label} className="grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
-      <div className="space-y-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200/70">
+      <div className="space-y-4 rounded-2xl bg-surface p-5 shadow-sm ring-1 ring-slate-200/70">
         <Skeleton className="aspect-square w-full rounded-xl" />
         <div className="flex gap-3">{Array.from({ length: media }, (_, index) => <Skeleton key={index} className="h-16 w-16 rounded-lg" />)}</div>
       </div>
       <div className="space-y-6">
-        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200/70">
+        <div className="rounded-2xl bg-surface p-6 shadow-sm ring-1 ring-slate-200/70">
           <Skeleton className="h-6 w-64" /><Skeleton className="mt-3 h-3 w-40" />
           <div className="mt-6 grid gap-5 sm:grid-cols-3">{Array.from({ length: 6 }, (_, index) => <div key={index}><Skeleton className="h-3 w-20" /><Skeleton className="mt-2 h-4 w-28" /></div>)}</div>
         </div>
-        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200/70">
+        <div className="rounded-2xl bg-surface p-6 shadow-sm ring-1 ring-slate-200/70">
           <Skeleton className="h-4 w-32" />
           <div className="mt-4 space-y-2"><Skeleton className="h-3 w-full" /><Skeleton className="h-3 w-11/12" /><Skeleton className="h-3 w-4/5" /></div>
         </div>
@@ -122,12 +122,12 @@ export function ListSkeleton({ rows = 5 }) {
 export function AppShellSkeleton() {
   return (
     <div role="status" aria-label="Loading dashboard" className="flex min-h-screen bg-slate-50 font-body">
-      <div className="hidden w-64 shrink-0 border-r border-slate-200 bg-white p-5 lg:block">
+      <div className="hidden w-64 shrink-0 border-r border-slate-200 bg-surface p-5 lg:block">
         <div className="flex items-center gap-3"><Skeleton className="h-10 w-10 rounded-2xl" /><Skeleton className="h-4 w-28" /></div>
         <div className="mt-10 space-y-4">{Array.from({ length: 10 }, (_, index) => <div key={index} className="flex items-center gap-3"><Skeleton className="h-5 w-5 rounded-md" /><Skeleton className="h-3.5 w-32" /></div>)}</div>
       </div>
       <div className="flex-1">
-        <div className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6"><Skeleton className="h-9 w-72 rounded-xl" /><Skeleton className="h-9 w-9 rounded-full" /></div>
+        <div className="flex h-16 items-center justify-between border-b border-slate-200 bg-surface px-6"><Skeleton className="h-9 w-72 rounded-xl" /><Skeleton className="h-9 w-9 rounded-full" /></div>
         <div className="space-y-6 p-6"><Skeleton className="h-7 w-56" /><DashboardCardSkeleton /><DashboardChartSkeleton /></div>
       </div>
       <span className="sr-only">Loading dashboard</span>

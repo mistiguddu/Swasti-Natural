@@ -12,6 +12,7 @@ import { EmptyState } from '../../components/ui/EmptyState.jsx';
 import { OrderTableSkeleton } from '../../components/ui/Skeleton.jsx';
 import { dateTime, money, ORDER_STATUSES, PAYMENT_METHOD_LABELS, PAYMENT_STATUSES, titleCase } from '../../lib/format.js';
 import { downloadCsv } from '../../lib/csv.js';
+import { t } from '../../i18n/index.js';
 
 export default function OrderListPage() {
   const { status } = useParams();
@@ -32,7 +33,7 @@ export default function OrderListPage() {
     { key: 'payment', header: 'Payment', render: (row) => <div className="space-y-1"><StatusBadge status={row.paymentStatus} /><span className="block text-[11px] text-slate-400">{PAYMENT_METHOD_LABELS[row.paymentMethod]}</span></div> },
     { key: 'status', header: 'Status', sortKey: 'status', render: (row) => <StatusBadge status={row.status} /> },
     { key: 'createdAt', header: 'Date', sortKey: 'createdAt', className: 'text-xs whitespace-nowrap text-slate-500', render: (row) => dateTime(row.createdAt) },
-    { key: 'actions', header: <span className="sr-only">Actions</span>, className: 'text-right', render: (row) => <IconButton icon={Eye} label={`View ${row.orderNumber}`} variant="teal" onClick={() => navigate(`/orders/${row.id}`)} /> },
+    { key: 'actions', header: <span className="sr-only">{t('Actions')}</span>, className: 'text-right', render: (row) => <IconButton icon={Eye} label={`View ${row.orderNumber}`} variant="teal" onClick={() => navigate(`/orders/${row.id}`)} /> },
   ];
 
   const exportCsv = () => downloadCsv(`orders-${status ?? 'all'}`, [
@@ -52,8 +53,8 @@ export default function OrderListPage() {
         description="Track, update and fulfil customer orders."
         actions={(
           <>
-            <Button variant="secondary" icon={Download} onClick={exportCsv} disabled={!data?.items?.length}>Export page</Button>
-            <LinkButton to="/orders/new" icon={Plus}>Create order</LinkButton>
+            <Button variant="secondary" icon={Download} onClick={exportCsv} disabled={!data?.items?.length}>{t('Export page')}</Button>
+            <LinkButton to="/orders/new" icon={Plus}>{t('Create order')}</LinkButton>
           </>
         )}
       />
@@ -70,7 +71,7 @@ export default function OrderListPage() {
           <SearchInput value={params.search ?? ''} onSearch={(search) => update({ search })} placeholder="Order #, customer, phone, transaction…" className="w-full sm:w-80" />
           <FilterDropdown label="Payment" value={params.paymentStatus ?? ''} onChange={(value) => update({ paymentStatus: value })} options={PAYMENT_STATUSES.map((value) => ({ value, label: titleCase(value) }))} />
           <FilterDropdown label="Method" value={params.paymentMethod ?? ''} onChange={(value) => update({ paymentMethod: value })} options={Object.entries(PAYMENT_METHOD_LABELS).map(([value, label]) => ({ value, label }))} />
-          {filtered && <Button variant="ghost" size="sm" onClick={() => update(Object.fromEntries(filterKeys.map((name) => [name, ''])))}>Clear filters</Button>}
+          {filtered && <Button variant="ghost" size="sm" onClick={() => update(Object.fromEntries(filterKeys.map((name) => [name, ''])))}>{t('Clear filters')}</Button>}
           <DateRangeFilter className="w-full xl:ml-auto xl:w-auto" value={{ range: params.range ?? '', from: params.from ?? '', to: params.to ?? '' }} onChange={(value) => update(value)} />
         </div>
         <DataTable
@@ -82,7 +83,7 @@ export default function OrderListPage() {
           onRowClick={(row) => navigate(`/orders/${row.id}`)}
           sort={{ sortBy: params.sortBy, sortOrder: params.sortOrder, onSort: toggleSort }}
           skeleton={<OrderTableSkeleton />}
-          empty={<EmptyState icon={ShoppingCart} title={filtered || status ? 'No orders match' : 'No orders yet'} message={filtered ? 'Try different filters.' : 'New orders will appear here.'} action={<LinkButton variant="secondary" to="/orders/new" icon={Plus}>Create order</LinkButton>} />}
+          empty={<EmptyState icon={ShoppingCart} title={filtered || status ? 'No orders match' : 'No orders yet'} message={filtered ? 'Try different filters.' : 'New orders will appear here.'} action={<LinkButton variant="secondary" to="/orders/new" icon={Plus}>{t('Create order')}</LinkButton>} />}
         />
         <Pagination pagination={data?.pagination} onPageChange={(page) => update({ page }, { resetPage: false })} onLimitChange={(limit) => update({ limit })} />
       </Card>

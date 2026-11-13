@@ -14,6 +14,7 @@ import { EmptyState } from '../../components/ui/EmptyState.jsx';
 import { ProductTableSkeleton } from '../../components/ui/Skeleton.jsx';
 import { money, number } from '../../lib/format.js';
 import { StockCell } from './ProductListPage.jsx';
+import { t } from '../../i18n/index.js';
 
 const PRESETS = {
   low: { title: 'Low Stock Products', description: 'Products at or below their minimum stock alert.', stock: 'low' },
@@ -41,7 +42,7 @@ function StockEditor({ product, onSaved }) {
     }
   }
 
-  if (!product.manageStock) return <span className="text-xs text-slate-400">Not tracked</span>;
+  if (!product.manageStock) return <span className="text-xs text-slate-400">{t('Not tracked')}</span>;
   return (
     <div className={`flex items-center gap-1 ${saving ? 'opacity-60' : ''}`}>
       <IconButton icon={Minus} label="Decrease by 1" disabled={saving} onClick={() => save('adjust', -1)} />
@@ -55,7 +56,7 @@ function StockEditor({ product, onSaved }) {
         className="h-8 w-20 rounded-lg border border-slate-200 px-2 text-center text-sm font-semibold tabular-nums outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
       />
       <IconButton icon={Plus} label="Increase by 1" disabled={saving} onClick={() => save('adjust', 1)} />
-      {dirty && <Button size="sm" icon={Check} busy={saving} busyLabel="Saving" onClick={() => save('set', Number(value))}>Save</Button>}
+      {dirty && <Button size="sm" icon={Check} busy={saving} busyLabel="Saving" onClick={() => save('set', Number(value))}>{t('Save')}</Button>}
     </div>
   );
 }

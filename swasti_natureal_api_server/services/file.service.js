@@ -3,7 +3,7 @@ import path from 'node:path';
 import { PUBLIC_UPLOAD_PREFIX, UPLOAD_ROOT } from '../config/upload.js';
 import Category from '../models/Category.js';
 import Product from '../models/Product.js';
-import { Banner } from '../models/Marketing.js';
+import { Banner, Setting } from '../models/Marketing.js';
 
 function toDiskPath(publicPath) {
   if (typeof publicPath !== 'string' || !publicPath.startsWith(PUBLIC_UPLOAD_PREFIX)) return null;
@@ -13,12 +13,13 @@ function toDiskPath(publicPath) {
 }
 
 export async function isFileReferenced(publicPath) {
-  const [categories, products, banners] = await Promise.all([
+  const [categories, products, banners, settings] = await Promise.all([
     Category.exists({ $or: [{ image: publicPath }, { thumbnail: publicPath }] }),
     Product.exists({ $or: [{ image: publicPath }, { thumbnail: publicPath }, { gallery: publicPath }] }),
     Banner.exists({ image: publicPath }),
+    Setting.exists({ $or: [{ 'branding.logo': publicPath }, { 'branding.logoMark': publicPath }] }),
   ]);
-  return Boolean(categories || products || banners);
+  return Boolean(categories || products || banners || settings);
 }
 
 /** Deletes upload files that no category, product or banner references any more. */

@@ -10,6 +10,7 @@ import { FormInput, FormSection, SelectInput, TextArea, Toggle } from '../../com
 import AsyncPicker from '../../components/ui/AsyncPicker.jsx';
 import { Thumb } from '../../components/ui/DataTable.jsx';
 import { money, PAYMENT_METHOD_LABELS, PAYMENT_STATUSES, titleCase } from '../../lib/format.js';
+import { t } from '../../i18n/index.js';
 
 const ADDRESS = { name: '', phone: '', line1: '', line2: '', city: '', state: '', postalCode: '', country: '' };
 
@@ -88,7 +89,7 @@ export default function OrderCreatePage() {
         breadcrumb={[{ label: 'Orders', to: '/orders' }, { label: 'Create order' }]}
         title="Create order"
         description="Place an order on behalf of a customer (phone or in-store orders). Prices, discounts, coupon and tax are calculated by the server."
-        actions={<><Button variant="secondary" onClick={() => navigate(-1)}>Cancel</Button><Button type="submit" icon={Save} busy={saving} busyLabel="Creating…">Create order</Button></>}
+        actions={<><Button variant="secondary" onClick={() => navigate(-1)}>{t('Cancel')}</Button><Button type="submit" icon={Save} busy={saving} busyLabel="Creating…">{t('Create order')}</Button></>}
       />
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="min-w-0 space-y-6">
@@ -151,9 +152,9 @@ export default function OrderCreatePage() {
           </FormSection>
           <FormSection title="Estimate" description="Before automatic discounts, coupon and tax.">
             <dl className="space-y-2 text-sm">
-              <div className="flex justify-between"><dt className="text-slate-500">Subtotal</dt><dd className="tabular-nums">{money(subtotal)}</dd></div>
-              <div className="flex justify-between"><dt className="text-slate-500">Shipping</dt><dd className="tabular-nums">{money(shippingEstimate)}</dd></div>
-              <div className="flex justify-between border-t border-slate-100 pt-2 font-semibold"><dt>Estimated total</dt><dd className="tabular-nums">{money(subtotal + shippingEstimate)}</dd></div>
+              <div className="flex justify-between"><dt className="text-slate-500">{t('Subtotal')}</dt><dd className="tabular-nums">{money(subtotal)}</dd></div>
+              <div className="flex justify-between"><dt className="text-slate-500">{t('Shipping')}</dt><dd className="tabular-nums">{money(shippingEstimate)}</dd></div>
+              <div className="flex justify-between border-t border-slate-100 pt-2 font-semibold"><dt>{t('Estimated total')}</dt><dd className="tabular-nums">{money(subtotal + shippingEstimate)}</dd></div>
             </dl>
           </FormSection>
         </div>

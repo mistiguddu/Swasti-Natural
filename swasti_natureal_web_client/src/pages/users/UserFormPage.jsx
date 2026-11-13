@@ -11,6 +11,7 @@ import { FormInput, FormSection, SelectInput, Toggle, fieldErrors } from '../../
 import { FormSkeleton } from '../../components/ui/Skeleton.jsx';
 import { ErrorState } from '../../components/ui/EmptyState.jsx';
 import { ROLE_LABELS } from '../../lib/format.js';
+import { t } from '../../i18n/index.js';
 
 const ADDRESS = { line1: '', line2: '', city: '', state: '', postalCode: '', country: '' };
 
@@ -71,7 +72,7 @@ export default function UserFormPage() {
         breadcrumb={breadcrumb}
         title={editing ? `Edit ${existing.data?.name}` : 'Add User'}
         description={can('admins.manage') ? 'Create customers, administrators or super administrators.' : 'Administrators can create and edit customer accounts.'}
-        actions={<><Button variant="secondary" onClick={() => navigate(-1)}>Cancel</Button><Button type="submit" icon={Save} busy={saving} busyLabel="Saving…">{editing ? 'Save changes' : 'Create user'}</Button></>}
+        actions={<><Button variant="secondary" onClick={() => navigate(-1)}>{t('Cancel')}</Button><Button type="submit" icon={Save} busy={saving} busyLabel="Saving…">{editing ? 'Save changes' : 'Create user'}</Button></>}
       />
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-6">

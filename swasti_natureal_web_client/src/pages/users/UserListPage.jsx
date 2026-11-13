@@ -17,6 +17,7 @@ import { EmptyState } from '../../components/ui/EmptyState.jsx';
 import { CustomerTableSkeleton } from '../../components/ui/Skeleton.jsx';
 import { date, dateTime } from '../../lib/format.js';
 import { Avatar } from '../customers/CustomerListPage.jsx';
+import { t } from '../../i18n/index.js';
 
 export default function UserListPage({ preset }) {
   const navigate = useNavigate();
@@ -70,9 +71,9 @@ export default function UserListPage({ preset }) {
     { key: 'phone', header: 'Phone', render: (row) => row.phone || <span className="text-slate-300">—</span> },
     { key: 'lastLoginAt', header: 'Last login', sortKey: 'lastLoginAt', className: 'text-xs whitespace-nowrap text-slate-500', render: (row) => (row.lastLoginAt ? dateTime(row.lastLoginAt) : 'Never') },
     { key: 'createdAt', header: 'Created', sortKey: 'createdAt', className: 'text-xs whitespace-nowrap text-slate-500', render: (row) => date(row.createdAt) },
-    { key: 'status', header: 'Status', render: (row) => <Toggle size="sm" checked={row.isActive} disabled={!manageable(row)} onChange={(value) => setActive(row, value)} label={<span className="text-xs font-medium">{row.isActive ? 'Active' : 'Inactive'}</span>} /> },
+    { key: 'status', header: 'Status', render: (row) => <Toggle size="sm" checked={row.isActive} disabled={!manageable(row)} onChange={(value) => setActive(row, value)} label={<span className="text-xs font-medium">{t(row.isActive ? 'Active' : 'Inactive')}</span>} /> },
     {
-      key: 'actions', header: <span className="sr-only">Actions</span>, className: 'text-right', render: (row) => (
+      key: 'actions', header: <span className="sr-only">{t('Actions')}</span>, className: 'text-right', render: (row) => (
         <div className="flex justify-end gap-0.5">
           <IconButton icon={Eye} variant="teal" label={`View ${row.name}`} onClick={() => navigate(`/users/${row.id}`)} />
           <IconButton icon={Pencil} variant="teal" label={`Edit ${row.name}`} disabled={row.id !== me.id && !manageable(row)} onClick={() => navigate(row.id === me.id ? '/settings/profile' : `/users/${row.id}/edit`)} />
@@ -87,7 +88,7 @@ export default function UserListPage({ preset }) {
       <PageHeader
         title={preset ? 'Admin Users' : 'User List'}
         description={preset ? 'Accounts with access to this dashboard.' : 'All accounts: customers, administrators and super administrators.'}
-        actions={<LinkButton to={`/users/new${preset ? '?role=admin' : ''}`} icon={UserPlus}>Add User</LinkButton>}
+        actions={<LinkButton to={`/users/new${preset ? '?role=admin' : ''}`} icon={UserPlus}>{t('Add User')}</LinkButton>}
       />
       <Card>
         <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 p-4">

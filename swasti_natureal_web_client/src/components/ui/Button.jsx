@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
+import { t } from '../../i18n/index.js';
 
 const VARIANTS = {
-  primary: 'bg-teal-600 text-white shadow-sm shadow-teal-600/20 hover:bg-teal-700 disabled:bg-teal-600/60',
-  secondary: 'bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-slate-900',
+  primary: 'bg-teal-600 text-white shadow-sm shadow-teal-600/20 hover:bg-teal-600/90 disabled:bg-teal-600/60',
+  secondary: 'bg-surface text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-slate-900',
   ghost: 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
   danger: 'bg-rose-600 text-white shadow-sm shadow-rose-600/20 hover:bg-rose-700 disabled:bg-rose-600/60',
   'danger-ghost': 'text-rose-600 hover:bg-rose-50',
@@ -23,7 +24,7 @@ export function Button({ variant, size, className, icon: Icon, busy, busyLabel, 
   return (
     <button type={type} className={buttonClass(variant, size, className)} disabled={busy || props.disabled} aria-busy={busy || undefined} {...props}>
       {Icon && <Icon size={size === 'sm' ? 14 : 16} className={busy ? 'motion-safe:animate-pulse' : ''} />}
-      {busy ? (busyLabel ?? 'Working…') : children}
+      {busy ? t(busyLabel ?? 'Working…') : t(children)}
     </button>
   );
 }
@@ -32,7 +33,7 @@ export function LinkButton({ to, variant, size, className, icon: Icon, children,
   return (
     <Link to={to} className={buttonClass(variant, size, className)} {...props}>
       {Icon && <Icon size={size === 'sm' ? 14 : 16} />}
-      {children}
+      {t(children)}
     </Link>
   );
 }
@@ -44,7 +45,7 @@ export function IconButton({ icon: Icon, label, variant = 'ghost', className = '
     teal: 'text-slate-500 hover:bg-teal-50 hover:text-teal-700',
   }[variant];
   return (
-    <button type="button" aria-label={label} title={label} className={`inline-grid h-8 w-8 shrink-0 cursor-pointer place-items-center rounded-lg transition focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-not-allowed disabled:opacity-40 ${tone} ${className}`} {...props}>
+    <button type="button" aria-label={t(label)} title={t(label)} className={`inline-grid h-8 w-8 shrink-0 cursor-pointer place-items-center rounded-lg transition focus-visible:outline-2 focus-visible:outline-teal-500 disabled:cursor-not-allowed disabled:opacity-40 ${tone} ${className}`} {...props}>
       <Icon size={size} />
     </button>
   );

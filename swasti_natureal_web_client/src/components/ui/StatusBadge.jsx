@@ -1,4 +1,5 @@
 import { titleCase } from '../../lib/format.js';
+import { t } from '../../i18n/index.js';
 
 const TONES = {
   green: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
@@ -28,7 +29,7 @@ export default function StatusBadge({ status, label, tone, className = '' }) {
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ring-1 ring-inset ${color} ${className}`}>
       <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" aria-hidden="true" />
-      {label ?? LABELS[status] ?? titleCase(status)}
+      {label ? t(label) : LABELS[status] ? t(LABELS[status]) : titleCase(status)}
     </span>
   );
 }

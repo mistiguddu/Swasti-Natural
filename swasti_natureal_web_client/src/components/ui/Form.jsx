@@ -1,7 +1,8 @@
 import { useId, useState } from 'react';
 import { ChevronDown, X } from 'lucide-react';
+import { t } from '../../i18n/index.js';
 
-const control = 'w-full rounded-xl border bg-white px-3.5 text-sm text-slate-800 transition outline-none placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/15 disabled:bg-slate-50 disabled:text-slate-500';
+const control = 'w-full rounded-xl border bg-surface px-3.5 text-sm text-slate-800 transition outline-none placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/15 disabled:bg-slate-50 disabled:text-slate-500';
 const border = (error) => (error ? 'border-rose-300' : 'border-slate-200');
 
 export function Field({ label, htmlFor, error, hint, required, children, className = '' }) {
@@ -9,35 +10,35 @@ export function Field({ label, htmlFor, error, hint, required, children, classNa
     <div className={className}>
       {label && (
         <label htmlFor={htmlFor} className="mb-1.5 block text-[13px] font-semibold text-slate-700">
-          {label}{required && <span className="ml-0.5 text-rose-500">*</span>}
+          {t(label)}{required && <span className="ml-0.5 text-rose-500">*</span>}
         </label>
       )}
       {children}
-      {error ? <p className="mt-1.5 text-xs text-rose-600">{error}</p> : hint && <p className="mt-1.5 text-xs text-slate-400">{hint}</p>}
+      {error ? <p className="mt-1.5 text-xs text-rose-600">{t(error)}</p> : hint && <p className="mt-1.5 text-xs text-slate-400">{t(hint)}</p>}
     </div>
   );
 }
 
-export function FormInput({ label, error, hint, required, className, prefix, suffix, id, ...props }) {
+export function FormInput({ label, error, hint, required, className, prefix, suffix, id, placeholder, ...props }) {
   const generated = useId();
   const inputId = id ?? generated;
   return (
     <Field label={label} htmlFor={inputId} error={error} hint={hint} required={required} className={className}>
       <div className="relative flex items-center">
         {prefix && <span className="pointer-events-none absolute left-3.5 text-sm text-slate-400">{prefix}</span>}
-        <input id={inputId} required={required} aria-invalid={Boolean(error)} className={`${control} ${border(error)} h-10 ${prefix ? 'pl-8' : ''} ${suffix ? 'pr-10' : ''}`} {...props} />
+        <input id={inputId} placeholder={t(placeholder)} required={required} aria-invalid={Boolean(error)} className={`${control} ${border(error)} h-10 ${prefix ? 'pl-8' : ''} ${suffix ? 'pr-10' : ''}`} {...props} />
         {suffix && <span className="pointer-events-none absolute right-3.5 text-xs text-slate-400">{suffix}</span>}
       </div>
     </Field>
   );
 }
 
-export function TextArea({ label, error, hint, required, className, rows = 4, id, ...props }) {
+export function TextArea({ label, error, hint, required, className, rows = 4, id, placeholder, ...props }) {
   const generated = useId();
   const inputId = id ?? generated;
   return (
     <Field label={label} htmlFor={inputId} error={error} hint={hint} required={required} className={className}>
-      <textarea id={inputId} rows={rows} required={required} aria-invalid={Boolean(error)} className={`${control} ${border(error)} resize-y py-2.5 leading-relaxed`} {...props} />
+      <textarea id={inputId} placeholder={t(placeholder)} rows={rows} required={required} aria-invalid={Boolean(error)} className={`${control} ${border(error)} resize-y py-2.5 leading-relaxed`} {...props} />
     </Field>
   );
 }
@@ -50,10 +51,10 @@ export function SelectInput({ label, error, hint, required, className, options =
     <Field label={label} htmlFor={inputId} error={error} hint={hint} required={required} className={className}>
       <div className="relative">
         <select id={inputId} required={required} aria-invalid={Boolean(error)} className={`${control} ${border(error)} h-10 cursor-pointer appearance-none pr-9`} {...props}>
-          {placeholder !== undefined && <option value="">{placeholder}</option>}
+          {placeholder !== undefined && <option value="">{t(placeholder)}</option>}
           {options.map((option) => {
             const { value, label: text, disabled } = typeof option === 'string' ? { value: option, label: option } : option;
-            return <option key={value} value={value} disabled={disabled}>{text}</option>;
+            return <option key={value} value={value} disabled={disabled}>{t(text)}</option>;
           })}
         </select>
         <ChevronDown size={16} className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-slate-400" />
@@ -75,8 +76,8 @@ export function Toggle({ checked, onChange, label, description, disabled, size =
       </span>
       {(label || description) && (
         <span>
-          {label && <span className="block text-sm font-semibold text-slate-700">{label}</span>}
-          {description && <span className="block text-xs text-slate-500">{description}</span>}
+          {label && <span className="block text-sm font-semibold text-slate-700">{t(label)}</span>}
+          {description && <span className="block text-xs text-slate-500">{t(description)}</span>}
         </span>
       )}
     </label>
@@ -98,10 +99,10 @@ export function Checkbox({ checked, indeterminate, onChange, label, className = 
 
 export function FormSection({ title, description, children, className = '' }) {
   return (
-    <section className={`rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200/70 sm:p-6 ${className}`}>
+    <section className={`rounded-2xl bg-surface p-5 shadow-sm ring-1 ring-slate-200/70 sm:p-6 ${className}`}>
       <div className="mb-5">
-        <h2 className="font-display text-[15px] font-bold text-slate-900">{title}</h2>
-        {description && <p className="mt-0.5 text-xs text-slate-500">{description}</p>}
+        <h2 className="font-display text-[15px] font-bold text-slate-900">{t(title)}</h2>
+        {description && <p className="mt-0.5 text-xs text-slate-500">{t(description)}</p>}
       </div>
       {children}
     </section>
@@ -119,7 +120,7 @@ export function TagInput({ label, value = [], onChange, placeholder = 'Type and 
   };
   return (
     <Field label={label} htmlFor={id} hint={hint} className={className}>
-      <div className="flex min-h-10 flex-wrap items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2 py-1.5 focus-within:border-teal-500 focus-within:ring-4 focus-within:ring-teal-500/15">
+      <div className="flex min-h-10 flex-wrap items-center gap-1.5 rounded-xl border border-slate-200 bg-surface px-2 py-1.5 focus-within:border-teal-500 focus-within:ring-4 focus-within:ring-teal-500/15">
         {value.map((item) => (
           <span key={item} className="inline-flex items-center gap-1 rounded-lg bg-teal-50 py-0.5 pr-1 pl-2 text-xs font-medium text-teal-800 ring-1 ring-teal-100">
             {item}
@@ -135,7 +136,7 @@ export function TagInput({ label, value = [], onChange, placeholder = 'Type and 
             if (event.key === 'Backspace' && !draft && value.length) onChange(value.slice(0, -1));
           }}
           onBlur={() => draft && add(draft)}
-          placeholder={value.length ? '' : placeholder}
+          placeholder={value.length ? '' : t(placeholder)}
           className="h-7 min-w-24 flex-1 bg-transparent px-1 text-sm outline-none placeholder:text-slate-400"
         />
       </div>

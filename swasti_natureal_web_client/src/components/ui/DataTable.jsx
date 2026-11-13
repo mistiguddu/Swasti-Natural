@@ -2,10 +2,11 @@ import { ArrowDown, ArrowUp, ArrowUpDown, X } from 'lucide-react';
 import { Checkbox } from './Form.jsx';
 import { TableSkeleton } from './Skeleton.jsx';
 import { EmptyState, ErrorState } from './EmptyState.jsx';
+import { t } from '../../i18n/index.js';
 
 // The actions column stays visible at the right edge when a wide table scrolls.
 const STICKY_HEAD = 'sticky right-0 z-10 bg-slate-50 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.12)]';
-const STICKY_CELL = 'sticky right-0 z-10 bg-white group-hover:bg-slate-50 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.12)]';
+const STICKY_CELL = 'sticky right-0 z-10 bg-surface group-hover:bg-slate-50 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.12)]';
 
 /**
  * columns: [{ key, header, render?(row, index), sortKey?, className?, headerClassName? }]
@@ -51,9 +52,9 @@ export default function DataTable({
                 <th key={column.key} scope="col" aria-sort={active ? (sort.sortOrder === 'asc' ? 'ascending' : 'descending') : undefined} className={`px-3 py-3 whitespace-nowrap ${column.key === 'actions' ? STICKY_HEAD : ''} ${column.headerClassName ?? ''}`}>
                   {sort && column.sortKey ? (
                     <button type="button" onClick={() => sort.onSort(column.sortKey)} className={`inline-flex cursor-pointer items-center gap-1 uppercase hover:text-slate-800 ${active ? 'text-teal-700' : ''}`}>
-                      {column.header}<SortIcon size={12} className={active ? '' : 'opacity-40'} />
+                      {t(column.header)}<SortIcon size={12} className={active ? '' : 'opacity-40'} />
                     </button>
-                  ) : column.header}
+                  ) : t(column.header)}
                 </th>
               );
             })}
@@ -89,8 +90,8 @@ export function BulkBar({ count, onClear, children }) {
   if (!count) return null;
   return (
     <div className="flex flex-wrap items-center gap-2 border-b border-teal-100 bg-teal-50/70 px-4 py-2.5 motion-safe:animate-fade-up">
-      <span className="text-sm font-semibold text-teal-800">{count} selected</span>
-      <button type="button" onClick={onClear} className="inline-flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-0.5 text-xs text-teal-700 hover:bg-teal-100"><X size={12} /> Clear</button>
+      <span className="text-sm font-semibold text-teal-800">{t('{count} selected', { count })}</span>
+      <button type="button" onClick={onClear} className="inline-flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-0.5 text-xs text-teal-700 hover:bg-teal-100"><X size={12} /> {t('Clear')}</button>
       <div className="ml-auto flex flex-wrap items-center gap-2">{children}</div>
     </div>
   );

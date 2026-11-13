@@ -15,6 +15,7 @@ import { ConfirmationModal, Modal } from '../../components/ui/Modal.jsx';
 import { EmptyState, ErrorState } from '../../components/ui/EmptyState.jsx';
 import { ProductTableSkeleton, Skeleton } from '../../components/ui/Skeleton.jsx';
 import { date, money, number } from '../../lib/format.js';
+import { t } from '../../i18n/index.js';
 
 const PRESETS = {
   featured: { title: 'Featured Products', description: 'Products highlighted on your storefront.', filter: { featured: 'true' } },
@@ -56,7 +57,7 @@ function CategoryBanner({ category, loading, subcategory, onSubcategory }) {
           ))}
         </div>
       )}
-      <Link to={`/categories/${category.id}`} className="text-xs font-semibold text-teal-700 hover:underline">Category details</Link>
+      <Link to={`/categories/${category.id}`} className="text-xs font-semibold text-teal-700 hover:underline">{t('Category details')}</Link>
     </Card>
   );
 }
@@ -165,8 +166,8 @@ export default function ProductListPage({ preset }) {
         <div className="min-w-48">
           <Link to={`/products/${row.id}`} className="line-clamp-2 font-semibold text-slate-900 hover:text-teal-700">{row.name}</Link>
           <div className="mt-0.5 flex flex-wrap gap-1">
-            {row.isNewArrival && <span className="rounded bg-sky-50 px-1.5 text-[10px] font-semibold text-sky-700">NEW</span>}
-            {row.isBestSelling && <span className="rounded bg-violet-50 px-1.5 text-[10px] font-semibold text-violet-700">BEST SELLER</span>}
+            {row.isNewArrival && <span className="rounded bg-sky-50 px-1.5 text-[10px] font-semibold text-sky-700">{t('NEW')}</span>}
+            {row.isBestSelling && <span className="rounded bg-violet-50 px-1.5 text-[10px] font-semibold text-violet-700">{t('BEST SELLER')}</span>}
             {row.brand && <span className="text-[11px] text-slate-400">{row.brand}</span>}
           </div>
         </div>
@@ -192,13 +193,13 @@ export default function ProductListPage({ preset }) {
     {
       key: 'status', header: 'Status', render: (row) => (
         <select value={row.status} onChange={(event) => toggle(row, 'status', event.target.value)} aria-label={`Status of ${row.name}`} className={`h-7 cursor-pointer rounded-full border-0 px-2.5 text-xs font-semibold ring-1 ring-inset outline-none ${row.status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : row.status === 'draft' ? 'bg-amber-50 text-amber-700 ring-amber-200' : 'bg-slate-100 text-slate-600 ring-slate-200'}`}>
-          <option value="active">Active</option><option value="inactive">Inactive</option><option value="draft">Draft</option>
+          <option value="active">{t('Active')}</option><option value="inactive">{t('Inactive')}</option><option value="draft">{t('Draft')}</option>
         </select>
       ),
     },
     { key: 'createdAt', header: 'Created', sortKey: 'createdAt', className: 'text-xs whitespace-nowrap text-slate-500', render: (row) => date(row.createdAt) },
     {
-      key: 'actions', header: <span className="sr-only">Actions</span>, className: 'text-right', render: (row) => (
+      key: 'actions', header: <span className="sr-only">{t('Actions')}</span>, className: 'text-right', render: (row) => (
         <div className="flex justify-end gap-0.5">
           <IconButton icon={Eye} label={`View ${row.name}`} variant="teal" onClick={() => navigate(`/products/${row.id}`)} />
           <IconButton icon={Pencil} label={`Edit ${row.name}`} variant="teal" onClick={() => navigate(`/products/${row.id}/edit`)} />
@@ -232,20 +233,20 @@ export default function ProductListPage({ preset }) {
           {!categoryId && <FilterDropdown label="Category" value={params.category ?? ''} onChange={(value) => update({ category: value })} options={allCategories.map((item) => ({ value: item.id, label: item.parent ? `— ${item.name}` : item.name }))} />}
           <FilterDropdown label="Status" value={params.status ?? ''} onChange={(status) => update({ status })} options={[{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }, { value: 'draft', label: 'Draft' }]} />
           <FilterDropdown label="Stock" value={params.stock ?? ''} onChange={(stock) => update({ stock })} options={[{ value: 'in_stock', label: 'In stock' }, { value: 'low', label: 'Low stock' }, { value: 'out_of_stock', label: 'Out of stock' }, { value: 'backorder', label: 'Backorder' }]} />
-          <div className="flex h-10 items-center gap-1 rounded-xl border border-slate-200 bg-white px-2 text-sm">
-            <span className="pl-1 text-xs font-medium text-slate-500">Price:</span>
+          <div className="flex h-10 items-center gap-1 rounded-xl border border-slate-200 bg-surface px-2 text-sm">
+            <span className="pl-1 text-xs font-medium text-slate-500">{t('Price:')}</span>
             <input type="number" min="0" inputMode="decimal" aria-label="Minimum price" placeholder="Min" defaultValue={params.minPrice ?? ''} onBlur={(event) => update({ minPrice: event.target.value })} onKeyDown={(event) => event.key === 'Enter' && update({ minPrice: event.currentTarget.value })} className="w-16 bg-transparent px-1 outline-none" />
             <span className="text-slate-300">–</span>
             <input type="number" min="0" inputMode="decimal" aria-label="Maximum price" placeholder="Max" defaultValue={params.maxPrice ?? ''} onBlur={(event) => update({ maxPrice: event.target.value })} onKeyDown={(event) => event.key === 'Enter' && update({ maxPrice: event.currentTarget.value })} className="w-16 bg-transparent px-1 outline-none" />
           </div>
-          {filtered && <Button variant="ghost" size="sm" onClick={clear}>Clear filters</Button>}
+          {filtered && <Button variant="ghost" size="sm" onClick={clear}>{t('Clear filters')}</Button>}
         </div>
         <BulkBar count={selected.size} onClear={() => setSelected(new Set())}>
-          <Button size="sm" variant="secondary" onClick={() => bulkStatus('active')}>Set active</Button>
-          <Button size="sm" variant="secondary" onClick={() => bulkStatus('inactive')}>Set inactive</Button>
-          <Button size="sm" variant="secondary" onClick={() => bulkStatus('draft')}>Set draft</Button>
-          <Button size="sm" variant="secondary" icon={FolderInput} onClick={() => setMove({ category: '', subcategory: '' })}>Change category</Button>
-          <Button size="sm" variant="danger" icon={Trash2} onClick={() => setConfirm({ type: 'bulk' })}>Delete</Button>
+          <Button size="sm" variant="secondary" onClick={() => bulkStatus('active')}>{t('Set active')}</Button>
+          <Button size="sm" variant="secondary" onClick={() => bulkStatus('inactive')}>{t('Set inactive')}</Button>
+          <Button size="sm" variant="secondary" onClick={() => bulkStatus('draft')}>{t('Set draft')}</Button>
+          <Button size="sm" variant="secondary" icon={FolderInput} onClick={() => setMove({ category: '', subcategory: '' })}>{t('Change category')}</Button>
+          <Button size="sm" variant="danger" icon={Trash2} onClick={() => setConfirm({ type: 'bulk' })}>{t('Delete')}</Button>
         </BulkBar>
         <DataTable
           columns={columns}
@@ -262,7 +263,7 @@ export default function ProductListPage({ preset }) {
               icon={Package}
               title={filtered ? 'No products match your filters' : categoryId ? 'No products in this category yet' : config ? `No ${config.title.toLowerCase()} yet` : 'No products yet'}
               message={filtered ? 'Try a different search or clear the filters.' : config ? 'Turn on the matching option when editing a product.' : 'Add your first product to start selling.'}
-              action={filtered ? <Button variant="secondary" onClick={clear}>Clear filters</Button> : <LinkButton to={addLink} icon={Plus}>Add Product</LinkButton>}
+              action={filtered ? <Button variant="secondary" onClick={clear}>{t('Clear filters')}</Button> : <LinkButton to={addLink} icon={Plus}>{t('Add Product')}</LinkButton>}
             />
           )}
         />
@@ -281,7 +282,7 @@ export default function ProductListPage({ preset }) {
         open={Boolean(move)}
         onClose={() => setMove(null)}
         title={`Change category for ${selected.size} product(s)`}
-        footer={<><Button variant="secondary" onClick={() => setMove(null)}>Cancel</Button><Button disabled={!move?.category} busy={busy} busyLabel="Moving…" onClick={moveProducts}>Move products</Button></>}
+        footer={<><Button variant="secondary" onClick={() => setMove(null)}>{t('Cancel')}</Button><Button disabled={!move?.category} busy={busy} busyLabel="Moving…" onClick={moveProducts}>{t('Move products')}</Button></>}
       >
         <div className="space-y-4">
           <SelectInput label="New category" required value={move?.category ?? ''} onChange={(event) => setMove({ category: event.target.value, subcategory: '' })} placeholder="Choose a category" options={allCategories.filter((item) => !item.parent).map((item) => ({ value: item.id, label: item.name }))} />

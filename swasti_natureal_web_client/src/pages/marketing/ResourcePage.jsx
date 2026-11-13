@@ -18,6 +18,7 @@ import { EmptyState } from '../../components/ui/EmptyState.jsx';
 import { TableSkeleton } from '../../components/ui/Skeleton.jsx';
 import NotFoundPage from '../NotFoundPage.jsx';
 import { RESOURCES } from './resources.jsx';
+import { t } from '../../i18n/index.js';
 
 /** Chips + search picker for categories/products (stores ids, shows names). */
 function MultiSelect({ field, value, onChange }) {
@@ -171,7 +172,7 @@ export default function ResourcePage({ resource: fixed }) {
       },
     },
     {
-      key: 'actions', header: <span className="sr-only">Actions</span>, className: 'text-right', render: (row) => (
+      key: 'actions', header: <span className="sr-only">{t('Actions')}</span>, className: 'text-right', render: (row) => (
         <div className="flex justify-end gap-0.5">
           <IconButton icon={Pencil} variant="teal" label="Edit" onClick={() => open(row)} />
           <IconButton icon={Trash2} variant="danger" label="Delete" onClick={() => setConfirm({ row })} />
@@ -190,9 +191,9 @@ export default function ResourcePage({ resource: fixed }) {
           {config.filters?.map((filter) => <FilterDropdown key={filter.name} label={filter.label} value={params[filter.name] ?? ''} onChange={(value) => update({ [filter.name]: value })} options={filter.options} />)}
         </div>
         <BulkBar count={selected.size} onClear={() => setSelected(new Set())}>
-          <Button size="sm" variant="secondary" onClick={() => bulkStatus('active')}>Activate</Button>
-          <Button size="sm" variant="secondary" onClick={() => bulkStatus('inactive')}>Deactivate</Button>
-          <Button size="sm" variant="danger" icon={Trash2} onClick={() => setConfirm({})}>Delete</Button>
+          <Button size="sm" variant="secondary" onClick={() => bulkStatus('active')}>{t('Activate')}</Button>
+          <Button size="sm" variant="secondary" onClick={() => bulkStatus('inactive')}>{t('Deactivate')}</Button>
+          <Button size="sm" variant="danger" icon={Trash2} onClick={() => setConfirm({})}>{t('Delete')}</Button>
         </BulkBar>
         <DataTable
           columns={columns} rows={data?.items} loading={loading} error={error} onRetry={reload}
@@ -208,7 +209,7 @@ export default function ResourcePage({ resource: fixed }) {
         open={Boolean(editor)}
         onClose={() => !saving && setEditor(null)}
         title={editor?.id ? `Edit ${config.singular.toLowerCase()}` : `New ${config.singular.toLowerCase()}`}
-        footer={<><Button variant="secondary" onClick={() => setEditor(null)} disabled={saving}>Cancel</Button><Button onClick={save} busy={saving} busyLabel="Saving…">{editor?.id ? 'Save changes' : 'Create'}</Button></>}
+        footer={<><Button variant="secondary" onClick={() => setEditor(null)} disabled={saving}>{t('Cancel')}</Button><Button onClick={save} busy={saving} busyLabel="Saving…">{editor?.id ? 'Save changes' : 'Create'}</Button></>}
       >
         {editor && (
           <form onSubmit={(event) => { event.preventDefault(); save(); }}>

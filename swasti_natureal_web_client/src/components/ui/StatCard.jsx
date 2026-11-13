@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react';
+import { digits, t } from '../../i18n/index.js';
 
 const ACCENTS = {
   teal: 'bg-teal-50 text-teal-600 ring-teal-100',
@@ -23,7 +24,7 @@ export default function StatCard({ title, value, icon: Icon, accent = 'teal', ch
   const body = (
     <>
       <div className="flex items-start justify-between gap-3">
-        <p className="text-[13px] font-medium text-slate-500">{title}</p>
+        <p className="text-[13px] font-medium text-slate-500">{t(title)}</p>
         {Icon && <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ring-1 ${ACCENTS[accent]}`}><Icon size={18} /></span>}
       </div>
       <p className="mt-1 font-display text-2xl font-bold tracking-tight text-slate-900 tabular-nums">{value}</p>
@@ -31,16 +32,16 @@ export default function StatCard({ title, value, icon: Icon, accent = 'teal', ch
         {hasChange && (
           <span className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 font-semibold ${trendTone}`}>
             <TrendIcon size={12} aria-hidden="true" />
-            {change == null ? 'New' : `${Math.abs(change)}%`}
+            {change == null ? t('New') : `${digits(Math.abs(change))}%`}
             <span className="sr-only">{change == null ? 'no previous data' : up ? 'increase' : change === 0 ? 'no change' : 'decrease'}</span>
           </span>
         )}
-        {footnote && <span className="text-slate-500">{footnote}</span>}
+        {footnote && <span className="text-slate-500">{t(footnote)}</span>}
       </div>
     </>
   );
 
-  const className = 'block rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200/70 transition';
+  const className = 'block rounded-2xl bg-surface p-5 shadow-sm ring-1 ring-slate-200/70 transition';
   return to ? (
     <Link to={to} className={`${className} hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-teal-500`}>{body}</Link>
   ) : (

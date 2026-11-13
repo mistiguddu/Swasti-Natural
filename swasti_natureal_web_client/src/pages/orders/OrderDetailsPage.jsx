@@ -12,10 +12,11 @@ import { Thumb } from '../../components/ui/DataTable.jsx';
 import { ProductDetailsSkeleton } from '../../components/ui/Skeleton.jsx';
 import { ErrorState } from '../../components/ui/EmptyState.jsx';
 import { dateTime, money, PAYMENT_METHOD_LABELS, PAYMENT_STATUSES, titleCase } from '../../lib/format.js';
+import { t } from '../../i18n/index.js';
 
 function Address({ address }) {
   const lines = [address?.name, address?.phone, address?.line1, address?.line2, [address?.city, address?.state, address?.postalCode].filter(Boolean).join(', '), address?.country].filter(Boolean);
-  return lines.length ? <address className="text-sm leading-relaxed text-slate-700 not-italic">{lines.map((line) => <span key={line} className="block">{line}</span>)}</address> : <p className="text-sm text-slate-400">Not provided</p>;
+  return lines.length ? <address className="text-sm leading-relaxed text-slate-700 not-italic">{lines.map((line) => <span key={line} className="block">{line}</span>)}</address> : <p className="text-sm text-slate-400">{t('Not provided')}</p>;
 }
 
 function StatusForm({ order, onUpdated }) {
@@ -24,7 +25,7 @@ function StatusForm({ order, onUpdated }) {
   const [saving, setSaving] = useState(false);
   useEffect(() => setForm({ status: order.allowedStatuses[0] ?? '', note: '', trackingNumber: order.trackingNumber ?? '' }), [order]);
 
-  if (!order.allowedStatuses.length) return <p className="text-sm text-slate-500">This order is <strong>{order.status}</strong>. No further status changes are possible.</p>;
+  if (!order.allowedStatuses.length) return <p className="text-sm text-slate-500">{t('This order is')} <strong>{order.status}</strong>{t('. No further status changes are possible.')}</p>;
 
   async function submit(event) {
     event.preventDefault();
@@ -45,8 +46,8 @@ function StatusForm({ order, onUpdated }) {
       <SelectInput label="New status" value={form.status} onChange={(event) => setForm((current) => ({ ...current, status: event.target.value }))} options={order.allowedStatuses.map((value) => ({ value, label: titleCase(value) }))} />
       {['shipped', 'delivered'].includes(form.status) && <FormInput label="Tracking number" value={form.trackingNumber} onChange={(event) => setForm((current) => ({ ...current, trackingNumber: event.target.value }))} />}
       <TextArea label="Note (optional)" rows={2} value={form.note} onChange={(event) => setForm((current) => ({ ...current, note: event.target.value }))} placeholder="Visible in the order timeline" />
-      {['cancelled', 'returned'].includes(form.status) && <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 ring-1 ring-amber-100">Stock for these items will be returned to inventory.</p>}
-      <Button type="submit" className="w-full" busy={saving} busyLabel="Updating…">Update status</Button>
+      {['cancelled', 'returned'].includes(form.status) && <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 ring-1 ring-amber-100">{t('Stock for these items will be returned to inventory.')}</p>}
+      <Button type="submit" className="w-full" busy={saving} busyLabel="Updating…">{t('Update status')}</Button>
     </form>
   );
 }
@@ -76,7 +77,7 @@ function PaymentForm({ order, onUpdated }) {
     <form onSubmit={submit} className="space-y-4">
       <SelectInput label="Payment status" value={form.paymentStatus} onChange={(event) => setForm((current) => ({ ...current, paymentStatus: event.target.value }))} options={PAYMENT_STATUSES.map((value) => ({ value, label: titleCase(value) }))} />
       <FormInput label="Transaction ID" value={form.transactionId} onChange={(event) => setForm((current) => ({ ...current, transactionId: event.target.value }))} />
-      <Button type="submit" variant="secondary" className="w-full" disabled={!dirty} busy={saving} busyLabel="Saving…">Save payment</Button>
+      <Button type="submit" variant="secondary" className="w-full" disabled={!dirty} busy={saving} busyLabel="Saving…">{t('Save payment')}</Button>
     </form>
   );
 }
@@ -104,7 +105,7 @@ export default function OrderDetailsPage() {
         breadcrumb={breadcrumb}
         title={`Order ${order.orderNumber}`}
         description={<span className="inline-flex flex-wrap items-center gap-2">Placed {dateTime(order.createdAt)} <StatusBadge status={order.status} /> <StatusBadge status={order.paymentStatus} label={`Payment ${order.paymentStatus}`} /></span>}
-        actions={<Button variant="secondary" icon={Printer} onClick={() => window.print()}>Print</Button>}
+        actions={<Button variant="secondary" icon={Printer} onClick={() => window.print()}>{t('Print')}</Button>}
       />
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="min-w-0 space-y-6">
@@ -112,7 +113,7 @@ export default function OrderDetailsPage() {
             <CardHeader title="Items" icon={Package} description={`${order.items.length} product(s)`} />
             <div className="overflow-x-auto">
               <table className="w-full min-w-[560px] text-sm">
-                <thead><tr className="border-b border-slate-100 text-left text-[11px] font-semibold tracking-wider text-slate-500 uppercase"><th className="px-5 py-2.5">Product</th><th className="px-3 py-2.5 text-right">Price</th><th className="px-3 py-2.5 text-right">Qty</th><th className="px-5 py-2.5 text-right">Total</th></tr></thead>
+                <thead><tr className="border-b border-slate-100 text-left text-[11px] font-semibold tracking-wider text-slate-500 uppercase"><th className="px-5 py-2.5">{t('Product')}</th><th className="px-3 py-2.5 text-right">{t('Price')}</th><th className="px-3 py-2.5 text-right">{t('Qty')}</th><th className="px-5 py-2.5 text-right">{t('Total')}</th></tr></thead>
                 <tbody className="divide-y divide-slate-100">
                   {order.items.map((item, index) => (
                     <tr key={`${item.sku}-${index}`}>
@@ -137,14 +138,14 @@ export default function OrderDetailsPage() {
               {totals.map(([label, value, note]) => (
                 <div key={label} className="flex justify-between gap-4"><dt className="text-slate-500">{label}{note && <span className="block text-[11px] text-slate-400">{note}</span>}</dt><dd className="text-slate-800 tabular-nums">{value}</dd></div>
               ))}
-              <div className="flex justify-between gap-4 border-t border-slate-100 pt-2 text-base"><dt className="font-semibold text-slate-900">Grand total</dt><dd className="font-display font-bold text-slate-900 tabular-nums">{money(order.grandTotal)}</dd></div>
+              <div className="flex justify-between gap-4 border-t border-slate-100 pt-2 text-base"><dt className="font-semibold text-slate-900">{t('Grand total')}</dt><dd className="font-display font-bold text-slate-900 tabular-nums">{money(order.grandTotal)}</dd></div>
             </dl>
           </Card>
 
           <div className="grid gap-6 md:grid-cols-2">
             <Card>
               <CardHeader title="Shipping address" icon={MapPin} />
-              <div className="p-5"><Address address={order.shippingAddress} />{order.trackingNumber && <p className="mt-3 inline-flex items-center gap-1.5 text-xs text-slate-600"><Truck size={13} /> Tracking: <strong>{order.trackingNumber}</strong></p>}</div>
+              <div className="p-5"><Address address={order.shippingAddress} />{order.trackingNumber && <p className="mt-3 inline-flex items-center gap-1.5 text-xs text-slate-600"><Truck size={13} /> {t('Tracking:')} <strong>{order.trackingNumber}</strong></p>}</div>
             </Card>
             <Card>
               <CardHeader title="Billing address" icon={CreditCard} />

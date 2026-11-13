@@ -13,6 +13,7 @@ import { FormSkeleton } from '../../components/ui/Skeleton.jsx';
 import { ErrorState } from '../../components/ui/EmptyState.jsx';
 import { slugify } from '../../lib/slugify.js';
 import { money } from '../../lib/format.js';
+import { t } from '../../i18n/index.js';
 
 const EMPTY = {
   name: '', slug: '', sku: '', code: '', brand: '', productType: 'simple', category: '', subcategory: '',
@@ -141,7 +142,7 @@ export default function ProductFormPage() {
         description="Fields marked * are required. Everything else can be filled in later."
         actions={(
           <>
-            <Button variant="secondary" onClick={() => navigate(-1)}>Cancel</Button>
+            <Button variant="secondary" onClick={() => navigate(-1)}>{t('Cancel')}</Button>
             <Button type="submit" icon={Save} busy={saving} busyLabel="Saving…">{editing ? 'Save changes' : 'Create product'}</Button>
           </>
         )}
@@ -167,7 +168,7 @@ export default function ProductFormPage() {
               <FormInput label="Sale price" type="number" min="0" step="0.01" value={form.salePrice} onChange={set('salePrice')} error={errors.salePrice} suffix={form.currency} />
               <FormInput label="Cost price" type="number" min="0" step="0.01" value={form.costPrice} onChange={set('costPrice')} suffix={form.currency} hint="Used for profit reports." />
               <div className="rounded-xl bg-emerald-50/70 px-4 py-3 ring-1 ring-emerald-100">
-                <p className="text-xs font-semibold text-emerald-700">Discount</p>
+                <p className="text-xs font-semibold text-emerald-700">{t('Discount')}</p>
                 <p className="font-display text-xl font-bold text-emerald-800">{discount}%</p>
                 {discount > 0 && <p className="text-[11px] text-emerald-700">Saves {money(regular - sale)}</p>}
               </div>

@@ -7,6 +7,7 @@ import { DashboardCardSkeleton, TableSkeleton } from '../../components/ui/Skelet
 import { ErrorState } from '../../components/ui/EmptyState.jsx';
 import StatusBadge from '../../components/ui/StatusBadge.jsx';
 import { number } from '../../lib/format.js';
+import { t } from '../../i18n/index.js';
 
 export default function RolesPage() {
   const { data, loading, error, reload } = useApi(() => api.get('/users/roles'), []);
@@ -24,8 +25,8 @@ export default function RolesPage() {
               <span className="grid h-10 w-10 place-items-center rounded-xl bg-teal-50 text-teal-600 ring-1 ring-teal-100"><ShieldCheck size={18} /></span>
               <StatusBadge status={role.key} />
             </div>
-            <h2 className="mt-3 font-display text-base font-bold text-slate-900">{role.label}</h2>
-            <p className="mt-1 text-sm text-slate-500">{role.description}</p>
+            <h2 className="mt-3 font-display text-base font-bold text-slate-900">{t(role.label)}</h2>
+            <p className="mt-1 text-sm text-slate-500">{t(role.description)}</p>
             <p className="mt-4 text-sm"><Link to={role.key === 'user' ? '/customers' : `/users?role=${role.key}`} className="font-semibold text-teal-700 hover:underline">{number(role.users)} account(s)</Link> · {role.permissions.length} permissions</p>
           </Card>
         ))}
@@ -36,16 +37,16 @@ export default function RolesPage() {
           <table className="w-full min-w-[560px] text-sm">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50/70 text-left text-[11px] font-semibold tracking-wider text-slate-500 uppercase">
-                <th className="px-5 py-3">Permission</th>
-                {data.roles.map((role) => <th key={role.key} className="px-4 py-3 text-center">{role.label}</th>)}
+                <th className="px-5 py-3">{t('Permission')}</th>
+                {data.roles.map((role) => <th key={role.key} className="px-4 py-3 text-center">{t(role.label)}</th>)}
               </tr>
             </thead>
             <tbody>
               {groups.map((group) => [
-                <tr key={group}><td colSpan={data.roles.length + 1} className="bg-slate-50/40 px-5 pt-4 pb-1.5 text-xs font-bold text-slate-400 uppercase">{group}</td></tr>,
+                <tr key={group}><td colSpan={data.roles.length + 1} className="bg-slate-50/40 px-5 pt-4 pb-1.5 text-xs font-bold text-slate-400 uppercase">{t(group)}</td></tr>,
                 ...data.permissions.filter((permission) => permission.group === group).map((permission) => (
                   <tr key={permission.key} className="border-b border-slate-100 last:border-0">
-                    <td className="px-5 py-3 text-slate-700">{permission.label}<code className="ml-2 text-[11px] text-slate-400">{permission.key}</code></td>
+                    <td className="px-5 py-3 text-slate-700">{t(permission.label)}<code className="ml-2 text-[11px] text-slate-400">{permission.key}</code></td>
                     {data.roles.map((role) => (
                       <td key={role.key} className="px-4 py-3 text-center">
                         {role.permissions.includes(permission.key)

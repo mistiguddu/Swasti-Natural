@@ -10,6 +10,7 @@ import { CategoryDetailsSkeleton } from '../../components/ui/Skeleton.jsx';
 import { ErrorState } from '../../components/ui/EmptyState.jsx';
 import { dateTime } from '../../lib/format.js';
 import { Avatar } from '../customers/CustomerListPage.jsx';
+import { t } from '../../i18n/index.js';
 
 export default function UserDetailsPage() {
   const { id } = useParams();
@@ -29,7 +30,7 @@ export default function UserDetailsPage() {
 
   return (
     <>
-      <PageHeader breadcrumb={breadcrumb} title={user.name} description={user.email} actions={editable && <LinkButton to={user.id === me.id ? '/settings/profile' : `/users/${id}/edit`} icon={Pencil}>Edit user</LinkButton>} />
+      <PageHeader breadcrumb={breadcrumb} title={user.name} description={user.email} actions={editable && <LinkButton to={user.id === me.id ? '/settings/profile' : `/users/${id}/edit`} icon={Pencil}>{t('Edit user')}</LinkButton>} />
       <div className="grid gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
         <Card className="self-start p-6 text-center">
           <div className="flex justify-center"><Avatar name={user.name} size="h-20 w-20 text-3xl" /></div>
@@ -49,9 +50,9 @@ export default function UserDetailsPage() {
             </dl>
           </Card>
           <Card>
-            <CardHeader title="Permissions" description={role ? `${role.label}: ${role.description}` : undefined} />
+            <CardHeader title="Permissions" description={role ? `${t(role.label)}: ${t(role.description)}` : undefined} />
             <ul className="grid gap-2 p-5 sm:grid-cols-2">
-              {permissions.length ? permissions.map((permission) => <li key={permission.key} className="rounded-lg bg-teal-50/60 px-3 py-2 text-sm text-teal-900 ring-1 ring-teal-100">{permission.label}</li>) : <li className="text-sm text-slate-500">No dashboard permissions.</li>}
+              {permissions.length ? permissions.map((permission) => <li key={permission.key} className="rounded-lg bg-teal-50/60 px-3 py-2 text-sm text-teal-900 ring-1 ring-teal-100">{t(permission.label)}</li>) : <li className="text-sm text-slate-500">{t('No dashboard permissions.')}</li>}
             </ul>
           </Card>
         </div>

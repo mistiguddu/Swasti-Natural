@@ -15,6 +15,7 @@ import { ConfirmationModal } from '../../components/ui/Modal.jsx';
 import { EmptyState } from '../../components/ui/EmptyState.jsx';
 import { CategoryTableSkeleton } from '../../components/ui/Skeleton.jsx';
 import { date } from '../../lib/format.js';
+import { t } from '../../i18n/index.js';
 
 export default function CategoryListPage() {
   const toast = useToast();
@@ -94,7 +95,7 @@ export default function CategoryListPage() {
       ),
     },
     { key: 'code', header: 'Code', sortKey: 'code', className: 'whitespace-nowrap', render: (row) => <code className="rounded-md bg-slate-100 px-1.5 py-0.5 text-xs text-slate-700">{row.code}</code> },
-    { key: 'parent', header: 'Parent', render: (row) => (row.parent ? <Link to={`/categories/${row.parent.id}`} className="text-slate-600 hover:text-teal-700">{row.parent.name}</Link> : <span className="text-xs whitespace-nowrap text-slate-400">Top level</span>) },
+    { key: 'parent', header: 'Parent', render: (row) => (row.parent ? <Link to={`/categories/${row.parent.id}`} className="text-slate-600 hover:text-teal-700">{row.parent.name}</Link> : <span className="text-xs whitespace-nowrap text-slate-400">{t('Top level')}</span>) },
     {
       key: 'products', header: 'Products', className: 'text-center', headerClassName: 'text-center', render: (row) => (
         <Link to={`/categories/${row.id}/products`} title="View products in this category" className="inline-flex min-w-9 justify-center rounded-lg bg-teal-50 px-2 py-1 text-xs font-bold text-teal-700 ring-1 ring-teal-100 hover:bg-teal-100">{row.productCount}</Link>
@@ -111,7 +112,7 @@ export default function CategoryListPage() {
     },
     { key: 'createdAt', header: 'Created', sortKey: 'createdAt', className: 'text-xs whitespace-nowrap text-slate-500', render: (row) => date(row.createdAt) },
     {
-      key: 'actions', header: <span className="sr-only">Actions</span>, className: 'text-right', render: (row) => (
+      key: 'actions', header: <span className="sr-only">{t('Actions')}</span>, className: 'text-right', render: (row) => (
         <div className="flex justify-end gap-0.5">
           <IconButton icon={Eye} label={`View ${row.name}`} variant="teal" onClick={() => navigate(`/categories/${row.id}`)} />
           <IconButton icon={Pencil} label={`Edit ${row.name}`} variant="teal" onClick={() => navigate(`/categories/${row.id}/edit`)} />
@@ -126,7 +127,7 @@ export default function CategoryListPage() {
       <PageHeader
         title="Product Categories"
         description="Organise your catalogue into categories and subcategories."
-        actions={<LinkButton to="/categories/new" icon={Plus}>Add Category</LinkButton>}
+        actions={<LinkButton to="/categories/new" icon={Plus}>{t('Add Category')}</LinkButton>}
       />
       <Card>
         <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 p-4">
@@ -145,12 +146,12 @@ export default function CategoryListPage() {
             onChange={(value) => { const [sortBy, sortOrder] = (value || 'createdAt:desc').split(':'); update({ sortBy, sortOrder }); }}
             options={[{ value: 'createdAt:asc', label: 'Oldest first' }, { value: 'name:asc', label: 'Name A–Z' }, { value: 'name:desc', label: 'Name Z–A' }, { value: 'displayOrder:asc', label: 'Display order' }]}
           />
-          {filtered && <Button variant="ghost" size="sm" onClick={() => update({ search: '', status: '', parent: '' })}>Clear filters</Button>}
+          {filtered && <Button variant="ghost" size="sm" onClick={() => update({ search: '', status: '', parent: '' })}>{t('Clear filters')}</Button>}
         </div>
         <BulkBar count={selected.size} onClear={() => setSelected(new Set())}>
-          <Button size="sm" variant="secondary" onClick={() => bulkStatus('active')}>Set active</Button>
-          <Button size="sm" variant="secondary" onClick={() => bulkStatus('inactive')}>Set inactive</Button>
-          <Button size="sm" variant="danger" icon={Trash2} onClick={() => setConfirm({ type: 'bulk-delete' })}>Delete</Button>
+          <Button size="sm" variant="secondary" onClick={() => bulkStatus('active')}>{t('Set active')}</Button>
+          <Button size="sm" variant="secondary" onClick={() => bulkStatus('inactive')}>{t('Set inactive')}</Button>
+          <Button size="sm" variant="danger" icon={Trash2} onClick={() => setConfirm({ type: 'bulk-delete' })}>{t('Delete')}</Button>
         </BulkBar>
         <DataTable
           columns={columns}
@@ -167,7 +168,7 @@ export default function CategoryListPage() {
               icon={FolderTree}
               title={filtered ? 'No categories match your filters' : 'No categories yet'}
               message={filtered ? 'Try a different search or clear the filters.' : 'Create your first category to start organising products.'}
-              action={filtered ? <Button variant="secondary" onClick={() => update({ search: '', status: '', parent: '' })}>Clear filters</Button> : <LinkButton to="/categories/new" icon={Plus}>Add Category</LinkButton>}
+              action={filtered ? <Button variant="secondary" onClick={() => update({ search: '', status: '', parent: '' })}>{t('Clear filters')}</Button> : <LinkButton to="/categories/new" icon={Plus}>{t('Add Category')}</LinkButton>}
             />
           )}
         />

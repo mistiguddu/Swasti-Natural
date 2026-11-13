@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Search } from 'lucide-react';
 import { useDebounce } from '../../hooks/useApi.js';
 import { Skeleton } from './Skeleton.jsx';
+import { t } from '../../i18n/index.js';
 
 /** Search-as-you-type picker. fetchOptions(term) → items; renderItem(item) → node. */
 export default function AsyncPicker({ label, placeholder, fetchOptions, renderItem, onSelect, emptyText = 'No matches' }) {
@@ -29,7 +30,7 @@ export default function AsyncPicker({ label, placeholder, fetchOptions, renderIt
 
   return (
     <div ref={box} className="relative">
-      {label && <p className="mb-1.5 text-[13px] font-semibold text-slate-700">{label}</p>}
+      {label && <p className="mb-1.5 text-[13px] font-semibold text-slate-700">{t(label)}</p>}
       <div className="relative">
         <Search size={16} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-slate-400" />
         <input
@@ -37,20 +38,20 @@ export default function AsyncPicker({ label, placeholder, fetchOptions, renderIt
           onChange={(event) => { setTerm(event.target.value); setOpen(true); }}
           onFocus={() => setOpen(true)}
           onKeyDown={(event) => event.key === 'Escape' && setOpen(false)}
-          placeholder={placeholder}
-          aria-label={label ?? placeholder}
-          className="h-10 w-full rounded-xl border border-slate-200 bg-white pr-3 pl-9 text-sm outline-none placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/15"
+          placeholder={t(placeholder)}
+          aria-label={t(label ?? placeholder)}
+          className="h-10 w-full rounded-xl border border-slate-200 bg-surface pr-3 pl-9 text-sm outline-none placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/15"
         />
       </div>
       {open && (
-        <div className="absolute z-30 mt-1.5 max-h-72 w-full overflow-y-auto rounded-xl bg-white py-1 shadow-xl ring-1 ring-slate-200">
+        <div className="absolute z-30 mt-1.5 max-h-72 w-full overflow-y-auto rounded-xl bg-surface py-1 shadow-xl ring-1 ring-slate-200">
           {state.loading ? (
             <div className="space-y-2 p-3">{[0, 1, 2].map((index) => <Skeleton key={index} className="h-8 w-full" />)}</div>
           ) : state.items.length ? state.items.map((item) => (
             <button key={item.id} type="button" onClick={() => { onSelect(item); setTerm(''); setOpen(false); }} className="flex w-full cursor-pointer items-center gap-3 px-3 py-2 text-left text-sm hover:bg-teal-50">
               {renderItem(item)}
             </button>
-          )) : <p className="px-3 py-3 text-sm text-slate-500">{emptyText}</p>}
+          )) : <p className="px-3 py-3 text-sm text-slate-500">{t(emptyText)}</p>}
         </div>
       )}
     </div>

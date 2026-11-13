@@ -15,6 +15,7 @@ import { ConfirmationModal, Modal } from '../components/ui/Modal.jsx';
 import { EmptyState } from '../components/ui/EmptyState.jsx';
 import { TableSkeleton } from '../components/ui/Skeleton.jsx';
 import { date } from '../lib/format.js';
+import { t } from '../i18n/index.js';
 
 function Stars({ value }) {
   return (
@@ -83,7 +84,7 @@ export default function ReviewsPage() {
       key: 'product', header: 'Product', render: (row) => (
         <div className="flex min-w-44 items-center gap-2.5">
           <Thumb src={row.product?.thumbnail || row.product?.image} size="h-9 w-9" icon={Package} />
-          {row.product ? <Link to={`/products/${row.product.id}`} className="line-clamp-2 text-sm font-medium text-slate-800 hover:text-teal-700">{row.product.name}</Link> : <span className="text-slate-400">Deleted product</span>}
+          {row.product ? <Link to={`/products/${row.product.id}`} className="line-clamp-2 text-sm font-medium text-slate-800 hover:text-teal-700">{row.product.name}</Link> : <span className="text-slate-400">{t('Deleted product')}</span>}
         </div>
       ),
     },
@@ -93,7 +94,7 @@ export default function ReviewsPage() {
       key: 'review', header: 'Review', render: (row) => (
         <div className="max-w-sm">
           {row.title && <p className="text-sm font-semibold text-slate-800">{row.title}</p>}
-          <p className="line-clamp-2 text-sm text-slate-600">{row.comment || <span className="text-slate-400">No comment</span>}</p>
+          <p className="line-clamp-2 text-sm text-slate-600">{row.comment || <span className="text-slate-400">{t('No comment')}</span>}</p>
           {row.adminReply && <p className="mt-1 line-clamp-1 text-xs text-teal-700">↳ {row.adminReply}</p>}
         </div>
       ),
@@ -101,7 +102,7 @@ export default function ReviewsPage() {
     { key: 'status', header: 'Status', render: (row) => <StatusBadge status={row.status} /> },
     { key: 'createdAt', header: 'Date', sortKey: 'createdAt', className: 'text-xs whitespace-nowrap text-slate-500', render: (row) => date(row.createdAt) },
     {
-      key: 'actions', header: <span className="sr-only">Actions</span>, className: 'text-right', render: (row) => (
+      key: 'actions', header: <span className="sr-only">{t('Actions')}</span>, className: 'text-right', render: (row) => (
         <div className="flex justify-end gap-0.5">
           {row.status !== 'approved' && <IconButton icon={Check} variant="teal" label="Approve" onClick={() => moderate(row, { status: 'approved' }, 'Review approved')} />}
           {row.status !== 'rejected' && <IconButton icon={X} variant="danger" label="Reject" onClick={() => moderate(row, { status: 'rejected' }, 'Review rejected')} />}
@@ -122,14 +123,14 @@ export default function ReviewsPage() {
           <FilterDropdown label="Rating" value={params.rating ?? ''} onChange={(rating) => update({ rating })} options={[5, 4, 3, 2, 1].map((value) => ({ value: String(value), label: `${value} star${value > 1 ? 's' : ''}` }))} />
         </div>
         <BulkBar count={selected.size} onClear={() => setSelected(new Set())}>
-          <Button size="sm" variant="secondary" icon={Check} onClick={() => bulk('approved')}>Approve</Button>
-          <Button size="sm" variant="secondary" icon={X} onClick={() => bulk('rejected')}>Reject</Button>
-          <Button size="sm" variant="danger" icon={Trash2} onClick={() => setConfirm({})}>Delete</Button>
+          <Button size="sm" variant="secondary" icon={Check} onClick={() => bulk('approved')}>{t('Approve')}</Button>
+          <Button size="sm" variant="secondary" icon={X} onClick={() => bulk('rejected')}>{t('Reject')}</Button>
+          <Button size="sm" variant="danger" icon={Trash2} onClick={() => setConfirm({})}>{t('Delete')}</Button>
         </BulkBar>
         <DataTable columns={columns} rows={data?.items} loading={loading} error={error} onRetry={reload} selection={{ selected, onChange: setSelected }} sort={{ sortBy: params.sortBy, sortOrder: params.sortOrder, onSort: toggleSort }} skeleton={<TableSkeleton columns={['w-4', 'w-40', 'w-28', 'w-20', 'w-64', 'w-16', 'w-20']} />} empty={<EmptyState icon={Star} title="No reviews yet" message="Customer reviews submitted through the API appear here for moderation." />} />
         <Pagination pagination={data?.pagination} onPageChange={(page) => update({ page }, { resetPage: false })} onLimitChange={(limit) => update({ limit })} />
       </Card>
-      <Modal open={Boolean(reply)} onClose={() => setReply(null)} title="Reply to review" description={reply?.row.product?.name} footer={<><Button variant="secondary" onClick={() => setReply(null)}>Cancel</Button><Button busy={busy} busyLabel="Saving…" onClick={saveReply}>Save reply</Button></>}>
+      <Modal open={Boolean(reply)} onClose={() => setReply(null)} title="Reply to review" description={reply?.row.product?.name} footer={<><Button variant="secondary" onClick={() => setReply(null)}>{t('Cancel')}</Button><Button busy={busy} busyLabel="Saving…" onClick={saveReply}>{t('Save reply')}</Button></>}>
         {reply && (
           <div className="space-y-4">
             <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700 ring-1 ring-slate-200"><Stars value={reply.row.rating} /><p className="mt-1">{reply.row.comment || 'No comment'}</p></div>

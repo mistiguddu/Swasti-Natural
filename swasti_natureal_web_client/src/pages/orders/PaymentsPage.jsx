@@ -13,6 +13,7 @@ import { EmptyState } from '../../components/ui/EmptyState.jsx';
 import { DashboardCardSkeleton, OrderTableSkeleton } from '../../components/ui/Skeleton.jsx';
 import { dateTime, money, number, PAYMENT_METHOD_LABELS, PAYMENT_STATUSES, titleCase } from '../../lib/format.js';
 import { downloadCsv } from '../../lib/csv.js';
+import { t } from '../../i18n/index.js';
 
 export default function PaymentsPage() {
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ export default function PaymentsPage() {
           { key: 'orderNumber', label: 'Order' }, { label: 'Customer', value: (row) => row.customerInfo?.name }, { key: 'paymentMethod', label: 'Method' },
           { key: 'transactionId', label: 'Transaction ID' }, { key: 'grandTotal', label: 'Amount' }, { key: 'paymentStatus', label: 'Payment status' },
           { label: 'Date', value: (row) => new Date(row.createdAt).toISOString() },
-        ], data.items)}>Export page</Button>}
+        ], data.items)}>{t('Export page')}</Button>}
       />
       <div className="space-y-6">
         {loading && !data ? <DashboardCardSkeleton /> : summary && (

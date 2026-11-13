@@ -20,6 +20,7 @@ import { axisProps, BRAND, gridProps, ORDER_STATUS_COLORS, SERIES } from '../../
 import { bucketLabel, money, number, PAYMENT_METHOD_LABELS, titleCase } from '../../lib/format.js';
 import { downloadCsv } from '../../lib/csv.js';
 import NotFoundPage from '../NotFoundPage.jsx';
+import { t } from '../../i18n/index.js';
 
 const moneyTick = (value) => money(value, { compact: true });
 
@@ -32,12 +33,12 @@ function SeriesChart({ data, lines, kind = 'line', valueFormatter = money, heigh
           <CartesianGrid {...gridProps} />
           <XAxis dataKey="date" {...axisProps} tickFormatter={(value) => bucketLabel(value, data.granularity)} minTickGap={24} />
           <YAxis {...axisProps} width={58} tickFormatter={valueFormatter === money ? moneyTick : (value) => number(value, { compact: true })} allowDecimals={false} />
-          <Tooltip cursor={kind === 'bar' ? { fill: '#f1f5f9' } : { stroke: '#cbd5e1', strokeDasharray: '3 3' }} content={<ChartTooltip labelFormatter={(value) => bucketLabel(value, data.granularity)} valueFormatter={(value) => valueFormatter(value)} />} />
+          <Tooltip cursor={kind === 'bar' ? { fill: 'var(--color-slate-100)' } : { stroke: 'var(--color-slate-300)', strokeDasharray: '3 3' }} content={<ChartTooltip labelFormatter={(value) => bucketLabel(value, data.granularity)} valueFormatter={(value) => valueFormatter(value)} />} />
           {lines.map((line) => (kind === 'bar'
             ? <Bar key={line.key} dataKey={line.key} name={line.name} fill={line.color} radius={[4, 4, 0, 0]} maxBarSize={28} stackId={line.stack} />
             : kind === 'area'
-              ? <Area key={line.key} type="monotone" dataKey={line.key} name={line.name} stroke={line.color} fill={line.color} fillOpacity={0.12} strokeWidth={2} activeDot={{ r: 5, stroke: '#fff', strokeWidth: 2 }} />
-              : <Line key={line.key} type="monotone" dataKey={line.key} name={line.name} stroke={line.color} strokeWidth={2} dot={false} strokeDasharray={line.dashed ? '5 4' : undefined} activeDot={{ r: 5, stroke: '#fff', strokeWidth: 2 }} />))}
+              ? <Area key={line.key} type="monotone" dataKey={line.key} name={line.name} stroke={line.color} fill={line.color} fillOpacity={0.12} strokeWidth={2} activeDot={{ r: 5, stroke: 'var(--color-surface)', strokeWidth: 2 }} />
+              : <Line key={line.key} type="monotone" dataKey={line.key} name={line.name} stroke={line.color} strokeWidth={2} dot={false} strokeDasharray={line.dashed ? '5 4' : undefined} activeDot={{ r: 5, stroke: 'var(--color-surface)', strokeWidth: 2 }} />))}
         </Chart>
       </ResponsiveContainer>
     </div>
@@ -121,7 +122,7 @@ const REPORTS = {
               <CartesianGrid {...gridProps} vertical horizontal={false} />
               <XAxis type="number" {...axisProps} tickFormatter={moneyTick} />
               <YAxis type="category" dataKey="name" {...axisProps} width={150} tickFormatter={(value) => (value.length > 22 ? `${value.slice(0, 21)}…` : value)} />
-              <Tooltip cursor={{ fill: '#f1f5f9' }} content={<ChartTooltip valueFormatter={(value) => money(value)} />} />
+              <Tooltip cursor={{ fill: 'var(--color-slate-100)' }} content={<ChartTooltip valueFormatter={(value) => money(value)} />} />
               <Bar dataKey="revenue" name="Revenue" fill={BRAND} radius={[0, 4, 4, 0]} maxBarSize={22} />
             </BarChart>
           </ResponsiveContainer>
@@ -157,7 +158,7 @@ const REPORTS = {
               <CartesianGrid {...gridProps} />
               <XAxis dataKey="name" {...axisProps} interval={0} tickFormatter={(value) => (value.length > 12 ? `${value.slice(0, 11)}…` : value)} />
               <YAxis {...axisProps} width={58} tickFormatter={moneyTick} />
-              <Tooltip cursor={{ fill: '#f1f5f9' }} content={<ChartTooltip valueFormatter={(value) => money(value)} />} />
+              <Tooltip cursor={{ fill: 'var(--color-slate-100)' }} content={<ChartTooltip valueFormatter={(value) => money(value)} />} />
               <Bar dataKey="revenue" name="Revenue" fill={BRAND} radius={[4, 4, 0, 0]} maxBarSize={40} />
             </BarChart>
           </ResponsiveContainer>
@@ -279,7 +280,7 @@ export default function ReportPage() {
       <PageHeader
         title={config.title}
         description={config.description}
-        actions={<Button variant="secondary" icon={Download} disabled={!table?.rows.length} onClick={exportCsv}>Export CSV</Button>}
+        actions={<Button variant="secondary" icon={Download} disabled={!table?.rows.length} onClick={exportCsv}>{t('Export CSV')}</Button>}
       >
         {!config.noRange && <DateRangeFilter className="mt-5" value={range} onChange={(next) => setParams(Object.fromEntries(Object.entries(next).filter(([, value]) => value)), { replace: true })} />}
       </PageHeader>

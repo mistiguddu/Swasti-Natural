@@ -9,11 +9,12 @@ import { EmptyState, ErrorState } from '../../components/ui/EmptyState.jsx';
 import { Thumb } from '../../components/ui/DataTable.jsx';
 import { BarList } from '../../components/charts/ChartCard.jsx';
 import { money, number } from '../../lib/format.js';
+import { t } from '../../i18n/index.js';
 
 function ProductList({ title, items, empty, to, tone }) {
   return (
     <Card>
-      <CardHeader title={title} description={`${items.length} product(s)`} actions={<Link to={to} className="text-xs font-semibold text-teal-700 hover:underline">Manage</Link>} />
+      <CardHeader title={title} description={`${items.length} product(s)`} actions={<Link to={to} className="text-xs font-semibold text-teal-700 hover:underline">{t('Manage')}</Link>} />
       {!items.length ? <EmptyState icon={CheckCircle2} title={empty} className="py-10" /> : (
         <ul className="divide-y divide-slate-100">
           {items.slice(0, 8).map((product) => (

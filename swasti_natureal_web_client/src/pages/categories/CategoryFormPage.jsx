@@ -11,6 +11,7 @@ import { ImageUploader } from '../../components/ui/ImageUploader.jsx';
 import { FormSkeleton } from '../../components/ui/Skeleton.jsx';
 import { ErrorState } from '../../components/ui/EmptyState.jsx';
 import { slugify } from '../../lib/slugify.js';
+import { t } from '../../i18n/index.js';
 
 const EMPTY = {
   name: '', slug: '', code: '', shortDescription: '', description: '', parent: '',
@@ -98,7 +99,7 @@ export default function CategoryFormPage() {
         description={editing ? 'Update details, images and SEO.' : 'Create a category or subcategory for your products.'}
         actions={(
           <>
-            <Button variant="secondary" onClick={() => navigate(-1)}>Cancel</Button>
+            <Button variant="secondary" onClick={() => navigate(-1)}>{t('Cancel')}</Button>
             <Button type="submit" icon={Save} busy={saving} busyLabel="Saving…">{editing ? 'Save changes' : 'Create category'}</Button>
           </>
         )}

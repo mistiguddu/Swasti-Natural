@@ -7,7 +7,7 @@ import { useApi } from '../../hooks/useApi.js';
 import { useBranding } from '../../context/BrandingContext.jsx';
 import { Container, ErrorBlock, ProductImage, SectionHeading, Skel, Stars } from '../components/ui.jsx';
 import { ProductGrid } from '../components/ProductCard.jsx';
-import HeroSlider, { buildSlides } from '../components/HeroSlider.jsx';
+import HeroSlider, { buildPromos, buildSlides } from '../components/HeroSlider.jsx';
 import { usePageMeta } from '../lib/helpers.js';
 
 const isExternal = (link) => /^https?:\/\//.test(link ?? '');
@@ -130,7 +130,13 @@ function Testimonials({ items }) {
 function HomeSkeleton() {
   return (
     <div aria-busy="true" aria-label="Loading">
-      <Skel className="h-[min(580px,calc(100svh-140px))] min-h-[500px] w-full rounded-none sm:h-[580px] lg:h-[560px]" />
+      <Container className="grid gap-3 pt-3 pb-6 sm:gap-4 sm:pt-5 lg:grid-cols-[minmax(0,1fr)_300px] lg:pt-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <Skel className="h-[470px] w-full rounded-3xl sm:h-[440px] lg:h-[480px] lg:rounded-[2rem]" />
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-1 lg:grid-rows-2">
+          <Skel className="h-[124px] rounded-2xl sm:h-[150px] lg:h-full lg:rounded-3xl" />
+          <Skel className="h-[124px] rounded-2xl sm:h-[150px] lg:h-full lg:rounded-3xl" />
+        </div>
+      </Container>
       <Container className="py-16">
         <Skel className="h-8 w-64" />
         <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">{Array.from({ length: 4 }, (_, i) => <Skel key={i} className="aspect-[4/3] rounded-3xl" />)}</div>
@@ -152,7 +158,7 @@ export default function HomePage() {
   return (
     <>
       <h1 className="sr-only">{storeName} — natural products delivered across Bangladesh</h1>
-      <HeroSlider slides={buildSlides(data)} />
+      <HeroSlider slides={buildSlides(data)} promos={buildPromos(data)} />
       <Categories categories={data.categories} />
       <ProductSection eyebrow="Handpicked" title="Featured products" products={data.featured} link="/products?featured=true" tone="tint" />
       <ProductSection eyebrow="Just in" title="New arrivals" products={data.newArrivals} link="/products?sort=latest" />

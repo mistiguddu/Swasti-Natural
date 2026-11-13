@@ -280,6 +280,7 @@ const bn = {
   'Settings sections': 'সেটিংস বিভাগ',
 
   // ── Login ──
+  'Reports & analytics': 'রিপোর্ট ও অ্যানালিটিক্স',
   'Welcome back': 'আবার স্বাগতম',
   'We’re happy to see you again. Please sign in to continue.': 'আপনাকে আবার দেখে আমরা আনন্দিত। চালিয়ে যেতে সাইন ইন করুন।',
   'Email address': 'ইমেইল ঠিকানা',
@@ -900,6 +901,27 @@ const bn = {
   'Browser tab': 'ব্রাউজার ট্যাব',
   'Sidebar · light & dark': 'সাইডবার · লাইট ও ডার্ক',
   'Sign-in page': 'সাইন-ইন পেজ',
+  // ── Login ──
+  'Admin console': 'অ্যাডমিন কনসোল',
+  'Store administration': 'স্টোর পরিচালনা',
+  'Run your entire store from one place.': 'এক জায়গা থেকে পুরো স্টোর পরিচালনা করুন।',
+  'Orders, products, customers and reports — managed securely by your team.': 'অর্ডার, পণ্য, কাস্টমার ও রিপোর্ট — আপনার টিম নিরাপদে পরিচালনা করে।',
+  'Orders & payments': 'অর্ডার ও পেমেন্ট',
+  'Track every order from placement to delivery.': 'অর্ডার দেওয়া থেকে ডেলিভারি পর্যন্ত প্রতিটি অর্ডার ট্র্যাক করুন।',
+  'Catalog & inventory': 'পণ্য তালিকা ও ইনভেন্টরি',
+  'Products, categories and stock in one place.': 'পণ্য, ক্যাটাগরি ও স্টক এক জায়গায়।',
+  'Sales, revenue and customer insights.': 'বিক্রয়, আয় ও কাস্টমারের তথ্য বিশ্লেষণ।',
+  'Role-based access': 'রোল-ভিত্তিক অ্যাক্সেস',
+  'Permissions are checked on every request.': 'প্রতিটি অনুরোধে অনুমতি যাচাই করা হয়।',
+  'Authorized personnel only': 'শুধুমাত্র অনুমোদিত ব্যক্তিদের জন্য',
+  'Sign in to the admin console': 'অ্যাডমিন কনসোলে সাইন ইন করুন',
+  'For administrators and staff. Use the account provided by your super administrator.': 'অ্যাডমিনিস্ট্রেটর ও স্টাফদের জন্য। সুপার অ্যাডমিনিস্ট্রেটরের দেওয়া অ্যাকাউন্ট ব্যবহার করুন।',
+  'Work email': 'অফিসিয়াল ইমেইল',
+  'Caps Lock is on': 'ক্যাপস লক চালু আছে',
+  'Protected area. Sign-in activity is recorded and your session ends when you close this tab.': 'সুরক্ষিত এলাকা। সাইন-ইন কার্যক্রম রেকর্ড করা হয় এবং ট্যাব বন্ধ করলে সেশন শেষ হয়ে যায়।',
+  'Forgot your password? Ask a super administrator to reset it.': 'পাসওয়ার্ড ভুলে গেছেন? রিসেট করতে সুপার অ্যাডমিনিস্ট্রেটরকে বলুন।',
+  'Sign in to manage {name}.': '{name} পরিচালনা করতে সাইন ইন করুন।',
+  'Secure session — ends when you close this tab': 'নিরাপদ সেশন — ট্যাব বন্ধ করলে শেষ হবে',
 };
 
 export default bn;

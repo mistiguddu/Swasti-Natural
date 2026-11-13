@@ -18,6 +18,15 @@ const schema = z.object({
   ADMIN_NAME: z.string().trim().min(2).max(80).default('Administrator'),
   ADMIN_EMAIL: z.string().trim().email().default('admin@gmail.com'),
   ADMIN_PASSWORD: z.string().max(128).optional(),
+  // Customer website URL (used in password-reset links)
+  CLIENT_URL: z.string().url().default('http://localhost:5173'),
+  // Optional SMTP for transactional email (password reset). Without it, links are logged in development.
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().int().positive().default(587),
+  SMTP_SECURE: z.enum(['true', 'false']).default('false'),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_FROM: z.string().optional(),
 });
 
 const parsed = schema.safeParse(process.env);
@@ -35,6 +44,14 @@ export const env = {
   jwtExpiresIn: parsed.data.JWT_EXPIRES_IN,
   corsOrigins: parsed.data.CORS_ORIGINS,
   trustProxy: parsed.data.TRUST_PROXY === 'true',
+  clientUrl: parsed.data.CLIENT_URL.replace(/\/$/, ''),
+  smtp: parsed.data.SMTP_HOST ? {
+    host: parsed.data.SMTP_HOST,
+    port: parsed.data.SMTP_PORT,
+    secure: parsed.data.SMTP_SECURE === 'true',
+    auth: parsed.data.SMTP_USER ? { user: parsed.data.SMTP_USER, pass: parsed.data.SMTP_PASS } : undefined,
+    from: parsed.data.SMTP_FROM || parsed.data.SMTP_USER,
+  } : null,
   // Accounts seeded automatically on startup (created only if the email does not exist yet).
   initialAccounts: [
     {

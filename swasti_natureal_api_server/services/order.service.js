@@ -76,7 +76,7 @@ async function bestDiscounts(products) {
     let best = 0;
     for (const discount of discounts) {
       const applies = discount.appliesTo === 'all'
-        || (discount.appliesTo === 'category' && discount.categories.some((id) => String(id) === String(product.category) || String(id) === String(product.subcategory)))
+        || (discount.appliesTo === 'category' && discount.categories.some((id) => String(id) === String(product.category?._id ?? product.category) || String(id) === String(product.subcategory?._id ?? product.subcategory)))
         || (discount.appliesTo === 'product' && discount.products.some((id) => String(id) === String(product._id)));
       if (!applies) continue;
       const amount = discount.type === 'percentage' ? unitPrice * (discount.value / 100) : discount.value;
@@ -86,19 +86,117 @@ async function bestDiscounts(products) {
   };
 }
 
-async function reserveCoupon(code, amount) {
+/** Validates a coupon for an amount without using it. Returns { coupon, discount } or throws AppError. */
+async function checkCoupon(code, amount) {
   if (!code) return { coupon: null, discount: 0 };
   const coupon = await Coupon.findOne({ code: code.toUpperCase(), status: 'active' });
   const now = new Date();
   if (!coupon || !isWithin(now, coupon.startsAt, coupon.expiresAt)) throw new AppError('Coupon is invalid or has expired', 400);
   if (coupon.minOrderAmount && amount < coupon.minOrderAmount) throw new AppError(`Coupon requires a minimum order of ${coupon.minOrderAmount}`, 400);
-  const filter = { _id: coupon._id };
-  if (coupon.usageLimit > 0) filter.usedCount = { $lt: coupon.usageLimit };
-  const reserved = await Coupon.findOneAndUpdate(filter, { $inc: { usedCount: 1 } });
-  if (!reserved) throw new AppError('Coupon usage limit has been reached', 400);
+  if (coupon.usageLimit > 0 && coupon.usedCount >= coupon.usageLimit) throw new AppError('Coupon usage limit has been reached', 400);
   let discount = coupon.type === 'percentage' ? amount * (coupon.value / 100) : coupon.value;
   if (coupon.maxDiscountAmount > 0) discount = Math.min(discount, coupon.maxDiscountAmount);
   return { coupon, discount: round(Math.min(discount, amount)) };
+}
+
+async function reserveCoupon(code, amount) {
+  const result = await checkCoupon(code, amount);
+  if (!result.coupon) return result;
+  const filter = { _id: result.coupon._id };
+  if (result.coupon.usageLimit > 0) filter.usedCount = { $lt: result.coupon.usageLimit };
+  const reserved = await Coupon.findOneAndUpdate(filter, { $inc: { usedCount: 1 } });
+  if (!reserved) throw new AppError('Coupon usage limit has been reached', 400);
+  return result;
+}
+
+/**
+ * Prices a cart with the same rules as createOrder (sale price, automatic discounts,
+ * coupon, shipping, tax) but never reserves stock or coupons. Unavailable lines are
+ * reported instead of throwing, so the storefront can show them.
+ */
+export async function quoteCart({ items = [], couponCode = '', shippingMethod: shippingMethodId = null }) {
+  const quantities = new Map();
+  for (const item of items) quantities.set(String(item.product), (quantities.get(String(item.product)) ?? 0) + item.quantity);
+  const [products, settings] = await Promise.all([
+    Product.find({ _id: { $in: [...quantities.keys()] } }).populate('category', 'status'),
+    getSettings(),
+  ]);
+  const discountFor = await bestDiscounts(products);
+  const byId = new Map(products.map((product) => [product.id, product]));
+
+  const lines = [...quantities.entries()].map(([id, quantity]) => {
+    const product = byId.get(id);
+    if (!product || product.status !== 'active' || product.category?.status === 'inactive') {
+      return { product: id, quantity, status: 'unavailable', message: 'This product is no longer available' };
+    }
+    const tracked = product.manageStock && !product.allowBackorders;
+    const available = tracked ? Math.max(product.stockQuantity, 0) : null;
+    const unitPrice = product.price;
+    const unitDiscount = discountFor(product, unitPrice);
+    const taxRate = product.tax || settings.store.taxRate || 0;
+    const base = {
+      product: product.id,
+      slug: product.slug,
+      name: product.name,
+      sku: product.sku,
+      image: product.thumbnail || product.image,
+      regularPrice: product.regularPrice,
+      price: unitPrice,
+      unitDiscount,
+      quantity,
+      availableQuantity: available,
+      total: round(unitPrice * quantity),
+      discount: round(unitDiscount * quantity),
+      tax: round((unitPrice - unitDiscount) * quantity * (taxRate / 100)),
+    };
+    if (tracked && available <= 0) return { ...base, status: 'out_of_stock', message: 'Out of stock' };
+    if (tracked && available < quantity) return { ...base, status: 'insufficient_stock', message: `Only ${available} left in stock` };
+    return { ...base, status: 'ok' };
+  });
+
+  const ok = lines.filter((line) => line.status === 'ok');
+  const subtotal = round(ok.reduce((sum, line) => sum + line.total, 0));
+  const itemDiscount = round(ok.reduce((sum, line) => sum + line.discount, 0));
+  const tax = round(ok.reduce((sum, line) => sum + line.tax, 0));
+
+  let shippingCharge = 0;
+  let shipping = null;
+  if (shippingMethodId) {
+    shipping = await ShippingMethod.findOne({ _id: shippingMethodId, status: 'active' });
+    if (shipping) {
+      const free = shipping.freeShippingThreshold > 0 && subtotal - itemDiscount >= shipping.freeShippingThreshold;
+      shippingCharge = free ? 0 : shipping.charge;
+    }
+  }
+
+  let coupon = { code: '', valid: false, discount: 0, message: '' };
+  if (couponCode) {
+    try {
+      const result = await checkCoupon(couponCode, subtotal - itemDiscount);
+      coupon = { code: result.coupon.code, valid: true, discount: result.discount, message: '' };
+    } catch (error) {
+      coupon = { code: couponCode.toUpperCase(), valid: false, discount: 0, message: error.message };
+    }
+  }
+
+  const discount = round(itemDiscount + coupon.discount);
+  return {
+    lines,
+    canCheckout: ok.length > 0 && ok.length === lines.length,
+    currency: settings.store.currency,
+    coupon,
+    shippingMethod: shipping ? { id: shipping.id, name: shipping.name, charge: shippingCharge, freeShippingThreshold: shipping.freeShippingThreshold } : null,
+    totals: {
+      items: ok.reduce((sum, line) => sum + line.quantity, 0),
+      subtotal,
+      itemDiscount,
+      couponDiscount: coupon.discount,
+      discount,
+      shipping: shippingCharge,
+      tax,
+      grandTotal: round(Math.max(0, subtotal - discount + shippingCharge + tax)),
+    },
+  };
 }
 
 /** Decrements stock atomically; rolls back on failure. */
@@ -136,6 +234,8 @@ export async function createOrder(data, actor) {
   const customer = await User.findById(customerId);
   if (!customer || customer.role !== 'user') throw new AppError('Customer not found', 400);
   if (!customer.isActive) throw new AppError('This customer account is inactive', 400);
+  // Only cash on delivery is offered to customers until an online payment gateway is configured.
+  if (!staff && data.paymentMethod !== 'cash_on_delivery') throw new AppError('Only cash on delivery is available right now', 400);
 
   const quantities = new Map();
   for (const item of data.items) quantities.set(item.product, (quantities.get(item.product) ?? 0) + item.quantity);

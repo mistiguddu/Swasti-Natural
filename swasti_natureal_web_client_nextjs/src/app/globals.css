@@ -1,0 +1,158 @@
+@import "tailwindcss";
+
+/* Tailwind v4 theme config (replaces tailwind.config.js) — no custom CSS classes. */
+@theme {
+  --font-display: "Manrope", "Hind Siliguri", sans-serif;
+  --font-body: "DM Sans", "Hind Siliguri", sans-serif;
+  /* Storefront headings */
+  --font-serif: "Fraunces", Georgia, serif;
+
+  /* Card / panel background. Switches with the theme (see [data-theme="dark"]). */
+  --color-surface: oklch(100% 0 0);
+  /* Second gradient colour that pairs with the accent. */
+  --color-accent2-400: var(--color-emerald-400);
+  --color-accent2-500: var(--color-emerald-500);
+
+  --animate-ecg: ecg 3.2s linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-fade-up: fade-up 0.7s ease-out both;
+  --animate-soft-pulse: soft-pulse 2.4s ease-in-out infinite;
+  --animate-wave: wave 2s ease-in-out 1;
+  --animate-slide-in: slide-in 0.25s ease-out both;
+
+  @keyframes slide-in { from { transform: translateX(24px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  @keyframes ecg { from { stroke-dashoffset: 600; } to { stroke-dashoffset: 0; } }
+  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  @keyframes fade-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes soft-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.12); opacity: 0.85; } }
+  @keyframes wave { 0%, 60%, 100% { transform: rotate(0); } 10%, 30% { transform: rotate(14deg); } 20% { transform: rotate(-8deg); } 40% { transform: rotate(-4deg); } 50% { transform: rotate(10deg); } }
+}
+
+/*
+ * ── Themes ──────────────────────────────────────────────────────────────
+ * The UI is written with `teal-*` (brand), `slate-*` (neutrals) and `bg-surface`.
+ * Themes only re-point those Tailwind colour variables, so every existing
+ * utility class follows the chosen accent and light/dark mode automatically.
+ * Set on <html>: data-accent="teal|blue|violet|rose|amber", data-theme="light|dark".
+ */
+
+/* Accent source palette (--a-*). Teal is written out because `teal-*` itself is re-pointed below. */
+:root {
+  --a-50: oklch(98.4% 0.014 180.72);
+  --a-100: oklch(95.3% 0.051 180.801);
+  --a-200: oklch(91% 0.096 180.426);
+  --a-300: oklch(85.5% 0.138 181.071);
+  --a-400: oklch(77.7% 0.152 181.912);
+  --a-500: oklch(70.4% 0.14 182.503);
+  --a-600: oklch(60% 0.118 184.704);
+  --a-700: oklch(51.1% 0.096 186.391);
+  --a-800: oklch(43.7% 0.078 188.216);
+  --a-900: oklch(38.6% 0.063 188.416);
+  --a-950: oklch(27.7% 0.046 192.524);
+
+  --color-teal-50: var(--a-50);
+  --color-teal-100: var(--a-100);
+  --color-teal-200: var(--a-200);
+  --color-teal-300: var(--a-300);
+  --color-teal-400: var(--a-400);
+  --color-teal-500: var(--a-500);
+  --color-teal-600: var(--a-600);
+  --color-teal-700: var(--a-700);
+  --color-teal-800: var(--a-800);
+  --color-teal-900: var(--a-900);
+  --color-teal-950: var(--a-950);
+
+  /* Chart series (validated categorical palette, light surface) */
+  --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a; --series-4: #eda100;
+  --series-5: #e87ba4; --series-6: #008300; --series-7: #6250d6; --series-8: #e34948;
+}
+
+[data-accent="blue"] {
+  --a-50: var(--color-blue-50); --a-100: var(--color-blue-100); --a-200: var(--color-blue-200); --a-300: var(--color-blue-300);
+  --a-400: var(--color-blue-400); --a-500: var(--color-blue-500); --a-600: var(--color-blue-600); --a-700: var(--color-blue-700);
+  --a-800: var(--color-blue-800); --a-900: var(--color-blue-900); --a-950: var(--color-blue-950);
+  --color-accent2-400: var(--color-cyan-400); --color-accent2-500: var(--color-cyan-500);
+}
+[data-accent="violet"] {
+  --a-50: var(--color-violet-50); --a-100: var(--color-violet-100); --a-200: var(--color-violet-200); --a-300: var(--color-violet-300);
+  --a-400: var(--color-violet-400); --a-500: var(--color-violet-500); --a-600: var(--color-violet-600); --a-700: var(--color-violet-700);
+  --a-800: var(--color-violet-800); --a-900: var(--color-violet-900); --a-950: var(--color-violet-950);
+  --color-accent2-400: var(--color-fuchsia-400); --color-accent2-500: var(--color-fuchsia-500);
+}
+[data-accent="rose"] {
+  --a-50: oklch(96.9% 0.015 12.422); --a-100: oklch(94.1% 0.03 12.58); --a-200: oklch(89.2% 0.058 10.001); --a-300: oklch(81% 0.117 11.638);
+  --a-400: oklch(71.2% 0.194 13.428); --a-500: oklch(64.5% 0.246 16.439); --a-600: oklch(58.6% 0.253 17.585); --a-700: oklch(51.4% 0.222 16.935);
+  --a-800: oklch(45.5% 0.188 13.697); --a-900: oklch(41% 0.159 10.272); --a-950: oklch(27.1% 0.105 12.094);
+  --color-accent2-400: var(--color-orange-400); --color-accent2-500: var(--color-orange-500);
+}
+[data-accent="amber"] {
+  --a-50: oklch(98.7% 0.022 95.277); --a-100: oklch(96.2% 0.059 95.617); --a-200: oklch(92.4% 0.12 95.746); --a-300: oklch(87.9% 0.169 91.605);
+  --a-400: oklch(82.8% 0.189 84.429); --a-500: oklch(76.9% 0.188 70.08); --a-600: oklch(66.6% 0.179 58.318); --a-700: oklch(55.5% 0.163 48.998);
+  --a-800: oklch(47.3% 0.137 46.201); --a-900: oklch(41.4% 0.112 45.904); --a-950: oklch(27.9% 0.077 45.635);
+  --color-accent2-400: var(--color-orange-400); --color-accent2-500: var(--color-orange-500);
+}
+
+/* Dark mode: invert the neutral scale, darken surfaces, and turn pastel tints into dark tints. */
+[data-theme="dark"] {
+  color-scheme: dark;
+  --color-surface: oklch(20.8% 0.042 265.755);
+
+  --color-slate-50: oklch(16.5% 0.042 265);
+  --color-slate-100: oklch(27.9% 0.041 260.031);
+  --color-slate-200: oklch(32.5% 0.043 258);
+  --color-slate-300: oklch(37.2% 0.044 257.287);
+  --color-slate-400: oklch(55.4% 0.046 257.417);
+  --color-slate-500: oklch(70.4% 0.04 256.788);
+  --color-slate-600: oklch(80% 0.03 255);
+  --color-slate-700: oklch(86.9% 0.022 252.894);
+  --color-slate-800: oklch(92.9% 0.013 255.508);
+  --color-slate-900: oklch(96.8% 0.007 247.896);
+  --color-slate-950: oklch(98.4% 0.003 247.858);
+
+  --color-teal-50: color-mix(in oklab, var(--a-500) 14%, var(--color-surface));
+  --color-teal-100: color-mix(in oklab, var(--a-500) 24%, var(--color-surface));
+  --color-teal-200: color-mix(in oklab, var(--a-500) 38%, var(--color-surface));
+  --color-teal-700: var(--a-300);
+  --color-teal-800: color-mix(in oklab, var(--a-300) 60%, white);
+  --color-teal-900: color-mix(in oklab, var(--a-300) 40%, white);
+
+  --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
+  --series-5: #d55181; --series-6: #008300; --series-7: #9085e9; --series-8: #e66767;
+}
+
+/* Status colours (badges, alerts) in dark mode. */
+[data-theme="dark"] {
+  --color-emerald-50: color-mix(in oklab, var(--color-emerald-500) 14%, var(--color-surface));
+  --color-emerald-100: color-mix(in oklab, var(--color-emerald-500) 24%, var(--color-surface));
+  --color-emerald-200: color-mix(in oklab, var(--color-emerald-500) 38%, var(--color-surface));
+  --color-emerald-700: var(--color-emerald-300);
+  --color-emerald-800: color-mix(in oklab, var(--color-emerald-300) 60%, white);
+
+  --color-rose-50: color-mix(in oklab, var(--color-rose-500) 14%, var(--color-surface));
+  --color-rose-100: color-mix(in oklab, var(--color-rose-500) 24%, var(--color-surface));
+  --color-rose-200: color-mix(in oklab, var(--color-rose-500) 38%, var(--color-surface));
+  --color-rose-700: var(--color-rose-300);
+  --color-rose-800: color-mix(in oklab, var(--color-rose-300) 60%, white);
+
+  --color-amber-50: color-mix(in oklab, var(--color-amber-500) 14%, var(--color-surface));
+  --color-amber-100: color-mix(in oklab, var(--color-amber-500) 24%, var(--color-surface));
+  --color-amber-200: color-mix(in oklab, var(--color-amber-500) 38%, var(--color-surface));
+  --color-amber-700: var(--color-amber-300);
+  --color-amber-800: color-mix(in oklab, var(--color-amber-300) 60%, white);
+
+  --color-sky-50: color-mix(in oklab, var(--color-sky-500) 14%, var(--color-surface));
+  --color-sky-100: color-mix(in oklab, var(--color-sky-500) 24%, var(--color-surface));
+  --color-sky-200: color-mix(in oklab, var(--color-sky-500) 38%, var(--color-surface));
+  --color-sky-700: var(--color-sky-300);
+
+  --color-violet-50: color-mix(in oklab, var(--color-violet-500) 14%, var(--color-surface));
+  --color-violet-100: color-mix(in oklab, var(--color-violet-500) 24%, var(--color-surface));
+  --color-violet-200: color-mix(in oklab, var(--color-violet-500) 38%, var(--color-surface));
+  --color-violet-700: var(--color-violet-300);
+
+  --color-orange-50: color-mix(in oklab, var(--color-orange-500) 14%, var(--color-surface));
+  --color-orange-100: color-mix(in oklab, var(--color-orange-500) 24%, var(--color-surface));
+  --color-orange-200: color-mix(in oklab, var(--color-orange-500) 38%, var(--color-surface));
+  --color-orange-700: var(--color-orange-300);
+}

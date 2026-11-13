@@ -24,3 +24,13 @@ export async function changePassword(req, res) {
   await authService.changePassword(req.user.id, req.validated.body);
   res.json({ data: { message: 'Password updated' } });
 }
+
+export async function forgotPassword(req, res) {
+  const result = await authService.requestPasswordReset(req.validated.body.email);
+  res.json({ data: { message: 'If an account exists for that email, a reset link has been sent.', ...result } });
+}
+
+export async function resetPassword(req, res) {
+  await authService.resetPassword(req.validated.body);
+  res.json({ data: { message: 'Password updated. You can now sign in.' } });
+}

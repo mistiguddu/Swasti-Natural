@@ -83,6 +83,10 @@ const settingSchema = new mongoose.Schema({
     phone: { type: String, trim: true, maxlength: 30, default: '' },
     address: { type: String, trim: true, maxlength: 300, default: '' },
     website: { type: String, trim: true, maxlength: 200, default: '' },
+    facebook: { type: String, trim: true, maxlength: 300, default: '' },
+    instagram: { type: String, trim: true, maxlength: 300, default: '' },
+    youtube: { type: String, trim: true, maxlength: 300, default: '' },
+    whatsapp: { type: String, trim: true, maxlength: 30, default: '' },
   },
   /** Uploaded brand images (empty = use the logo bundled with the web client). */
   branding: {
@@ -100,6 +104,19 @@ const settingSchema = new mongoose.Schema({
   },
 }, { timestamps: true, toJSON: jsonOptions });
 
+const contactMessageSchema = new mongoose.Schema({
+  name: { type: String, required: true, trim: true, maxlength: 100 },
+  email: { type: String, required: true, trim: true, lowercase: true, maxlength: 254 },
+  phone: { type: String, trim: true, maxlength: 30, default: '' },
+  subject: { type: String, trim: true, maxlength: 150, default: '' },
+  message: { type: String, required: true, trim: true, maxlength: 3000 },
+  status: { type: String, enum: ['new', 'read'], default: 'new', index: true },
+}, { timestamps: true, toJSON: jsonOptions });
+
+const subscriberSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true, trim: true, lowercase: true, maxlength: 254 },
+}, { timestamps: true, toJSON: jsonOptions });
+
 export const Coupon = mongoose.model('Coupon', couponSchema);
 export const Discount = mongoose.model('Discount', discountSchema);
 export const Banner = mongoose.model('Banner', bannerSchema);
@@ -107,3 +124,5 @@ export const ShippingMethod = mongoose.model('ShippingMethod', shippingMethodSch
 export const Review = mongoose.model('Review', reviewSchema);
 export const Notification = mongoose.model('Notification', notificationSchema);
 export const Setting = mongoose.model('Setting', settingSchema);
+export const ContactMessage = mongoose.model('ContactMessage', contactMessageSchema);
+export const Subscriber = mongoose.model('Subscriber', subscriberSchema);

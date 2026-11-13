@@ -57,6 +57,9 @@ export const productSchema = body({
   subcategory: optionalId,
   shortDescription: text(500),
   description: text(20000),
+  ingredients: text(10000),
+  howToUse: text(10000),
+  benefits: text(10000),
   regularPrice: number({ min: 0 }),
   salePrice: number({ min: 0 }),
   costPrice: number({ min: 0 }),
@@ -194,8 +197,10 @@ export const reviewModerationSchema = body({
 });
 export const createReviewSchema = body({ product: objectId, rating: number({ min: 1, max: 5, int: true }), title: text(150), comment: text(3000) });
 
+const socialUrl = text(300).refine((value) => !value || /^https:\/\//.test(value), 'Use a full https:// link');
 export const generalSettingsSchema = body({
   storeName: requiredText(2, 120), tagline: text(200), email: text(254), phone: text(30), address: text(300), website: text(200),
+  facebook: socialUrl, instagram: socialUrl, youtube: socialUrl, whatsapp: text(30),
 });
 export const brandingSchema = body({
   storeName: requiredText(2, 120),

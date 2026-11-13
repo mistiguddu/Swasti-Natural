@@ -48,6 +48,23 @@ Order creation calculates prices server-side (sale prices, automatic discounts, 
 
 **Roles:** `superadmin` has every permission; `admin` has everything except managing administrator accounts; `user` (customer) has no dashboard access. See `config/roles.js`.
 
+## Customer Storefront API
+
+Public endpoints (no token) live under `/api/v1/store`. Customer-only endpoints live under `/api/v1/store/account` and need a customer (`user` role) token; staff tokens get `403`.
+
+| Area | Endpoints |
+| --- | --- |
+| Catalogue | `GET /store/info`, `/store/home`, `/store/categories`, `/store/categories/:slug`, `/store/products` (filters: `category`, `search`, `availability`, `onSale`, `featured`, `newArrival`, `bestSelling`, `minPrice`, `maxPrice`, `sort`, `page`, `limit`), `/store/products/:slug`, `/store/products/:id/reviews` |
+| Cart | `POST /store/cart/quote`: server-side prices, stock check, coupon and delivery charge |
+| Forms | `POST /store/contact`, `POST /store/newsletter` |
+| Account | `GET /store/account/summary`, `GET /store/account/orders`, `GET /store/account/orders/:orderNumber` (own orders only), address CRUD under `/store/account/addresses`, wishlist `GET/POST/DELETE /store/account/wishlist` |
+| Checkout | `POST /store/account/checkout`: cash on delivery only, with prices and stock re-validated on the server |
+| Password reset | `POST /auth/forgot-password`, `POST /auth/reset-password` (30-minute, single-use token) |
+
+Public responses never include cost prices or raw stock counts. Online payment is not offered because no payment gateway is configured.
+
+**Optional `.env` values:** `CLIENT_URL` (default `http://localhost:5173`), used to build password-reset links. `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` send reset emails. Without SMTP in development, the reset link is logged and shown on the forgot-password page; in production, configure SMTP.
+
 ## Requirements
 
 - Windows 10/11 with PowerShell
@@ -99,6 +116,16 @@ npm run admin:create
 ```
 
 The command uses the same idempotent seed logic as startup: passwords are hashed with bcrypt and existing accounts are never overwritten. Public registration always creates a `user`; a caller cannot choose their role.
+
+## Demo Data (for testing the UI)
+
+```powershell
+npm run seed:demo               # adds 20 categories (8 main + 12 sub) and 50 products with generated images
+npm run seed:demo -- --fresh    # deletes the demo data, then adds it again
+npm run seed:demo:remove        # deletes the demo data only
+```
+
+Demo records are marked: category codes and product SKUs start with `DEMO-`, products carry the tag `demo`, and their images are `uploads/*/demo-*.png`. Removing them never touches your own categories, products, orders or users. A demo category that one of your own products uses is kept. The demo set includes sale prices; featured, new-arrival and best-selling products; low-stock and out-of-stock items; and one draft and one inactive product. Product texts are plain facts (size, ingredients, how to use) with no health claims.
 
 ## REST API
 

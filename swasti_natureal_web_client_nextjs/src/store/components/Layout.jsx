@@ -1,0 +1,270 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from '@/router';
+import {
+  ChevronDown, Facebook, Heart, Instagram, Mail, MapPin, Menu, MessageCircle, Phone, Search, ShieldCheck, ShoppingBag, Truck, UserRound, X, Youtube,
+} from 'lucide-react';
+import { useBranding } from '../../context/BrandingContext.jsx';
+import { useStore } from '../context/StoreContext.jsx';
+import { useCart } from '../context/CartContext.jsx';
+import { useWishlist } from '../context/WishlistContext.jsx';
+import { useCustomer } from '../context/CustomerAuthContext.jsx';
+import { useToast } from '../../context/ToastContext.jsx';
+import { storeApi } from '../api.js';
+import { money } from '../../lib/format.js';
+import { Container, btn } from './ui.jsx';
+
+const NAV = [
+  { to: '/', label: 'Home', end: true },
+  { to: '/products', label: 'All Products' },
+  { to: '/categories', label: 'Categories', menu: true },
+  { to: '/about', label: 'About Us' },
+  { to: '/contact', label: 'Contact' },
+];
+
+function Logo({ compact = false }) {
+  const { logoMarkUrl, storeName } = useBranding();
+  return (
+    <Link to="/" className="flex shrink-0 items-center gap-2.5" aria-label={`${storeName} home`}>
+      <img src={logoMarkUrl} alt="" className="h-11 w-11 rounded-full bg-white object-contain p-0.5 ring-1 ring-emerald-900/10" />
+      {!compact && <span className="font-serif text-xl leading-none font-semibold text-emerald-950">{storeName}</span>}
+    </Link>
+  );
+}
+
+function SearchBox({ className = '', onDone }) {
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const [term, setTerm] = useState(params.get('q') ?? '');
+  return (
+    <form
+      role="search"
+      className={`relative ${className}`}
+      onSubmit={(event) => {
+        event.preventDefault();
+        const q = term.trim();
+        navigate(q ? `/products?q=${encodeURIComponent(q)}` : '/products');
+        onDone?.();
+      }}
+    >
+      <input
+        type="search"
+        value={term}
+        onChange={(event) => setTerm(event.target.value)}
+        placeholder="Search natural products…"
+        aria-label="Search products"
+        className="h-11 w-full rounded-full border border-stone-200 bg-stone-50 pr-12 pl-5 text-sm outline-none placeholder:text-stone-400 focus:border-emerald-700 focus:bg-white focus:ring-4 focus:ring-emerald-700/10 [&::-webkit-search-cancel-button]:hidden"
+      />
+      <button type="submit" aria-label="Search" className="absolute top-1 right-1 grid h-9 w-9 cursor-pointer place-items-center rounded-full bg-emerald-800 text-white hover:bg-emerald-900"><Search size={16} /></button>
+    </form>
+  );
+}
+
+function IconLink({ to, label, count, children }) {
+  return (
+    <Link to={to} aria-label={`${label}${count ? ` (${count})` : ''}`} title={label} className="relative grid h-11 w-11 place-items-center rounded-full text-emerald-950 transition hover:bg-emerald-50">
+      {children}
+      {count > 0 && <span className="absolute top-0.5 right-0.5 min-w-5 rounded-full bg-amber-400 px-1 text-center text-[11px] leading-5 font-bold text-emerald-950 ring-2 ring-white">{count > 99 ? '99+' : count}</span>}
+    </Link>
+  );
+}
+
+function Header() {
+  const { topCategories, freeShippingFrom, info } = useStore();
+  const cart = useCart();
+  const wishlist = useWishlist();
+  const { isSignedIn, user } = useCustomer();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [catOpen, setCatOpen] = useState(false);
+  const { pathname } = useLocation();
+
+  useEffect(() => { setMenuOpen(false); setCatOpen(false); }, [pathname]);
+  useEffect(() => { document.body.style.overflow = menuOpen ? 'hidden' : ''; }, [menuOpen]);
+
+  return (
+    <header className="sticky top-0 z-40 bg-white/95 shadow-[0_1px_0_rgba(6,78,59,0.08)] backdrop-blur-md">
+      {freeShippingFrom && (
+        <div className="bg-emerald-900 text-emerald-50">
+          <Container className="flex h-9 items-center justify-center gap-2 text-xs font-medium sm:text-[13px]">
+            <Truck size={15} className="shrink-0" /> Free delivery on orders over {money(freeShippingFrom)}
+          </Container>
+        </div>
+      )}
+      <Container className="flex h-[72px] items-center gap-4 lg:gap-8">
+        <button type="button" onClick={() => setMenuOpen(true)} aria-label="Open menu" className="grid h-11 w-11 cursor-pointer place-items-center rounded-full text-emerald-950 hover:bg-emerald-50 lg:hidden"><Menu size={22} /></button>
+        <Logo />
+        <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
+          {NAV.map((item) => (item.menu ? (
+            <div key={item.to} className="relative" onMouseEnter={() => setCatOpen(true)} onMouseLeave={() => setCatOpen(false)}>
+              <NavLink to={item.to} onFocus={() => setCatOpen(true)} className={({ isActive }) => `inline-flex items-center gap-1 rounded-full px-3 whitespace-nowrap xl:px-4 py-2 text-[15px] font-medium transition ${isActive ? 'text-emerald-800' : 'text-stone-700 hover:text-emerald-800'}`}>
+                {item.label} <ChevronDown size={14} />
+              </NavLink>
+              {catOpen && topCategories.length > 0 && (
+                <div className="absolute top-full left-0 w-72 pt-2">
+                  <div className="rounded-2xl bg-white p-2 shadow-xl ring-1 ring-stone-200">
+                    {topCategories.slice(0, 10).map((category) => (
+                      <Link key={category.id} to={`/category/${category.slug}`} className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm text-stone-700 hover:bg-emerald-50 hover:text-emerald-900">
+                        {category.name}<span className="text-xs text-stone-400">{category.productCount}</span>
+                      </Link>
+                    ))}
+                    <Link to="/categories" className="mt-1 block rounded-xl px-3 py-2.5 text-sm font-semibold text-emerald-800 hover:bg-emerald-50">View all categories →</Link>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => `rounded-full px-3 xl:px-4 py-2 whitespace-nowrap text-[15px] font-medium transition ${isActive ? 'text-emerald-800' : 'text-stone-700 hover:text-emerald-800'}`}>{item.label}</NavLink>
+          )))}
+        </nav>
+        <SearchBox className="ml-auto hidden w-full max-w-xs md:block lg:hidden xl:block xl:max-w-sm" />
+        <div className="ml-auto flex items-center gap-1 md:ml-0 lg:ml-auto xl:ml-0">
+          <IconLink to={isSignedIn ? '/account' : '/login'} label={isSignedIn ? `My account (${user?.name})` : 'Sign in'}><UserRound size={21} /></IconLink>
+          <IconLink to="/wishlist" label="Wishlist" count={wishlist.count}><Heart size={21} /></IconLink>
+          <IconLink to="/cart" label="Cart" count={cart.count}><ShoppingBag size={21} /></IconLink>
+        </div>
+      </Container>
+      <Container className="pb-3 md:hidden lg:block xl:hidden"><SearchBox /></Container>
+
+      {/* Mobile menu */}
+      {menuOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="absolute inset-0 bg-emerald-950/40" onClick={() => setMenuOpen(false)} aria-hidden="true" />
+          <aside className="absolute inset-y-0 left-0 flex w-80 max-w-[85vw] flex-col bg-white shadow-2xl motion-safe:animate-fade-up" aria-label="Menu">
+            <div className="flex items-center justify-between border-b border-stone-100 p-4">
+              <Logo />
+              <button type="button" onClick={() => setMenuOpen(false)} aria-label="Close menu" className="grid h-10 w-10 cursor-pointer place-items-center rounded-full hover:bg-stone-100"><X size={20} /></button>
+            </div>
+            <nav className="flex-1 overflow-y-auto p-3" aria-label="Mobile">
+              {NAV.map((item) => <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => `block rounded-xl px-4 py-3 font-medium ${isActive ? 'bg-emerald-50 text-emerald-900' : 'text-stone-800 hover:bg-stone-50'}`}>{item.label}</NavLink>)}
+              {topCategories.length > 0 && <p className="mt-4 px-4 pb-1 text-[11px] font-bold tracking-widest text-stone-400 uppercase">Shop by category</p>}
+              {topCategories.map((category) => <Link key={category.id} to={`/category/${category.slug}`} className="block rounded-xl px-4 py-2.5 text-sm text-stone-700 hover:bg-stone-50">{category.name}</Link>)}
+            </nav>
+            <div className="border-t border-stone-100 p-4 text-sm text-stone-600">
+              {info?.contact?.phone && <a href={`tel:${info.contact.phone}`} className="flex items-center gap-2"><Phone size={15} /> {info.contact.phone}</a>}
+            </div>
+          </aside>
+        </div>
+      )}
+    </header>
+  );
+}
+
+function Newsletter() {
+  const toast = useToast();
+  const [email, setEmail] = useState('');
+  const [busy, setBusy] = useState(false);
+  async function submit(event) {
+    event.preventDefault();
+    setBusy(true);
+    try {
+      const result = await storeApi.post('/store/newsletter', { email });
+      toast.success(result.alreadySubscribed ? 'You’re already subscribed — thank you!' : 'Thanks for subscribing!');
+      setEmail('');
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <section className="bg-emerald-900" aria-labelledby="newsletter-title">
+      <Container className="flex flex-col items-center justify-between gap-6 py-12 lg:flex-row">
+        <div className="text-center lg:text-left">
+          <h2 id="newsletter-title" className="font-serif text-3xl font-semibold text-white">Join our newsletter</h2>
+          <p className="mt-1 text-emerald-100/80">New arrivals, offers and natural-living tips — straight to your inbox.</p>
+        </div>
+        <form onSubmit={submit} className="flex w-full max-w-md gap-2">
+          <input type="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Your email address" aria-label="Email address" className="h-12 min-w-0 flex-1 rounded-full border-0 bg-white/10 px-5 text-white ring-1 ring-white/20 outline-none placeholder:text-emerald-100/50 focus:ring-2 focus:ring-amber-300" />
+          <button type="submit" disabled={busy} className={`${btn.accent} h-12 shrink-0`}>{busy ? 'Subscribing…' : 'Subscribe'}</button>
+        </form>
+      </Container>
+    </section>
+  );
+}
+
+function Footer() {
+  const { info, topCategories } = useStore();
+  const { storeName, logoMarkUrl } = useBranding();
+  const contact = info?.contact ?? {};
+  const social = info?.social ?? {};
+  const socials = [
+    social.facebook && { href: social.facebook, label: 'Facebook', icon: Facebook },
+    social.instagram && { href: social.instagram, label: 'Instagram', icon: Instagram },
+    social.youtube && { href: social.youtube, label: 'YouTube', icon: Youtube },
+    social.whatsapp && { href: `https://wa.me/${social.whatsapp.replace(/\D/g, '')}`, label: 'WhatsApp', icon: MessageCircle },
+  ].filter(Boolean);
+
+  return (
+    <footer className="bg-[#052e22] text-emerald-50/80">
+      <Container className="grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
+        <div>
+          <div className="flex items-center gap-3">
+            <img src={logoMarkUrl} alt="" className="h-12 w-12 rounded-full bg-white object-contain p-0.5" />
+            <span className="font-serif text-xl font-semibold text-white">{storeName}</span>
+          </div>
+          <p className="mt-4 text-sm leading-relaxed">{info?.tagline || 'Natural wellness products, carefully selected and delivered to your door.'}</p>
+          {socials.length > 0 && (
+            <div className="mt-5 flex gap-2">
+              {socials.map(({ href, label, icon: Icon }) => (
+                <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={label} className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white transition hover:bg-amber-400 hover:text-emerald-950"><Icon size={17} /></a>
+              ))}
+            </div>
+          )}
+        </div>
+        <div>
+          <h3 className="font-semibold text-white">Shop</h3>
+          <ul className="mt-4 space-y-2.5 text-sm">
+            <li><Link to="/products" className="hover:text-white">All products</Link></li>
+            <li><Link to="/products?onSale=true" className="hover:text-white">Special offers</Link></li>
+            {topCategories.slice(0, 4).map((category) => <li key={category.id}><Link to={`/category/${category.slug}`} className="hover:text-white">{category.name}</Link></li>)}
+          </ul>
+        </div>
+        <div>
+          <h3 className="font-semibold text-white">Customer care</h3>
+          <ul className="mt-4 space-y-2.5 text-sm">
+            <li><Link to="/account" className="hover:text-white">My account</Link></li>
+            <li><Link to="/account/orders" className="hover:text-white">My orders</Link></li>
+            <li><Link to="/track-order" className="hover:text-white">Track your order</Link></li>
+            <li><Link to="/wishlist" className="hover:text-white">Wishlist</Link></li>
+            <li><Link to="/about" className="hover:text-white">About us</Link></li>
+            <li><Link to="/contact" className="hover:text-white">Contact us</Link></li>
+          </ul>
+        </div>
+        <div>
+          <h3 className="font-semibold text-white">Contact</h3>
+          <ul className="mt-4 space-y-3 text-sm">
+            {contact.address && <li className="flex gap-2.5"><MapPin size={16} className="mt-0.5 shrink-0 text-amber-300" />{contact.address}</li>}
+            {contact.phone && <li><a href={`tel:${contact.phone}`} className="flex gap-2.5 hover:text-white"><Phone size={16} className="mt-0.5 shrink-0 text-amber-300" />{contact.phone}</a></li>}
+            {contact.email && <li><a href={`mailto:${contact.email}`} className="flex gap-2.5 hover:text-white"><Mail size={16} className="mt-0.5 shrink-0 text-amber-300" />{contact.email}</a></li>}
+            {!contact.address && !contact.phone && !contact.email && <li><Link to="/contact" className="hover:text-white">Send us a message</Link></li>}
+          </ul>
+          <h3 className="mt-6 font-semibold text-white">We accept</h3>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-semibold text-white"><ShieldCheck size={14} className="text-amber-300" /> Cash on delivery</span>
+          </div>
+        </div>
+      </Container>
+      <div className="border-t border-white/10">
+        <Container className="flex flex-col items-center justify-between gap-2 py-5 text-xs sm:flex-row">
+          <p>© {new Date().getFullYear()} {storeName}. All rights reserved.</p>
+          <p className="flex gap-4"><Link to="/about" className="hover:text-white">About</Link><Link to="/contact" className="hover:text-white">Contact</Link></p>
+        </Container>
+      </div>
+    </footer>
+  );
+}
+
+export default function StoreLayout() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo({ top: 0 }); }, [pathname]);
+  return (
+    <div className="flex min-h-screen flex-col bg-white font-body text-stone-800 selection:bg-emerald-200">
+      <a href="#content" className="sr-only z-[80] rounded-lg bg-white px-3 py-2 focus:not-sr-only focus:fixed focus:top-3 focus:left-3">Skip to content</a>
+      <Header />
+      <main id="content" className="flex-1"><Outlet /></main>
+      <Newsletter />
+      <Footer />
+    </div>
+  );
+}

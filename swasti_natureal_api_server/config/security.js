@@ -57,11 +57,21 @@ const credentialLimiter = rateLimit({
   handler: limitHandler('Too many failed sign-in attempts. Please wait 15 minutes and try again.'),
 });
 
+// Spam protection for public forms (contact, newsletter). Counts every request.
+const formLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: isDevelopment ? 100 : 10,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  handler: limitHandler('Too many submissions. Please try again in a few minutes.'),
+});
+
 export function configureSecurity(app) {
   app.disable('x-powered-by');
   app.set('trust proxy', env.trustProxy ? 1 : false);
   app.use(helmet());
   app.use(cors(httpCorsOptions));
   app.use('/api', apiLimiter);
-  app.use(['/api/v1/auth/login', '/api/v1/auth/register'], credentialLimiter);
+  app.use(['/api/v1/auth/login', '/api/v1/auth/register', '/api/v1/auth/forgot-password', '/api/v1/auth/reset-password'], credentialLimiter);
+  app.use(['/api/v1/store/contact', '/api/v1/store/newsletter'], formLimiter);
 }

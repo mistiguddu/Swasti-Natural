@@ -2,15 +2,21 @@ import bcrypt from 'bcrypt';
 import User from './models/User.js';
 import AppError from './utils/AppError.js';
 import { createAccessToken } from './utils/jwt.js';
+import { createHash, randomBytes } from 'node:crypto';
 import { notify } from './services/notification.service.js';
+import { env } from './config/env.js';
+import { sendMail } from './utils/mailer.js';
+
+const RESET_TTL_MS = 30 * 60 * 1000;
+const hashToken = (token) => createHash('sha256').update(token).digest('hex');
 
 const SALT_ROUNDS = 12;
 
-export async function register({ name, email, password }) {
+export async function register({ name, email, password, phone = '' }) {
   const normalizedEmail = email.toLowerCase();
   if (await User.exists({ email: normalizedEmail })) throw new AppError('Email is already registered', 409);
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-  const user = await User.create({ name, email: normalizedEmail, passwordHash });
+  const user = await User.create({ name, email: normalizedEmail, passwordHash, phone });
   await notify({ type: 'customer.registered', title: 'New customer registered', message: `${user.name} (${user.email})`, link: `/customers/${user.id}` });
   return { user, accessToken: createAccessToken(user) };
 }
@@ -71,4 +77,41 @@ export async function ensureInitialAccounts(accounts) {
     results.push({ ...account, status: await ensureInitialAccount(account) });
   }
   return results;
+}
+/**
+ * Starts a password reset. Always succeeds (does not reveal whether the email exists).
+ * Only customer accounts can reset by email; staff are reset by a super administrator.
+ * In development without SMTP the link is returned as `devResetUrl` and logged.
+ */
+export async function requestPasswordReset(email) {
+  const user = await User.findOne({ email: email.toLowerCase(), role: 'user', isActive: true });
+  if (!user) return {};
+  const token = randomBytes(32).toString('hex');
+  user.passwordResetTokenHash = hashToken(token);
+  user.passwordResetExpires = new Date(Date.now() + RESET_TTL_MS);
+  await user.save();
+  const url = `${env.clientUrl}/reset-password?token=${token}`;
+  const sent = await sendMail({
+    to: user.email,
+    subject: 'Reset your password',
+    text: `Hello ${user.name},
+
+Use this link to set a new password (valid for 30 minutes):
+${url}
+
+If you didn't request this, you can ignore this email.`,
+  });
+  return !sent && env.nodeEnv === 'development' ? { devResetUrl: url } : {};
+}
+
+export async function resetPassword({ token, password }) {
+  const user = await User.findOne({
+    passwordResetTokenHash: hashToken(token),
+    passwordResetExpires: { $gt: new Date() },
+  }).select('+passwordResetTokenHash +passwordResetExpires');
+  if (!user) throw new AppError('This reset link is invalid or has expired', 400);
+  user.passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+  user.passwordResetTokenHash = null;
+  user.passwordResetExpires = null;
+  await user.save();
 }

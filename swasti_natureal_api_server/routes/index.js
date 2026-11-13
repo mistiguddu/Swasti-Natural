@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import authRoutes from './auth.routes.js';
+import { storefrontRouter } from './storefront.routes.js';
 import { categoryRouter, productRouter } from './catalog.routes.js';
 import { customerRouter, dashboardRouter, orderRouter, reportRouter, userRouter } from './sales.routes.js';
 import {
@@ -23,4 +24,5 @@ router.use('/shipping-methods', shippingRouter);
 router.use('/reviews', reviewRouter);
 router.use('/notifications', notificationRouter);
 router.use('/settings', settingRouter);
+router.use('/store', storefrontRouter);
 export default router;

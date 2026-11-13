@@ -18,6 +18,10 @@ const productSchema = new mongoose.Schema({
   subcategory: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', default: null, index: true },
   shortDescription: { type: String, trim: true, maxlength: 500, default: '' },
   description: { type: String, trim: true, maxlength: 20000, default: '' },
+  // Optional storefront content (shown as tabs only when filled in)
+  ingredients: { type: String, trim: true, maxlength: 10000, default: '' },
+  howToUse: { type: String, trim: true, maxlength: 10000, default: '' },
+  benefits: { type: String, trim: true, maxlength: 10000, default: '' },
 
   regularPrice: { ...money, required: true },
   salePrice: money,

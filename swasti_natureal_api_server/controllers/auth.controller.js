@@ -1,0 +1,26 @@
+import * as authService from '../auth.service.js';
+import { ROLE_DEFINITIONS } from '../config/roles.js';
+
+export async function register(req, res) {
+  const result = await authService.register(req.validated.body);
+  res.status(201).json({ data: result });
+}
+
+export async function login(req, res) {
+  const result = await authService.login(req.validated.body);
+  res.status(200).json({ data: result });
+}
+
+export async function getCurrentUser(req, res) {
+  res.json({ data: { user: req.user, permissions: ROLE_DEFINITIONS[req.user.role]?.permissions ?? [] } });
+}
+
+export async function updateProfile(req, res) {
+  const user = await authService.updateProfile(req.user, req.validated.body);
+  res.json({ data: { user } });
+}
+
+export async function changePassword(req, res) {
+  await authService.changePassword(req.user.id, req.validated.body);
+  res.json({ data: { message: 'Password updated' } });
+}

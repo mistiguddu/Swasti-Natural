@@ -1,0 +1,74 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Install web client dependencies",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\npm.cmd",
+			"args": [
+				"--prefix",
+				"swasti_natureal_web_client",
+				"install"
+			],
+			"isBackground": false,
+			"options": {
+				"env": {
+					"PATH": "C:\\Program Files\\nodejs;${env:PATH}"
+				}
+			}
+		},
+		{
+			"label": "Build Swasti Natural web client",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\npm.cmd",
+			"args": [
+				"--prefix",
+				"swasti_natureal_web_client",
+				"run",
+				"build"
+			],
+			"isBackground": false,
+			"options": {
+				"env": {
+					"PATH": "C:\\Program Files\\nodejs;${env:PATH}"
+				}
+			}
+		},
+		{
+			"label": "Run Swasti Natural web client",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\npm.cmd",
+			"args": [
+				"--prefix",
+				"swasti_natureal_web_client",
+				"run",
+				"dev"
+			],
+			"isBackground": true,
+			"problemMatcher": [],
+			"options": {
+				"env": {
+					"PATH": "C:\\Program Files\\nodejs;${env:PATH}"
+				}
+			}
+		},
+		{
+			"label": "Run Swasti Natural API",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\npm.cmd",
+			"args": [
+				"--prefix",
+				"swasti_natureal_api_server",
+				"run",
+				"dev"
+			],
+			"isBackground": true,
+			"problemMatcher": [],
+			"options": {
+				"env": {
+					"PATH": "C:\\Program Files\\nodejs;${env:PATH}"
+				}
+			}
+		}
+	]
+}

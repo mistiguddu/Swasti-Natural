@@ -9,6 +9,7 @@ import { useStore } from '../context/StoreContext.jsx';
 import { money } from '../../lib/format.js';
 import ProductCard, { ProductCardSkeleton } from '../components/ProductCard.jsx';
 import { Container, EmptyBlock, ErrorBlock, PageHeader, Skel, btn } from '../components/ui.jsx';
+import { CategoryHero, CategoryTree } from '../components/CategoryTree.jsx';
 import { usePageMeta } from '../lib/helpers.js';
 
 const SORTS = [
@@ -31,21 +32,7 @@ function Filters({ params, set, categories, activeCategory, priceRange, onClose 
 
   return (
     <div className="space-y-8">
-      <section>
-        <h3 className="text-sm font-bold tracking-wider text-emerald-950 uppercase">Category</h3>
-        <ul className="mt-3 space-y-1">
-          <li>
-            <Link to={{ pathname: '/products', search: params.toString().replace(/(^|&)category=[^&]*/, '') }} onClick={onClose} className={`flex justify-between rounded-lg px-3 py-2 text-sm ${!activeCategory ? 'bg-emerald-50 font-semibold text-emerald-900' : 'text-stone-700 hover:bg-stone-50'}`}>All products</Link>
-          </li>
-          {categories.map((category) => (
-            <li key={category.id}>
-              <Link to={`/category/${category.slug}`} onClick={onClose} className={`flex justify-between rounded-lg px-3 py-2 text-sm ${activeCategory === category.slug ? 'bg-emerald-50 font-semibold text-emerald-900' : 'text-stone-700 hover:bg-stone-50'} ${category.parent ? 'pl-7' : ''}`}>
-                {category.name}<span className="text-xs text-stone-400">{category.productCount}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <CategoryTree categories={categories} activeSlug={activeCategory} params={params} onNavigate={onClose} />
 
       <section>
         <h3 className="text-sm font-bold tracking-wider text-emerald-950 uppercase">Price</h3>
@@ -136,15 +123,15 @@ export default function ProductsPage() {
 
   return (
     <>
-      <PageHeader
-        title={title}
-        description={category?.shortDescription}
-        crumbs={category ? [{ label: 'Categories', to: '/categories' }, { label: category.name }] : [{ label: 'Products' }]}
-      />
+      {slug ? (
+        <CategoryHero slug={slug} categories={categories} fallback={category} params={params} />
+      ) : (
+        <PageHeader title={title} crumbs={[{ label: 'Products' }]} />
+      )}
       <Container className="py-10">
         <div className="lg:grid lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-10">
           <aside className="hidden lg:block" aria-label="Filters">
-            <div className="sticky top-32"><Filters params={params} set={set} categories={categories} activeCategory={slug} priceRange={data?.priceRange ?? { min: 0, max: 0 }} /></div>
+            <div className="sticky top-32 -mr-3 max-h-[calc(100vh-9rem)] overflow-y-auto pr-3 [scrollbar-width:thin]"><Filters params={params} set={set} categories={categories} activeCategory={slug} priceRange={data?.priceRange ?? { min: 0, max: 0 }} /></div>
           </aside>
 
           <div className="min-w-0">

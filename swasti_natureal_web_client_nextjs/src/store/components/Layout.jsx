@@ -26,9 +26,9 @@ const NAV = [
 function Logo({ compact = false }) {
   const { logoMarkUrl, storeName } = useBranding();
   return (
-    <Link to="/" className="flex shrink-0 items-center gap-2.5" aria-label={`${storeName} home`}>
-      <img src={logoMarkUrl} alt="" className="h-11 w-11 rounded-full bg-white object-contain p-0.5 ring-1 ring-emerald-900/10" />
-      {!compact && <span className="font-serif text-xl leading-none font-semibold text-emerald-950">{storeName}</span>}
+    <Link to="/" className="flex min-w-0 shrink items-center gap-2 sm:shrink-0 sm:gap-2.5" aria-label={`${storeName} home`}>
+      <img src={logoMarkUrl} alt="" className="h-10 w-10 shrink-0 rounded-full bg-white object-contain p-0.5 ring-1 ring-emerald-900/10 sm:h-11 sm:w-11" />
+      {!compact && <span className="truncate font-serif text-lg leading-none font-semibold text-emerald-950 sm:text-xl">{storeName}</span>}
     </Link>
   );
 }
@@ -63,7 +63,7 @@ function SearchBox({ className = '', onDone }) {
 
 function IconLink({ to, label, count, children }) {
   return (
-    <Link to={to} aria-label={`${label}${count ? ` (${count})` : ''}`} title={label} className="relative grid h-11 w-11 place-items-center rounded-full text-emerald-950 transition hover:bg-emerald-50">
+    <Link to={to} aria-label={`${label}${count ? ` (${count})` : ''}`} title={label} className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full text-emerald-950 transition hover:bg-emerald-50 sm:h-11 sm:w-11">
       {children}
       {count > 0 && <span className="absolute top-0.5 right-0.5 min-w-5 rounded-full bg-amber-400 px-1 text-center text-[11px] leading-5 font-bold text-emerald-950 ring-2 ring-white">{count > 99 ? '99+' : count}</span>}
     </Link>
@@ -91,8 +91,8 @@ function Header() {
           </Container>
         </div>
       )}
-      <Container className="flex h-[72px] items-center gap-4 lg:gap-8">
-        <button type="button" onClick={() => setMenuOpen(true)} aria-label="Open menu" className="grid h-11 w-11 cursor-pointer place-items-center rounded-full text-emerald-950 hover:bg-emerald-50 lg:hidden"><Menu size={22} /></button>
+      <Container className="flex h-[72px] items-center gap-2 sm:gap-4 lg:gap-8">
+        <button type="button" onClick={() => setMenuOpen(true)} aria-label="Open menu" className="-ml-2 grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-full text-emerald-950 hover:bg-emerald-50 sm:ml-0 sm:h-11 sm:w-11 lg:hidden"><Menu size={22} /></button>
         <Logo />
         <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
           {NAV.map((item) => (item.menu ? (
@@ -118,7 +118,7 @@ function Header() {
           )))}
         </nav>
         <SearchBox className="ml-auto hidden w-full max-w-xs md:block lg:hidden xl:block xl:max-w-sm" />
-        <div className="ml-auto flex items-center gap-1 md:ml-0 lg:ml-auto xl:ml-0">
+        <div className="ml-auto flex shrink-0 items-center gap-0 sm:gap-1 md:ml-0 lg:ml-auto xl:ml-0">
           <IconLink to={isSignedIn ? '/account' : '/login'} label={isSignedIn ? `My account (${user?.name})` : 'Sign in'}><UserRound size={21} /></IconLink>
           <IconLink to="/wishlist" label="Wishlist" count={wishlist.count}><Heart size={21} /></IconLink>
           <IconLink to="/cart" label="Cart" count={cart.count}><ShoppingBag size={21} /></IconLink>

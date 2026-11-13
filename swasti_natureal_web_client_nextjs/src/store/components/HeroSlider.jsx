@@ -80,7 +80,7 @@ function ProductCollage({ products, hidden }) {
 
 function CategoryVisual({ slide, active }) {
   return (
-    <div className="relative mx-auto w-full max-w-xl">
+    <div className="relative mx-auto w-full max-w-md lg:max-w-lg">
       <div className="overflow-hidden rounded-[2rem] shadow-2xl shadow-black/30 ring-1 ring-white/20">
         <img src={slide.image} alt={slide.title} className={`aspect-[4/3] w-full object-cover ${active ? 'motion-safe:animate-ken-burns' : ''}`} />
       </div>
@@ -119,7 +119,7 @@ function Slide({ slide, active, first }) {
       <div aria-hidden="true" className={`absolute -top-32 -right-24 h-[28rem] w-[28rem] rounded-full blur-3xl ${theme.glow}`} />
       <div aria-hidden="true" className={`absolute -bottom-40 -left-20 h-96 w-96 rounded-full blur-3xl ${theme.glow2}`} />
       <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:22px_22px]" />
-      <Container className="relative grid h-full content-center gap-8 py-12 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-12 lg:py-0">
+      <Container className="relative grid h-full content-center gap-8 pt-12 pb-24 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-12 lg:pt-0 lg:pb-16">
         <div key={active ? 'on' : 'off'} className="max-w-xl text-white motion-safe:animate-fade-up">
           <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-bold tracking-widest text-amber-200 uppercase ring-1 ring-white/15 backdrop-blur"><Icon size={14} /> {slide.eyebrow}</p>
           <h2 className="mt-5 font-serif text-4xl leading-[1.08] font-semibold tracking-tight sm:text-5xl lg:text-6xl">{slide.title}</h2>
@@ -203,7 +203,9 @@ export default function HeroSlider({ slides }) {
                     <span
                       key={`${current.id}-${index}`}
                       onAnimationEnd={() => go(index + 1)}
-                      className={`absolute inset-0 origin-left rounded-full bg-amber-300 motion-safe:animate-slide-progress ${paused ? '[animation-play-state:paused]' : ''}`}
+                      // Inline so it overrides the animation shorthand (pausing also pauses autoplay).
+                      style={{ animationPlayState: paused ? 'paused' : 'running' }}
+                      className="absolute inset-0 origin-left rounded-full bg-amber-300 motion-safe:animate-slide-progress"
                     />
                   )}
                 </button>

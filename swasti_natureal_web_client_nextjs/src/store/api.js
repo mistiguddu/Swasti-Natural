@@ -10,11 +10,18 @@ export const CUSTOMER_TOKEN_KEY = 'swasti_customer_token';
 export const getCustomerToken = () => localStorage.getItem(CUSTOMER_TOKEN_KEY);
 export const setCustomerToken = (token) => (token ? localStorage.setItem(CUSTOMER_TOKEN_KEY, token) : localStorage.removeItem(CUSTOMER_TOKEN_KEY));
 
+/** Guest live-chat identity: a random token issued by the server with the guest's first message. */
+export const CHAT_TOKEN_KEY = 'swasti_chat_token';
+export const getChatToken = () => localStorage.getItem(CHAT_TOKEN_KEY);
+export const setChatToken = (token) => (token ? localStorage.setItem(CHAT_TOKEN_KEY, token) : localStorage.removeItem(CHAT_TOKEN_KEY));
+
 const http = axios.create({ baseURL: '/api/v1', timeout: 30000 });
 
 http.interceptors.request.use((config) => {
   const token = getCustomerToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  const chatToken = config.url?.startsWith('/store/chat') ? getChatToken() : null;
+  if (chatToken) config.headers['X-Chat-Token'] = chatToken;
   return config;
 });
 

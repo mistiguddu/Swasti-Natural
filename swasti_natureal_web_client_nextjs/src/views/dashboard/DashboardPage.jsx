@@ -20,6 +20,7 @@ import { BarList, ChartCard, ChartLegend, ChartTooltip } from '../../components/
 import { axisProps, BRAND, gridProps, ORDER_STATUS_COLORS, SERIES } from '../../lib/chartTheme.js';
 import { bucketLabel, dateTime, monthLabel, money, number, relativeTime, titleCase } from '../../lib/format.js';
 import { useAuth } from '../../context/AuthContext.jsx';
+import RecentMessages from './RecentMessages.jsx';
 import { digits, t } from '../../i18n/index.js';
 
 function useRangeParams() {
@@ -287,7 +288,7 @@ function RecentActivities() {
 }
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, can } = useAuth();
   const [range, query, setRange] = useRangeParams();
   const hour = new Date().getHours();
   const greeting = t(hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening');
@@ -304,6 +305,7 @@ export default function DashboardPage() {
 
       <div className="space-y-6">
         <SummaryCards query={query} label={t(periodLabel(range)?.toLowerCase())} />
+        {can('customers.manage') && <RecentMessages />}
         <div className="grid gap-6 xl:grid-cols-3">
           <SalesChart query={query} />
           <OrderStatusChart query={query} />

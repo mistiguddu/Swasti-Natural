@@ -1,5 +1,5 @@
 import {
-  BarChart3, Bell, Boxes, CreditCard, LayoutDashboard, Megaphone, Package, Settings, ShoppingCart, Star, Truck, UserCog, Users,
+  BarChart3, Bell, Boxes, CreditCard, LayoutDashboard, Megaphone, MessagesSquare, Package, Settings, ShoppingCart, Star, Truck, UserCog, Users,
 } from 'lucide-react';
 
 /** Sidebar structure. `permission` hides an entry from roles that lack it. */
@@ -37,6 +37,7 @@ export const NAVIGATION = [
       { label: 'Customer Details', to: '/customers/details' },
     ],
   },
+  { label: 'Messages', icon: MessagesSquare, to: '/messages', permission: 'customers.manage', badge: 'messages' },
   {
     label: 'Users', icon: UserCog, permission: 'users.manage',
     children: [

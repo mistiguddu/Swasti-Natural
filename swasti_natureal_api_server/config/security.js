@@ -66,6 +66,15 @@ const formLimiter = rateLimit({
   handler: limitHandler('Too many submissions. Please try again in a few minutes.'),
 });
 
+// Chat: enough for a real conversation, not for flooding the inbox.
+const chatLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  limit: isDevelopment ? 300 : 40,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  handler: limitHandler('You’re sending messages too quickly. Please wait a moment.'),
+});
+
 export function configureSecurity(app) {
   app.disable('x-powered-by');
   app.set('trust proxy', env.trustProxy ? 1 : false);
@@ -74,4 +83,5 @@ export function configureSecurity(app) {
   app.use('/api', apiLimiter);
   app.use(['/api/v1/auth/login', '/api/v1/auth/register', '/api/v1/auth/forgot-password', '/api/v1/auth/reset-password'], credentialLimiter);
   app.use(['/api/v1/store/contact', '/api/v1/store/newsletter'], formLimiter);
+  app.use('/api/v1/store/chat/messages', chatLimiter);
 }

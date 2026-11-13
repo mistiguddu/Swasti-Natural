@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from '@/router';
 import {
-  Bell, Check, ChevronDown, ExternalLink, Languages, LogOut, Menu, Monitor, Moon, Palette, Plus, Search, Settings, ShieldCheck, Sun, UserRound,
+  Bell, Check, ChevronDown, ExternalLink, Languages, LogOut, Menu, MessagesSquare, Monitor, Moon, Palette, Plus, Search, Settings, ShieldCheck, Sun, UserRound,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
+import { useChatRealtime } from '../../context/ChatRealtimeContext.jsx';
 import { ACCENTS, usePreferences } from '../../context/PreferencesContext.jsx';
 import { FLAT_NAVIGATION } from './navigation.js';
 import { ROLE_LABELS } from '../../lib/format.js';
@@ -145,8 +146,9 @@ function LanguageToggle() {
   );
 }
 
-export default function Topbar({ onOpenMobile, unread }) {
+export default function Topbar({ onOpenMobile, unread, messages = 0 }) {
   const { user, signOut, can } = useAuth();
+  const { connected } = useChatRealtime();
   const [menuOpen, setMenuOpen] = useState(false);
   const menu = useRef(null);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
@@ -169,6 +171,13 @@ export default function Topbar({ onOpenMobile, unread }) {
         </a>
         <LanguageToggle />
         <AppearanceMenu />
+        {can('customers.manage') && (
+          <Link to="/messages" title={connected ? t('Live chat connected') : t('Live chat reconnecting…')} className="relative grid h-10 w-10 place-items-center rounded-xl text-slate-600 transition hover:bg-slate-100" aria-label={`${t('Messages')}${messages ? ` (${messages})` : ''}`}>
+            <MessagesSquare size={19} />
+            <span className={`absolute bottom-2 left-2 h-2 w-2 rounded-full ring-2 ring-surface ${connected ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+            {messages > 0 && <span className="absolute top-1.5 right-1.5 min-w-4 rounded-full bg-teal-600 px-1 text-center text-[9px] leading-4 font-bold text-white ring-2 ring-surface motion-safe:animate-soft-pulse">{digits(messages > 9 ? '9+' : messages)}</span>}
+          </Link>
+        )}
         <Link to="/notifications" className="relative grid h-10 w-10 place-items-center rounded-xl text-slate-600 transition hover:bg-slate-100" aria-label={`${t('Notifications')}${unread ? ` (${unread})` : ''}`}>
           <Bell size={19} />
           {unread > 0 && <span className="absolute top-1.5 right-1.5 min-w-4 rounded-full bg-rose-500 px-1 text-center text-[9px] leading-4 font-bold text-white ring-2 ring-surface">{digits(unread > 9 ? '9+' : unread)}</span>}

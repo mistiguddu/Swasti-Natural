@@ -6,6 +6,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import * as store from '../services/storefront.service.js';
 import * as account from '../services/account.service.js';
 import { createOrder, quoteCart } from '../services/order.service.js';
+import { shopperChatRouter } from './chat.routes.js';
 import {
   addressSchema, cartQuoteSchema, checkoutSchema, contactSchema, newsletterSchema, wishlistAddSchema,
 } from '../middlewares/store-schemas.js';
@@ -24,6 +25,8 @@ storefrontRouter.get('/products/:slug', ok((req) => store.getProduct(req.params.
 storefrontRouter.get('/products/:id/reviews', ok((req) => store.listProductReviews(req.params.id, req.query)));
 storefrontRouter.post('/cart/quote', validate(cartQuoteSchema), ok((req) => quoteCart(req.validated.body)));
 storefrontRouter.post('/contact', validate(contactSchema), created((req) => store.submitContact(req.validated.body)));
+/* Live chat with the store team — guests and signed-in customers. */
+storefrontRouter.use('/chat', shopperChatRouter);
 storefrontRouter.post('/newsletter', validate(newsletterSchema), ok((req) => store.subscribe(req.validated.body.email)));
 
 /* ── Customer account (signed-in customers only) ── */

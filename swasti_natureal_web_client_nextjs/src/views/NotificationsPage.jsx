@@ -1,7 +1,7 @@
 'use client';
 
 import { Link, useOutletContext } from '@/router';
-import { AlertTriangle, Bell, CheckCheck, FolderTree, Package, ShoppingCart, Star, Trash2, UserPlus } from 'lucide-react';
+import { AlertTriangle, Bell, CheckCheck, FolderTree, MessageCircle, Package, ShoppingCart, Star, Trash2, UserPlus } from 'lucide-react';
 import { api } from '../api.js';
 import { useApi, useListParams } from '../hooks/useApi.js';
 import { useToast } from '../context/ToastContext.jsx';
@@ -18,6 +18,7 @@ const ICONS = [
   ['order', ShoppingCart, 'bg-sky-50 text-sky-600'], ['payment', ShoppingCart, 'bg-sky-50 text-sky-600'], ['stock', AlertTriangle, 'bg-rose-50 text-rose-600'],
   ['product', Package, 'bg-violet-50 text-violet-600'], ['category', FolderTree, 'bg-emerald-50 text-emerald-600'], ['review', Star, 'bg-amber-50 text-amber-600'],
   ['customer', UserPlus, 'bg-teal-50 text-teal-600'], ['user', UserPlus, 'bg-teal-50 text-teal-600'],
+  ['chat', MessageCircle, 'bg-teal-50 text-teal-600'], ['contact', MessageCircle, 'bg-teal-50 text-teal-600'],
 ];
 const iconFor = (type) => ICONS.find(([prefix]) => type.startsWith(prefix)) ?? ['', Bell, 'bg-slate-100 text-slate-600'];
 

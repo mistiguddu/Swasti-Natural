@@ -15,6 +15,7 @@ import { useToast } from '../../context/ToastContext.jsx';
 import { storeApi } from '../api.js';
 import { money } from '../../lib/format.js';
 import { Container, ProductImage, btn } from './ui.jsx';
+import ChatWidget, { openChat } from './ChatWidget.jsx';
 
 const NAV = [
   { to: '/', label: 'Home', end: true },
@@ -178,6 +179,7 @@ function MobileMenu({ onClose }) {
         </div>
 
         <div className="border-t border-stone-200/70 bg-white p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <button type="button" onClick={() => { onClose(); openChat(); }} className={`${btn.accent} mb-3 h-11 w-full text-sm`}><MessageCircle size={16} /> Chat with us</button>
           <div className="flex items-center gap-2 text-xs text-stone-500"><ShieldCheck size={14} className="text-emerald-700" /> Cash on delivery across Bangladesh</div>
           {(phone || whatsapp) && (
             <div className="mt-3 grid grid-cols-2 gap-2">
@@ -368,6 +370,7 @@ export default function StoreLayout() {
       <main id="content" className="flex-1"><Outlet /></main>
       <Newsletter />
       <Footer />
+      <ChatWidget />
     </div>
   );
 }

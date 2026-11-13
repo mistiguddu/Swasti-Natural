@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { Link } from '@/router';
-import { CheckCircle2, Compass, HandCoins, Leaf, Mail, MapPin, PackageCheck, Phone, ShieldCheck, Truck } from 'lucide-react';
+import { CheckCircle2, Compass, HandCoins, Leaf, Mail, MapPin, MessageCircle, PackageCheck, Phone, ShieldCheck, Truck } from 'lucide-react';
+import { openChat } from '../components/ChatWidget.jsx';
 import { storeApi } from '../api.js';
 import { useStore } from '../context/StoreContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
@@ -74,6 +75,13 @@ export function ContactPage() {
           )}
         </section>
         <aside className="space-y-4">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-800 to-emerald-950 p-6 text-white">
+            <div aria-hidden="true" className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-emerald-400/20 blur-2xl" />
+            <span className="relative grid h-11 w-11 place-items-center rounded-full bg-white/15 ring-1 ring-white/20"><MessageCircle size={20} /></span>
+            <p className="relative mt-4 font-serif text-xl font-semibold">Prefer to chat?</p>
+            <p className="relative mt-1 text-sm text-emerald-100/80">Message our team live — no account needed. Signed-in customers keep their chat history.</p>
+            <button type="button" onClick={() => openChat()} className={`${btn.accent} relative mt-4 h-11`}>Start a chat</button>
+          </div>
           {channels.length ? channels.map(({ icon: Icon, label, value, href }) => (
             <div key={label} className="flex gap-4 rounded-3xl bg-emerald-50/70 p-5 ring-1 ring-emerald-100">
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-emerald-800 text-white"><Icon size={18} /></span>

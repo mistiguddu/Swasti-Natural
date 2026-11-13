@@ -130,7 +130,7 @@ function Testimonials({ items }) {
 function HomeSkeleton() {
   return (
     <div aria-busy="true" aria-label="Loading">
-      <Skel className="h-[640px] w-full rounded-none sm:h-[600px] lg:h-[560px]" />
+      <Skel className="h-[min(580px,calc(100svh-140px))] min-h-[500px] w-full rounded-none sm:h-[580px] lg:h-[560px]" />
       <Container className="py-16">
         <Skel className="h-8 w-64" />
         <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">{Array.from({ length: 4 }, (_, i) => <Skel key={i} className="aspect-[4/3] rounded-3xl" />)}</div>

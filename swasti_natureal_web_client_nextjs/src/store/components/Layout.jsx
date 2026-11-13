@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from '@/router';
 import {
-  ChevronDown, Facebook, Heart, Instagram, Mail, MapPin, Menu, MessageCircle, Phone, Search, ShieldCheck, ShoppingBag, Truck, UserRound, X, Youtube,
+  ChevronDown, ChevronRight, Facebook, Home, Info, LayoutGrid, LogIn, Package, Heart, Instagram, Mail, MapPin, Menu, MessageCircle, Phone, Search, ShieldCheck, ShoppingBag, Truck, UserRound, X, Youtube,
 } from 'lucide-react';
 import { useBranding } from '../../context/BrandingContext.jsx';
 import { useStore } from '../context/StoreContext.jsx';
@@ -13,7 +14,7 @@ import { useCustomer } from '../context/CustomerAuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import { storeApi } from '../api.js';
 import { money } from '../../lib/format.js';
-import { Container, btn } from './ui.jsx';
+import { Container, ProductImage, btn } from './ui.jsx';
 
 const NAV = [
   { to: '/', label: 'Home', end: true },
@@ -70,6 +71,127 @@ function IconLink({ to, label, count, children }) {
   );
 }
 
+const MOBILE_NAV_ICONS = { '/': Home, '/products': Package, '/categories': LayoutGrid, '/about': Info, '/contact': Mail };
+
+/**
+ * Off-canvas menu for phones/tablets. Rendered in a portal on <body>: the sticky header uses
+ * backdrop-filter, which would otherwise trap `position: fixed` inside the header's box.
+ */
+function MobileMenu({ onClose }) {
+  const { topCategories, info } = useStore();
+  const { isSignedIn, user } = useCustomer();
+  const cart = useCart();
+  const wishlist = useWishlist();
+  const [showAllCats, setShowAllCats] = useState(false);
+  const phone = info?.contact?.phone;
+  const whatsapp = info?.social?.whatsapp;
+  const cats = showAllCats ? topCategories : topCategories.slice(0, 6);
+
+  useEffect(() => {
+    const { overflow } = document.body.style;
+    document.body.style.overflow = 'hidden';
+    const onKey = (event) => { if (event.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = overflow; window.removeEventListener('keydown', onKey); };
+  }, [onClose]);
+
+  return createPortal(
+    <div className="fixed inset-0 z-[60] lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
+      <div className="absolute inset-0 bg-emerald-950/50 backdrop-blur-[2px] motion-safe:animate-fade-in" onClick={onClose} aria-hidden="true" />
+      <aside className="absolute inset-y-0 left-0 flex h-dvh w-[86vw] max-w-[340px] flex-col bg-stone-50 shadow-2xl shadow-emerald-950/30 motion-safe:animate-drawer-in">
+        <div className="flex items-center justify-between gap-3 border-b border-stone-200/70 bg-white px-4 py-3">
+          <Logo />
+          <button type="button" onClick={onClose} aria-label="Close menu" className="grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-full bg-stone-100 text-stone-700 transition hover:bg-stone-200"><X size={19} /></button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto overscroll-contain">
+          {/* Account */}
+          <div className="p-4">
+            <Link to={isSignedIn ? '/account' : '/login'} onClick={onClose} className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-emerald-800 to-emerald-950 p-3.5 text-white shadow-lg shadow-emerald-900/20">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/15 ring-1 ring-white/20">
+                {isSignedIn ? <span className="text-base font-bold uppercase">{(user?.name || 'U').charAt(0)}</span> : <LogIn size={19} />}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[11px] font-semibold tracking-wider text-emerald-200/80 uppercase">{isSignedIn ? 'Welcome back' : 'Hello, guest'}</span>
+                <span className="block truncate text-sm font-semibold">{isSignedIn ? user?.name : 'Sign in or create account'}</span>
+              </span>
+              <ChevronRight size={18} className="shrink-0 text-emerald-200" />
+            </Link>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <Link to="/wishlist" onClick={onClose} className="flex items-center gap-2 rounded-xl bg-white px-3 py-2.5 text-sm font-medium text-stone-700 ring-1 ring-stone-200/80">
+                <Heart size={16} className="text-rose-500" /> Wishlist
+                {wishlist.count > 0 && <span className="ml-auto rounded-full bg-stone-100 px-1.5 text-xs font-semibold text-stone-600">{wishlist.count}</span>}
+              </Link>
+              <Link to="/cart" onClick={onClose} className="flex items-center gap-2 rounded-xl bg-white px-3 py-2.5 text-sm font-medium text-stone-700 ring-1 ring-stone-200/80">
+                <ShoppingBag size={16} className="text-emerald-700" /> Cart
+                {cart.count > 0 && <span className="ml-auto rounded-full bg-amber-400 px-1.5 text-xs font-bold text-emerald-950">{cart.count}</span>}
+              </Link>
+            </div>
+          </div>
+
+          {/* Main navigation */}
+          <nav aria-label="Mobile" className="px-4">
+            <p className="px-1 pb-2 text-[11px] font-bold tracking-widest text-stone-400 uppercase">Menu</p>
+            <ul className="overflow-hidden rounded-2xl bg-white ring-1 ring-stone-200/80">
+              {NAV.map((item) => {
+                const Icon = MOBILE_NAV_ICONS[item.to] ?? ChevronRight;
+                return (
+                  <li key={item.to} className="border-b border-stone-100 last:border-0">
+                    <NavLink to={item.to} end={item.end} onClick={onClose} className={({ isActive }) => `group flex items-center gap-3 px-3.5 py-3 text-[15px] font-medium transition ${isActive ? 'active bg-emerald-50 text-emerald-900' : 'text-stone-800 active:bg-stone-50'}`}>
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-emerald-50 text-emerald-800 group-[.active]:bg-emerald-700 group-[.active]:text-white"><Icon size={16} /></span>
+                      {item.label}
+                      <ChevronRight size={16} className="ml-auto text-stone-300 group-[.active]:text-emerald-700" />
+                    </NavLink>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+
+          {/* Categories */}
+          {topCategories.length > 0 && (
+            <div className="px-4 pt-5 pb-4">
+              <div className="flex items-center justify-between px-1 pb-2">
+                <p className="text-[11px] font-bold tracking-widest text-stone-400 uppercase">Shop by category</p>
+                <Link to="/categories" onClick={onClose} className="text-xs font-semibold text-emerald-800">View all</Link>
+              </div>
+              <ul className="grid grid-cols-2 gap-2">
+                {cats.map((category) => (
+                  <li key={category.id}>
+                    <Link to={`/category/${category.slug}`} onClick={onClose} className="flex items-center gap-2 rounded-xl bg-white p-2 ring-1 ring-stone-200/80 transition active:scale-[0.98]">
+                      <span className="h-9 w-9 shrink-0 overflow-hidden rounded-lg bg-emerald-50"><ProductImage src={category.thumbnail || category.image} alt="" /></span>
+                      <span className="min-w-0">
+                        <span className="block truncate text-[13px] leading-tight font-semibold text-stone-800">{category.name}</span>
+                        {category.productCount != null && <span className="block text-[11px] text-stone-400">{category.productCount} items</span>}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              {topCategories.length > 6 && (
+                <button type="button" onClick={() => setShowAllCats((value) => !value)} className="mt-2 flex w-full cursor-pointer items-center justify-center gap-1 rounded-xl py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-50">
+                  {showAllCats ? 'Show less' : `Show ${topCategories.length - 6} more`} <ChevronDown size={15} className={`transition ${showAllCats ? 'rotate-180' : ''}`} />
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="border-t border-stone-200/70 bg-white p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <div className="flex items-center gap-2 text-xs text-stone-500"><ShieldCheck size={14} className="text-emerald-700" /> Cash on delivery across Bangladesh</div>
+          {(phone || whatsapp) && (
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {phone && <a href={`tel:${phone}`} className={`${btn.primary} h-10 px-3 text-sm ${whatsapp ? '' : 'col-span-2'}`}><Phone size={15} /> Call us</a>}
+              {whatsapp && <a href={`https://wa.me/${whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className={`${btn.secondary} h-10 px-3 text-sm ${phone ? '' : 'col-span-2'}`}><MessageCircle size={15} /> WhatsApp</a>}
+            </div>
+          )}
+        </div>
+      </aside>
+    </div>,
+    document.body,
+  );
+}
+
 function Header() {
   const { topCategories, freeShippingFrom, info } = useStore();
   const cart = useCart();
@@ -78,9 +200,9 @@ function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [catOpen, setCatOpen] = useState(false);
   const { pathname } = useLocation();
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
 
   useEffect(() => { setMenuOpen(false); setCatOpen(false); }, [pathname]);
-  useEffect(() => { document.body.style.overflow = menuOpen ? 'hidden' : ''; }, [menuOpen]);
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 shadow-[0_1px_0_rgba(6,78,59,0.08)] backdrop-blur-md">
@@ -126,26 +248,7 @@ function Header() {
       </Container>
       <Container className="pb-3 md:hidden lg:block xl:hidden"><SearchBox /></Container>
 
-      {/* Mobile menu */}
-      {menuOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-emerald-950/40" onClick={() => setMenuOpen(false)} aria-hidden="true" />
-          <aside className="absolute inset-y-0 left-0 flex w-80 max-w-[85vw] flex-col bg-white shadow-2xl motion-safe:animate-fade-up" aria-label="Menu">
-            <div className="flex items-center justify-between border-b border-stone-100 p-4">
-              <Logo />
-              <button type="button" onClick={() => setMenuOpen(false)} aria-label="Close menu" className="grid h-10 w-10 cursor-pointer place-items-center rounded-full hover:bg-stone-100"><X size={20} /></button>
-            </div>
-            <nav className="flex-1 overflow-y-auto p-3" aria-label="Mobile">
-              {NAV.map((item) => <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => `block rounded-xl px-4 py-3 font-medium ${isActive ? 'bg-emerald-50 text-emerald-900' : 'text-stone-800 hover:bg-stone-50'}`}>{item.label}</NavLink>)}
-              {topCategories.length > 0 && <p className="mt-4 px-4 pb-1 text-[11px] font-bold tracking-widest text-stone-400 uppercase">Shop by category</p>}
-              {topCategories.map((category) => <Link key={category.id} to={`/category/${category.slug}`} className="block rounded-xl px-4 py-2.5 text-sm text-stone-700 hover:bg-stone-50">{category.name}</Link>)}
-            </nav>
-            <div className="border-t border-stone-100 p-4 text-sm text-stone-600">
-              {info?.contact?.phone && <a href={`tel:${info.contact.phone}`} className="flex items-center gap-2"><Phone size={15} /> {info.contact.phone}</a>}
-            </div>
-          </aside>
-        </div>
-      )}
+      {menuOpen && <MobileMenu onClose={closeMenu} />}
     </header>
   );
 }

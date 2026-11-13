@@ -58,18 +58,18 @@ export function buildSlides(data) {
 function ProductCollage({ products, hidden }) {
   const positions = ['lg:translate-y-10', 'z-10 lg:-translate-y-4 lg:scale-110', 'lg:translate-y-14'];
   return (
-    <div className="grid grid-cols-3 items-center gap-3 sm:gap-5">
+    <div className="grid grid-cols-3 items-center gap-2.5 sm:gap-5">
       {products.map((product, i) => (
-        <Link key={product.id} to={`/product/${product.slug}`} tabIndex={hidden ? -1 : undefined} className={`group rounded-3xl bg-white p-2 shadow-2xl shadow-black/30 ring-1 ring-white/20 transition duration-300 hover:-translate-y-1 sm:p-3 ${positions[i] ?? ''}`}>
-          <div className="relative aspect-square overflow-hidden rounded-2xl bg-stone-100">
+        <Link key={product.id} to={`/product/${product.slug}`} tabIndex={hidden ? -1 : undefined} className={`group rounded-2xl bg-white p-1.5 shadow-xl shadow-black/30 ring-1 ring-white/20 transition duration-300 hover:-translate-y-1 sm:rounded-3xl sm:p-3 sm:shadow-2xl ${positions[i] ?? ''}`}>
+          <div className="relative aspect-square overflow-hidden rounded-xl bg-stone-100 sm:rounded-2xl">
             <ProductImage src={product.image} alt={product.name} imgClassName="transition duration-500 group-hover:scale-105" />
-            {product.onSale && <span className="absolute top-2 left-2 rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold text-amber-950 sm:text-xs">−{Math.round(product.discountPercentage)}%</span>}
+            {product.onSale && <span className="absolute top-1.5 left-1.5 rounded-full bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-amber-950 sm:top-2 sm:left-2 sm:px-2 sm:text-xs">−{Math.round(product.discountPercentage)}%</span>}
           </div>
-          <div className="hidden px-1 pt-3 pb-1 sm:block">
-            <p className="truncate text-sm font-semibold text-stone-900">{product.name}</p>
-            <p className="mt-0.5 text-sm">
+          <div className="px-0.5 pt-1.5 pb-0.5 sm:px-1 sm:pt-3 sm:pb-1">
+            <p className="truncate text-[11px] font-semibold text-stone-900 sm:text-sm">{product.name}</p>
+            <p className="mt-0.5 text-[11px] sm:text-sm">
               <span className="font-bold text-emerald-800">{money(product.price)}</span>
-              {product.onSale && <span className="ml-1.5 text-xs text-stone-400 line-through">{money(product.regularPrice)}</span>}
+              {product.onSale && <span className="ml-1.5 hidden text-xs text-stone-400 line-through sm:inline">{money(product.regularPrice)}</span>}
             </p>
           </div>
         </Link>
@@ -84,10 +84,22 @@ function CategoryVisual({ slide, active }) {
       <div className="overflow-hidden rounded-[2rem] shadow-2xl shadow-black/30 ring-1 ring-white/20">
         <img src={slide.image} alt={slide.title} className={`aspect-[4/3] w-full object-cover ${active ? 'motion-safe:animate-ken-burns' : ''}`} />
       </div>
-      <div className="absolute -bottom-5 left-6 hidden items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-xl sm:flex">
+      <div className="absolute -bottom-5 left-6 flex items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-xl">
         <span className="grid h-10 w-10 place-items-center rounded-full bg-emerald-100 text-emerald-800"><Truck size={18} /></span>
         <div><p className="text-sm font-semibold text-stone-900">Cash on delivery</p><p className="text-xs text-stone-500">Delivered across Bangladesh</p></div>
       </div>
+    </div>
+  );
+}
+
+/** Primary + secondary call to action; full-width pair on phones, inline on larger screens. */
+function Actions({ slide, hidden, secondary = true }) {
+  return (
+    <div className={`mt-6 grid gap-2.5 sm:mt-8 sm:flex sm:flex-wrap sm:gap-3 ${secondary ? 'grid-cols-[1fr_auto]' : 'grid-cols-1'}`}>
+      <SmartLink to={slide.link} tabIndex={hidden ? -1 : undefined} className={`${btn.accent} h-12 px-5 text-[15px] shadow-lg shadow-amber-500/20 sm:h-13 sm:px-7 sm:text-base`}>
+        <span className="truncate">{slide.buttonText || 'Shop now'}</span> <ArrowRight size={18} className="shrink-0" />
+      </SmartLink>
+      {secondary && <Link to="/products" tabIndex={hidden ? -1 : undefined} className="inline-flex h-12 items-center justify-center rounded-full px-5 text-[15px] font-semibold text-white ring-1 ring-white/30 transition hover:bg-white/10 sm:h-13 sm:px-6 sm:text-base">All products</Link>}
     </div>
   );
 }
@@ -100,12 +112,13 @@ function Slide({ slide, active, first }) {
         {slide.image
           ? <img src={slide.image} alt="" className={`absolute inset-0 h-full w-full object-cover ${active ? 'motion-safe:animate-ken-burns' : ''}`} loading={first ? 'eager' : 'lazy'} />
           : <div className="absolute inset-0 bg-gradient-to-br from-emerald-800 to-emerald-950" />}
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/90 via-emerald-950/55 to-transparent" />
-        <Container className="relative flex h-full items-center">
-          <div key={active ? 'on' : 'off'} className="max-w-xl text-white motion-safe:animate-fade-up">
-            <h2 className="font-serif text-4xl leading-tight font-semibold sm:text-5xl lg:text-6xl">{slide.title}</h2>
-            {slide.subtitle && <p className="mt-4 text-lg text-emerald-50/85">{slide.subtitle}</p>}
-            <SmartLink to={slide.link} tabIndex={hidden ? -1 : undefined} className={`${btn.accent} mt-8 h-13 text-base`}>{slide.buttonText || 'Shop now'} <ArrowRight size={18} /></SmartLink>
+        {/* Bottom-up shade on phones (text sits low), left-to-right shade on larger screens. */}
+        <div className="absolute inset-0 bg-gradient-to-t from-emerald-950 via-emerald-950/60 to-emerald-950/5 sm:bg-gradient-to-r sm:from-emerald-950/90 sm:via-emerald-950/55 sm:to-transparent" />
+        <Container className="relative flex h-full items-end pb-20 sm:items-center sm:pb-0">
+          <div key={active ? 'on' : 'off'} className="w-full max-w-xl text-white motion-safe:animate-fade-up">
+            <h2 className="line-clamp-3 font-serif text-[1.85rem] leading-[1.12] font-semibold tracking-tight sm:text-5xl lg:text-6xl">{slide.title}</h2>
+            {slide.subtitle && <p className="mt-3 line-clamp-2 text-[15px] text-emerald-50/85 sm:mt-4 sm:line-clamp-none sm:text-lg">{slide.subtitle}</p>}
+            <Actions slide={slide} hidden={hidden} secondary={false} />
           </div>
         </Container>
       </>
@@ -114,22 +127,27 @@ function Slide({ slide, active, first }) {
 
   const theme = THEMES[slide.theme] ?? THEMES.emerald;
   const Icon = slide.icon ?? Sparkles;
+  const isCategory = slide.kind === 'category';
   return (
     <div className={`absolute inset-0 bg-gradient-to-br ${theme.bg}`}>
-      <div aria-hidden="true" className={`absolute -top-32 -right-24 h-[28rem] w-[28rem] rounded-full blur-3xl ${theme.glow}`} />
-      <div aria-hidden="true" className={`absolute -bottom-40 -left-20 h-96 w-96 rounded-full blur-3xl ${theme.glow2}`} />
-      <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:22px_22px]" />
-      <Container className="relative grid h-full content-center gap-8 pt-12 pb-24 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-12 lg:pt-0 lg:pb-16">
-        <div key={active ? 'on' : 'off'} className="max-w-xl text-white motion-safe:animate-fade-up">
-          <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-bold tracking-widest text-amber-200 uppercase ring-1 ring-white/15 backdrop-blur"><Icon size={14} /> {slide.eyebrow}</p>
-          <h2 className="mt-5 font-serif text-4xl leading-[1.08] font-semibold tracking-tight sm:text-5xl lg:text-6xl">{slide.title}</h2>
-          <p className="mt-4 max-w-lg text-base text-emerald-50/80 sm:text-lg">{slide.subtitle}</p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <SmartLink to={slide.link} tabIndex={hidden ? -1 : undefined} className={`${btn.accent} h-12 text-base sm:h-13`}>{slide.buttonText} <ArrowRight size={18} /></SmartLink>
-            <Link to="/products" tabIndex={hidden ? -1 : undefined} className="inline-flex h-12 items-center rounded-full px-6 font-semibold text-white ring-1 ring-white/30 transition hover:bg-white/10 sm:h-13">All products</Link>
-          </div>
+      {/* Phones: category photo becomes a soft full-bleed backdrop instead of a side visual. */}
+      {isCategory && slide.image && (
+        <div className="absolute inset-0 sm:hidden" aria-hidden="true">
+          <img src={slide.image} alt="" className={`h-full w-full object-cover ${active ? 'motion-safe:animate-ken-burns' : ''}`} loading={first ? 'eager' : 'lazy'} />
+          <div className="absolute inset-0 bg-gradient-to-t from-emerald-950 via-emerald-950/75 to-emerald-950/20" />
         </div>
-        <div className={`w-full ${slide.kind === 'category' ? 'hidden sm:block' : ''}`}>
+      )}
+      <div aria-hidden="true" className={`absolute -top-32 -right-24 h-72 w-72 rounded-full blur-3xl sm:h-[28rem] sm:w-[28rem] ${theme.glow}`} />
+      <div aria-hidden="true" className={`absolute -bottom-40 -left-20 h-72 w-72 rounded-full blur-3xl sm:h-96 sm:w-96 ${theme.glow2}`} />
+      <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:22px_22px]" />
+      <Container className={`relative grid h-full gap-6 pt-8 pb-20 sm:content-center sm:gap-8 sm:pt-12 sm:pb-24 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-12 lg:pt-0 lg:pb-16 ${isCategory ? 'content-end' : 'content-center'}`}>
+        <div key={active ? 'on' : 'off'} className="max-w-xl text-white motion-safe:animate-fade-up">
+          <p className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[10px] font-bold tracking-widest text-amber-200 uppercase ring-1 ring-white/15 backdrop-blur sm:gap-2 sm:px-4 sm:py-1.5 sm:text-xs"><Icon size={13} /> {slide.eyebrow}</p>
+          <h2 className="mt-3 line-clamp-2 font-serif text-[1.85rem] leading-[1.1] font-semibold tracking-tight sm:mt-5 sm:line-clamp-none sm:text-5xl lg:text-6xl">{slide.title}</h2>
+          <p className="mt-2.5 line-clamp-2 max-w-lg text-sm text-emerald-50/80 sm:mt-4 sm:line-clamp-none sm:text-lg">{slide.subtitle}</p>
+          <Actions slide={slide} hidden={hidden} />
+        </div>
+        <div className={`w-full ${isCategory ? 'hidden sm:block' : ''}`}>
           {slide.kind === 'products' ? <ProductCollage products={slide.products} hidden={hidden} /> : <CategoryVisual slide={slide} active={active} />}
         </div>
       </Container>
@@ -137,39 +155,53 @@ function Slide({ slide, active, first }) {
   );
 }
 
-/** Professional home slider: autoplay with progress (pauses on hover/focus), arrows, dots, swipe, keyboard. */
+/** Professional home slider: autoplay with progress (pauses on hover/focus/touch), arrows, dots, swipe, keyboard. */
 export default function HeroSlider({ slides }) {
   const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const touchX = useRef(null);
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [touching, setTouching] = useState(false);
+  const touch = useRef(null);
   const count = slides.length;
   const go = useCallback((next) => setIndex((next + count) % count), [count]);
+  const paused = hovered || focused || touching;
 
   if (!count) return null;
   const current = slides[index];
+
+  const arrowClass = 'pointer-events-auto hidden h-11 w-11 cursor-pointer place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/20 backdrop-blur transition hover:bg-white/25 sm:grid';
 
   return (
     <section
       className="relative overflow-hidden bg-emerald-950"
       aria-roledescription="carousel"
       aria-label="Highlights"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocus={() => setPaused(true)}
-      onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setPaused(false); }}
+      // Pointer (not mouse) events: on touch screens mouseenter fires on tap and never "leaves",
+      // which used to freeze autoplay after the first tap.
+      onPointerEnter={(event) => { if (event.pointerType === 'mouse') setHovered(true); }}
+      onPointerLeave={(event) => { if (event.pointerType === 'mouse') setHovered(false); }}
+      onFocus={(event) => { if (event.target.matches(':focus-visible')) setFocused(true); }}
+      onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}
       onKeyDown={(event) => {
         if (event.key === 'ArrowLeft') go(index - 1);
         if (event.key === 'ArrowRight') go(index + 1);
       }}
-      onTouchStart={(event) => { touchX.current = event.touches[0].clientX; }}
-      onTouchEnd={(event) => {
-        if (touchX.current == null) return;
-        const dx = event.changedTouches[0].clientX - touchX.current;
-        if (Math.abs(dx) > 50) go(index + (dx < 0 ? 1 : -1));
-        touchX.current = null;
+      onTouchStart={(event) => {
+        touch.current = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+        setTouching(true);
       }}
+      onTouchEnd={(event) => {
+        setTouching(false);
+        if (!touch.current) return;
+        const dx = event.changedTouches[0].clientX - touch.current.x;
+        const dy = event.changedTouches[0].clientY - touch.current.y;
+        // Only horizontal swipes change slides, so vertical page scrolling is unaffected.
+        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.2) go(index + (dx < 0 ? 1 : -1));
+        touch.current = null;
+      }}
+      onTouchCancel={() => { setTouching(false); touch.current = null; }}
     >
-      <div className="relative h-[640px] sm:h-[600px] lg:h-[560px]">
+      <div className="relative h-[min(580px,calc(100svh-140px))] min-h-[500px] touch-pan-y sm:h-[580px] lg:h-[560px]">
         {slides.map((slide, i) => (
           <div
             key={slide.id}
@@ -187,8 +219,8 @@ export default function HeroSlider({ slides }) {
 
       {count > 1 && (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20">
-          <Container className="flex items-center justify-between gap-4 pb-6">
-            <div className="pointer-events-auto flex items-center gap-2" role="tablist" aria-label="Choose slide">
+          <Container className="flex items-center justify-between gap-4 pb-5 sm:pb-6">
+            <div className="pointer-events-auto -ml-1 flex items-center" role="tablist" aria-label="Choose slide">
               {slides.map((slide, i) => (
                 <button
                   key={slide.id}
@@ -197,24 +229,27 @@ export default function HeroSlider({ slides }) {
                   aria-selected={i === index}
                   aria-label={`Slide ${i + 1}: ${slide.title}`}
                   onClick={() => go(i)}
-                  className={`relative h-1.5 cursor-pointer overflow-hidden rounded-full transition-all duration-300 ${i === index ? 'w-12 bg-white/25' : 'w-6 bg-white/30 hover:bg-white/50'}`}
+                  // Generous invisible hit area (py/px) around a thin visual bar for easy tapping.
+                  className="group cursor-pointer px-1 py-3"
                 >
-                  {i === index && (
-                    <span
-                      key={`${current.id}-${index}`}
-                      onAnimationEnd={() => go(index + 1)}
-                      // Inline so it overrides the animation shorthand (pausing also pauses autoplay).
-                      style={{ animationPlayState: paused ? 'paused' : 'running' }}
-                      className="absolute inset-0 origin-left rounded-full bg-amber-300 motion-safe:animate-slide-progress"
-                    />
-                  )}
+                  <span className={`relative block h-1.5 overflow-hidden rounded-full transition-all duration-300 ${i === index ? 'w-10 bg-white/25 sm:w-12' : 'w-4 bg-white/35 group-hover:bg-white/60 sm:w-6'}`}>
+                    {i === index && (
+                      <span
+                        key={`${current.id}-${index}`}
+                        onAnimationEnd={() => go(index + 1)}
+                        // Inline so it overrides the animation shorthand (pausing also pauses autoplay).
+                        style={{ animationPlayState: paused ? 'paused' : 'running' }}
+                        className="absolute inset-0 origin-left rounded-full bg-amber-300 motion-safe:animate-slide-progress"
+                      />
+                    )}
+                  </span>
                 </button>
               ))}
             </div>
             <div className="pointer-events-auto flex items-center gap-3 text-white">
-              <span className="hidden font-serif text-sm tabular-nums text-white/70 sm:inline"><span className="text-lg text-white">{String(index + 1).padStart(2, '0')}</span> / {String(count).padStart(2, '0')}</span>
-              <button type="button" aria-label="Previous slide" onClick={() => go(index - 1)} className="grid h-11 w-11 cursor-pointer place-items-center rounded-full bg-white/10 ring-1 ring-white/20 backdrop-blur transition hover:bg-white/25"><ChevronLeft size={20} /></button>
-              <button type="button" aria-label="Next slide" onClick={() => go(index + 1)} className="grid h-11 w-11 cursor-pointer place-items-center rounded-full bg-white/10 ring-1 ring-white/20 backdrop-blur transition hover:bg-white/25"><ChevronRight size={20} /></button>
+              <span className="font-serif text-xs tabular-nums text-white/60 sm:text-sm"><span className="text-base text-white sm:text-lg">{String(index + 1).padStart(2, '0')}</span> / {String(count).padStart(2, '0')}</span>
+              <button type="button" aria-label="Previous slide" onClick={() => go(index - 1)} className={arrowClass}><ChevronLeft size={20} /></button>
+              <button type="button" aria-label="Next slide" onClick={() => go(index + 1)} className={arrowClass}><ChevronRight size={20} /></button>
             </div>
           </Container>
         </div>

@@ -27,6 +27,16 @@ Open `http://localhost:3000` for the store and `http://localhost:3000/admin` for
 
 If PowerShell blocks `npm` with an execution-policy error, use `npm.cmd run dev`.
 
+### Fast mode (recommended for using and testing the site)
+
+`npm run dev` compiles each page the first time you open it, so first visits can take several seconds. That is normal for development mode. For browsing and testing, build once and run the optimized version:
+
+```powershell
+npm run preview    # build + start on port 3000
+```
+
+Measured on this project (14 pages, first visit): dev mode 55–130 s in total, production mode **6 s** (0.1–0.4 s per page). After code changes run `npm run preview` again. Use `npm run dev` only while editing code.
+
 ### Production
 
 ```powershell

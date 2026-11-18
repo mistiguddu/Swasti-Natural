@@ -98,7 +98,7 @@ function MobileMenu({ onClose }) {
   }, [onClose]);
 
   return createPortal(
-    <div className="fixed inset-0 z-[60] lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
+    <div className="fixed inset-0 z-[60] font-body text-stone-800 lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
       <div className="absolute inset-0 bg-emerald-950/50 backdrop-blur-[2px] motion-safe:animate-fade-in" onClick={onClose} aria-hidden="true" />
       <aside className="absolute inset-y-0 left-0 flex h-dvh w-[86vw] max-w-[340px] flex-col bg-stone-50 shadow-2xl shadow-emerald-950/30 motion-safe:animate-drawer-in">
         <div className="flex items-center justify-between gap-3 border-b border-stone-200/70 bg-white px-4 py-3">

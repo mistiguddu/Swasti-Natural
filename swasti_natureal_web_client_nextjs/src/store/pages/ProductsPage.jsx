@@ -117,6 +117,14 @@ export default function ProductsPage() {
     shallowNavigate(`${window.location.pathname}${query ? `?${query}` : ''}`);
   };
   const [filtersOpen, setFiltersOpen] = useState(false);
+  useEffect(() => {
+    if (!filtersOpen) return undefined;
+    const { overflow } = document.body.style;
+    document.body.style.overflow = 'hidden';
+    const onKey = (event) => { if (event.key === 'Escape') setFiltersOpen(false); };
+    document.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = overflow; document.removeEventListener('keydown', onKey); };
+  }, [filtersOpen]);
   const view = params.get('view') === 'list' ? 'list' : 'grid';
   const query = Object.fromEntries([...params.entries()].filter(([key]) => key !== 'view'));
   if (slug) query.category = slug;
@@ -195,14 +203,14 @@ export default function ProductsPage() {
 
       {filtersOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-emerald-950/40" onClick={() => setFiltersOpen(false)} aria-hidden="true" />
-          <div role="dialog" aria-modal="true" aria-label="Filters" className="absolute inset-y-0 right-0 flex w-full max-w-sm flex-col bg-white shadow-2xl">
+          <div className="absolute inset-0 bg-emerald-950/40 backdrop-blur-[2px] motion-safe:animate-fade-in" onClick={() => setFiltersOpen(false)} aria-hidden="true" />
+          <div role="dialog" aria-modal="true" aria-label="Filters" className="absolute inset-y-0 right-0 flex h-dvh w-full max-w-sm flex-col bg-white shadow-2xl motion-safe:animate-slide-in sm:rounded-l-3xl">
             <div className="flex items-center justify-between border-b border-stone-100 p-4">
               <h2 className="font-serif text-xl font-semibold text-emerald-950">Filters</h2>
               <button type="button" onClick={() => setFiltersOpen(false)} aria-label="Close filters" className="grid h-10 w-10 cursor-pointer place-items-center rounded-full hover:bg-stone-100"><X size={20} /></button>
             </div>
             <div className="flex-1 overflow-y-auto p-5"><Filters params={params} set={set} categories={categories} activeCategory={slug} priceRange={data?.priceRange ?? { min: 0, max: 0 }} onClose={() => setFiltersOpen(false)} /></div>
-            <div className="border-t border-stone-100 p-4"><button type="button" onClick={() => setFiltersOpen(false)} className={`${btn.primary} h-12 w-full`}>Show {total} products</button></div>
+            <div className="border-t border-stone-100 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]"><button type="button" onClick={() => setFiltersOpen(false)} className={`${btn.primary} h-12 w-full`}>Show {total} products</button></div>
           </div>
         </div>
       )}

@@ -1,0 +1,59 @@
+name: swastiflutter
+description: "Swasti — customer shopping app for Swasti Natural (Android)."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.14.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  material_ui: ^1.1.0
+  cupertino_icons: ^1.0.8
+  provider: ^6.1.5+1
+  dio: ^5.11.1
+  flutter_secure_storage: ^11.2.0
+  shared_preferences: ^2.5.6
+  cached_network_image: ^4.0.7
+  url_launcher: ^6.3.3
+  local_auth: ^3.0.2
+  image_picker: ^1.2.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_native_splash: ^2.4.8
+  flutter_launcher_icons: ^0.14.4
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+
+# App icon (Android only): `dart run flutter_launcher_icons`
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: assets/images/logo-mark.png
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: assets/images/logo-mark-foreground.png
+  min_sdk_android: 21
+
+# Native launch screen shown before Flutter starts: `dart run flutter_native_splash:create`
+# The animated splash screen (lib/screens/splash_screen.dart) continues from it seamlessly.
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/images/logo-mark.png
+  color_dark: "#0B1F17"
+  image_dark: assets/images/logo-mark.png
+  android_12:
+    color: "#FFFFFF"
+    image: assets/images/logo-mark-foreground.png
+    color_dark: "#0B1F17"
+    image_dark: assets/images/logo-mark-foreground.png
+  android: true
+  ios: false
+  web: false
+  fullscreen: false

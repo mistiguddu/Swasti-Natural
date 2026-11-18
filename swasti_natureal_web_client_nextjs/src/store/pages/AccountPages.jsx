@@ -272,6 +272,7 @@ export function AddressesPage() {
     try {
       const list = await storeApi.put(`/store/account/addresses/${idOf(address)}`, { ...address, isDefault: true });
       setUser({ ...user, addresses: list });
+      toast.success('Default address updated');
     } catch (error) { toast.error(error.message); }
   }
   async function remove() {

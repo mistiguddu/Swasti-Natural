@@ -36,6 +36,7 @@ export function ContactPage() {
       await storeApi.post('/store/contact', Object.fromEntries(Object.entries(form).map(([key, value]) => [key, value.trim()]).filter(([, value]) => value)));
       setSent(true);
       setForm(EMPTY);
+      toast.success('We’ll get back to you soon.', { title: 'Message sent' });
     } catch (error) {
       setErrors(apiFieldErrors(error));
       toast.error(error.message);

@@ -37,6 +37,7 @@ export default function UserListPage({ preset }) {
     setData((current) => ({ ...current, items: current.items.map((item) => (item.id === row.id ? { ...item, isActive } : item)) }));
     try {
       await api.patch(`/users/${row.id}/status`, { isActive });
+      toast.success(isActive ? `${row.name} enabled` : `${row.name} disabled`);
     } catch (requestError) {
       setData((current) => ({ ...current, items: current.items.map((item) => (item.id === row.id ? { ...item, isActive: row.isActive } : item)) }));
       toast.error(requestError.message);

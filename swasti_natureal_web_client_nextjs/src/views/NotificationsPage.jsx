@@ -49,6 +49,7 @@ export default function NotificationsPage() {
   async function remove(item) {
     try {
       await api.delete(`/notifications/${item.id}`);
+      toast.success('Notification deleted');
       reload();
       refreshBadges?.();
     } catch (requestError) {

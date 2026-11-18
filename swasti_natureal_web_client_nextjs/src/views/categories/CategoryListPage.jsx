@@ -39,6 +39,7 @@ export default function CategoryListPage() {
       if (field === 'status') await api.patch(`/categories/${row.id}/status`, { status: value });
       else await api.patch(`/categories/${row.id}/featured`, { isFeatured: value });
       refreshCategories?.();
+      toast.success(field === 'status' ? `“${row.name}” is now ${value}` : value ? `“${row.name}” marked as featured` : `“${row.name}” removed from featured`);
     } catch (requestError) {
       patchRow(row.id, { [field]: row[field] });
       toast.error(requestError.message);

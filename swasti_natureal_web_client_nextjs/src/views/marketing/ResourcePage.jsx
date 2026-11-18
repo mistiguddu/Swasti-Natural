@@ -131,6 +131,7 @@ export default function ResourcePage({ resource: fixed }) {
     setData((current) => ({ ...current, items: current.items.map((item) => (item.id === row.id ? { ...item, status } : item)) }));
     try {
       await api.patch(`${config.endpoint}/${row.id}/status`, { status });
+      toast.success(`${config.singular} ${active ? 'activated' : 'deactivated'}`);
     } catch (requestError) {
       setData((current) => ({ ...current, items: current.items.map((item) => (item.id === row.id ? { ...item, status: row.status } : item)) }));
       toast.error(requestError.message);

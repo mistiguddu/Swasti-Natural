@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useToast } from '../../context/ToastContext.jsx';
+import { useNavigate } from '@/router';
 
 const CART_KEY = 'swasti_cart';
 const CartContext = createContext(null);
@@ -28,6 +29,7 @@ const snapshot = (product) => ({
  */
 export function CartProvider({ children }) {
   const toast = useToast();
+  const navigate = useNavigate();
   const [items, setItems] = useState(readCart);
   const [couponCode, setCouponState] = useState(() => localStorage.getItem('swasti_coupon') ?? '');
   const [shippingMethod, setShippingState] = useState(() => localStorage.getItem('swasti_shipping') ?? '');
@@ -51,7 +53,7 @@ export function CartProvider({ children }) {
 
   const add = useCallback((product, quantity = 1, { silent = false } = {}) => {
     if (!product.inStock) {
-      toast.error(`${product.name} is out of stock`);
+      toast.warning(`${product.name} is out of stock right now.`, { title: 'Out of stock' });
       return false;
     }
     const current = itemsRef.current;
@@ -59,7 +61,7 @@ export function CartProvider({ children }) {
     const have = existing?.quantity ?? 0;
     const next = Math.min(have + quantity, product.availableQuantity ?? 999);
     if (next <= have) {
-      if (!silent) toast.error(`Only ${product.availableQuantity} of ${product.name} available`);
+      if (!silent) toast.warning(`Only ${product.availableQuantity} of ${product.name} available.`, { title: 'Stock limit reached' });
       return false;
     }
     const updated = existing
@@ -67,9 +69,9 @@ export function CartProvider({ children }) {
       : [...current, { product: product.id, quantity: next, ...snapshot(product) }];
     itemsRef.current = updated;
     setItems(updated);
-    if (!silent) toast.success(`Added to cart: ${product.name}`);
+    if (!silent) toast.success(quantity > 1 ? `${quantity} × ${product.name}` : product.name, { title: 'Added to cart', action: { label: 'View cart', onClick: () => navigate('/cart') } });
     return true;
-  }, [toast]);
+  }, [toast, navigate]);
 
   const update = useCallback((productId, quantity) => {
     setItems((current) => current.map((item) => {
@@ -79,7 +81,19 @@ export function CartProvider({ children }) {
     }));
   }, []);
 
-  const remove = useCallback((productId) => setItems((current) => current.filter((item) => item.product !== productId)), []);
+  const remove = useCallback((productId) => {
+    const index = itemsRef.current.findIndex((item) => item.product === productId);
+    if (index === -1) return;
+    const removed = itemsRef.current[index];
+    setItems((current) => current.filter((item) => item.product !== productId));
+    toast.success(removed.name ? `${removed.name} removed from your cart` : 'Item removed from your cart', {
+      title: 'Removed',
+      action: {
+        label: 'Undo',
+        onClick: () => setItems((current) => (current.some((item) => item.product === productId) ? current : [...current.slice(0, index), removed, ...current.slice(index)])),
+      },
+    });
+  }, [toast]);
   const clear = useCallback(() => { setItems([]); setCouponCode(''); }, [setCouponCode]);
 
   /** Applies fresh server data (price, stock) to the saved rows. */

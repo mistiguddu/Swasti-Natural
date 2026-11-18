@@ -3,6 +3,12 @@
  * Missing keys fall back to English automatically.
  */
 const bn = {
+  // ── Toaster ──
+  'Success': 'সফল',
+  'Warning': 'সতর্কতা',
+  'Notice': 'বিজ্ঞপ্তি',
+  'Please wait': 'অপেক্ষা করুন',
+  'Undo': 'আগের মতো করুন',
   // ── Admin access: read-only / disabled ──
   'Access': 'অ্যাক্সেস',
   'Dashboard access': 'ড্যাশবোর্ড অ্যাক্সেস',

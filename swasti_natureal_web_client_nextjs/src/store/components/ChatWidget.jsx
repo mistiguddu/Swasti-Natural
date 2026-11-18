@@ -101,6 +101,11 @@ function Bubble({ message, grouped, logo, onRetry }) {
  */
 export default function ChatWidget() {
   const { pathname } = useLocation();
+  // Desktop toasts sit bottom-right; keep them clear of the round chat button.
+  useEffect(() => {
+    document.documentElement.style.setProperty('--toast-offset', '4.75rem');
+    return () => document.documentElement.style.removeProperty('--toast-offset');
+  }, []);
   const { isSignedIn, status: authStatus, user } = useCustomer();
   const { logoMarkUrl, storeName } = useBranding();
 

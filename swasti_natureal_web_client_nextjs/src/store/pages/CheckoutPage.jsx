@@ -131,6 +131,7 @@ export default function CheckoutPage() {
       });
       cart.clear();
       refresh().catch(() => {});
+      toast.success(`Order ${result.orderNumber} placed`, { title: 'Thank you!' });
       navigate(`/order-confirmation/${result.orderNumber}`, { replace: true });
     } catch (error) {
       setPlacing(false);

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from '@/router';
 import {
-  Bell, Check, ChevronDown, ExternalLink, Languages, LogOut, Menu, MessagesSquare, Monitor, Moon, Palette, Plus, Search, Settings, ShieldCheck, Sun, UserRound,
+  Bell, Check, ChevronDown, ExternalLink, Languages, LogOut, Menu, MessagesSquare, Monitor, Moon, Palette, Search, Settings, ShieldCheck, Sun, UserRound,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useChatRealtime } from '../../context/ChatRealtimeContext.jsx';
@@ -161,14 +161,9 @@ export default function Topbar({ onOpenMobile, unread, messages = 0 }) {
       <button type="button" onClick={onOpenMobile} className="grid h-10 w-10 cursor-pointer place-items-center rounded-xl text-slate-600 hover:bg-slate-100 lg:hidden" aria-label={t('Open menu')}><Menu size={20} /></button>
       <PageSearch />
       <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
-        {can('catalog.manage') && (
-          <Link to="/products/new" className="hidden h-10 items-center gap-2 rounded-xl bg-teal-600 px-3.5 text-sm font-semibold text-white shadow-sm shadow-teal-600/20 transition hover:bg-teal-600/90 sm:inline-flex">
-            <Plus size={16} /> {t('New product')}
-          </Link>
-        )}
-        {/* The storefront lives outside the /admin router, so this is a plain link. */}
-        <a href="/" target="_blank" rel="noreferrer" className="hidden h-10 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-100 xl:inline-flex">
-          <ExternalLink size={15} /> {t('View store')}
+        {/* Icon only, like the other header icons. The storefront lives outside the /admin router, so this is a plain link. */}
+        <a href="/" target="_blank" rel="noreferrer" title={t('View store')} aria-label={t('View store')} className="grid h-10 w-10 place-items-center rounded-xl text-slate-600 transition hover:bg-slate-100">
+          <ExternalLink size={19} />
         </a>
         <LanguageToggle />
         <AppearanceMenu />

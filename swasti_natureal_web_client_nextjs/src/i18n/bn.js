@@ -3,6 +3,21 @@
  * Missing keys fall back to English automatically.
  */
 const bn = {
+  // ── Admin access: read-only / disabled ──
+  'Access': 'অ্যাক্সেস',
+  'Dashboard access': 'ড্যাশবোর্ড অ্যাক্সেস',
+  'Full access': 'সম্পূর্ণ অ্যাক্সেস',
+  'Full': 'সম্পূর্ণ',
+  'Full (always)': 'সম্পূর্ণ (সবসময়)',
+  'Read only': 'শুধু দেখা',
+  'Can view and change everything their role allows.': 'তার রোলে যা অনুমতি আছে সব দেখতে ও পরিবর্তন করতে পারবেন।',
+  'Can open every page but cannot create, edit or delete anything.': 'সব পেজ খুলতে পারবেন, কিন্তু কিছু তৈরি, সম্পাদনা বা মুছতে পারবেন না।',
+  'Read-only access.': 'শুধু দেখার অনুমতি।',
+  'You can view everything, but changes are disabled. Ask a super administrator for full access.': 'আপনি সব দেখতে পারবেন, কিন্তু পরিবর্তন বন্ধ। সম্পূর্ণ অ্যাক্সেসের জন্য সুপার অ্যাডমিনকে বলুন।',
+  'Disabled': 'বন্ধ',
+  'Account enabled': 'অ্যাকাউন্ট চালু',
+  'Account disabled': 'অ্যাকাউন্ট বন্ধ',
+  'Disabled accounts can’t sign in and are signed out right away.': 'বন্ধ অ্যাকাউন্ট সাইন ইন করতে পারে না, এবং সাথে সাথে সাইন আউট হয়ে যায়।',
   // ── Role switching (super admin "view as") ──
   'Switch dashboard': 'ড্যাশবোর্ড পরিবর্তন করুন',
   'Full access, including administrator accounts': 'অ্যাডমিন অ্যাকাউন্টসহ সম্পূর্ণ অ্যাক্সেস',

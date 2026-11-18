@@ -2,7 +2,11 @@ import User from '../models/User.js';
 import AppError from '../utils/AppError.js';
 import { verifyAccessToken } from '../utils/jwt.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
-import { effectiveRole, hasPermission, VIEW_AS_ROLES } from '../config/roles.js';
+import { effectiveRole, hasPermission, isReadOnly, VIEW_AS_ROLES } from '../config/roles.js';
+
+const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+/** Writes a read-only admin may still make: marking their own notifications as read. */
+const READ_ONLY_ALLOWED = [/^\/api\/v\d+\/notifications(\/|$)/];
 
 export const authenticate = asyncHandler(async (req, res, next) => {
   const [scheme, token] = (req.get('authorization') ?? '').split(' ');
@@ -29,6 +33,12 @@ export function requirePermission(permission) {
   return (req, res, next) => {
     if (!hasPermission(req.user, permission)) {
       next(new AppError('Insufficient permissions', 403));
+      return;
+    }
+    // Read-only admins can view everything their role allows, but every change is refused here,
+    // on the server, whatever the client does.
+    if (isReadOnly(req.user) && !SAFE_METHODS.has(req.method) && !READ_ONLY_ALLOWED.some((rule) => rule.test(req.originalUrl))) {
+      next(new AppError('Your account is read-only. You can view the dashboard but cannot make changes.', 403, { code: 'READ_ONLY' }));
       return;
     }
     next();

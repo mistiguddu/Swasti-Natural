@@ -14,6 +14,7 @@ import { FormSkeleton } from '../../components/ui/Skeleton.jsx';
 import { ErrorState } from '../../components/ui/EmptyState.jsx';
 import { ROLE_LABELS } from '../../lib/format.js';
 import { t } from '../../i18n/index.js';
+import { AccessControl } from './AccessControl.jsx';
 
 const ADDRESS = { line1: '', line2: '', city: '', state: '', postalCode: '', country: '' };
 
@@ -24,14 +25,14 @@ export default function UserFormPage() {
   const navigate = useNavigate();
   const toast = useToast();
   const { can } = useAuth();
-  const [form, setForm] = useState({ name: '', email: '', role: searchParams.get('role') ?? 'user', phone: '', isActive: true, password: '', address: ADDRESS });
+  const [form, setForm] = useState({ name: '', email: '', role: searchParams.get('role') ?? 'user', phone: '', isActive: true, isReadOnly: false, password: '', address: ADDRESS });
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const existing = useApi(() => api.get(`/users/${id}`), [id], { enabled: editing });
 
   useEffect(() => {
     const user = existing.data;
-    if (user) setForm({ name: user.name, email: user.email, role: user.role, phone: user.phone ?? '', isActive: user.isActive, password: '', address: { ...ADDRESS, ...user.address } });
+    if (user) setForm({ name: user.name, email: user.email, role: user.role, phone: user.phone ?? '', isActive: user.isActive, isReadOnly: Boolean(user.isReadOnly), password: '', address: { ...ADDRESS, ...user.address } });
   }, [existing.data]);
 
   const roles = ['user', ...(can('admins.manage') ? ['admin', 'superadmin'] : [])];
@@ -101,7 +102,13 @@ export default function UserFormPage() {
           <FormSection title="Role & access">
             <div className="space-y-5">
               <SelectInput label="Role" value={form.role} onChange={set('role')} options={roles.map((role) => ({ value: role, label: ROLE_LABELS[role] }))} hint={form.role === 'user' ? 'Customers can’t open this dashboard.' : 'Can sign in to this dashboard.'} />
-              <Toggle checked={form.isActive} onChange={set('isActive')} label={form.isActive ? 'Active' : 'Inactive'} description="Inactive accounts can’t sign in." />
+              {form.role === 'admin' && can('admins.manage') && (
+                <div>
+                  <p className="mb-2 text-[13px] font-semibold text-slate-700">{t('Dashboard access')}</p>
+                  <AccessControl value={form.isReadOnly} onChange={set('isReadOnly')} />
+                </div>
+              )}
+              <Toggle checked={form.isActive} onChange={set('isActive')} label={form.isActive ? 'Active' : 'Disabled'} description="Disabled accounts can’t sign in and are signed out right away." />
             </div>
           </FormSection>
         </div>

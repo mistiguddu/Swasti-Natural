@@ -1,5 +1,5 @@
 import * as authService from '../auth.service.js';
-import { effectiveRole, permissionsFor, VIEW_AS_ROLES } from '../config/roles.js';
+import { effectiveRole, isReadOnly, permissionsFor, VIEW_AS_ROLES } from '../config/roles.js';
 
 export async function register(req, res) {
   const result = await authService.register(req.validated.body);
@@ -18,6 +18,7 @@ export async function getCurrentUser(req, res) {
       permissions: permissionsFor(req.user),
       activeRole: effectiveRole(req.user),
       switchableRoles: VIEW_AS_ROLES[req.user.role] ?? [],
+      readOnly: isReadOnly(req.user),
     },
   });
 }

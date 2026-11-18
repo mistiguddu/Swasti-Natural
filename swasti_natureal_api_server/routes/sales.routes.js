@@ -6,7 +6,7 @@ import { authenticate, requirePermission } from '../middlewares/auth.middleware.
 import { validate } from '../middlewares/validate.middleware.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import {
-  createOrderSchema, createUserSchema, orderPaymentSchema, orderStatusSchema, updateUserSchema, userStatusSchema,
+  createOrderSchema, createUserSchema, orderPaymentSchema, orderStatusSchema, updateUserSchema, userStatusSchema, userAccessSchema,
 } from '../middlewares/admin-schemas.js';
 
 /* Orders: staff manage all orders; customers may place their own (POST). */
@@ -32,6 +32,7 @@ userRouter.post('/', validate(createUserSchema), asyncHandler(users.create));
 userRouter.get('/:id', asyncHandler(users.get));
 userRouter.put('/:id', validate(updateUserSchema), asyncHandler(users.update));
 userRouter.patch('/:id/status', validate(userStatusSchema), asyncHandler(users.setStatus));
+userRouter.patch('/:id/access', validate(userAccessSchema), asyncHandler(users.setAccess));
 userRouter.delete('/:id', asyncHandler(users.remove));
 
 export const dashboardRouter = Router();

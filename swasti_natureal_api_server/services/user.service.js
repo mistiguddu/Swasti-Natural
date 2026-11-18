@@ -45,7 +45,13 @@ export async function getUser(id) {
   return user;
 }
 
-export async function createUser(data, actor) {
+/** Read-only applies to administrators only; other roles always get `false`. */
+function normaliseAccess(data) {
+  return { ...data, isReadOnly: data.role === 'admin' ? Boolean(data.isReadOnly) : false };
+}
+
+export async function createUser(input, actor) {
+  const data = normaliseAccess(input);
   assertCanManageRole(actor, data.role);
   if (await User.exists({ email: data.email })) throw new AppError('Email is already registered', 409);
   const { password, ...fields } = data;
@@ -54,13 +60,15 @@ export async function createUser(data, actor) {
   return user;
 }
 
-export async function updateUser(id, data, actor) {
+export async function updateUser(id, input, actor) {
+  const data = normaliseAccess(input);
   const user = await getUser(id);
   assertCanManageRole(actor, user.role);
   assertCanManageRole(actor, data.role);
   const isSelf = String(user._id) === String(actor._id);
   if (isSelf && data.role !== user.role) throw new AppError('You cannot change your own role', 400);
   if (isSelf && !data.isActive) throw new AppError('You cannot deactivate your own account', 400);
+  if (isSelf && data.isReadOnly !== Boolean(user.isReadOnly)) throw new AppError('You cannot change your own access level', 400);
   if (data.role !== user.role) await assertNotLastSuperadmin(user, 'demote');
   if (!data.isActive) await assertNotLastSuperadmin(user, 'deactivate');
   if (data.email !== user.email && await User.exists({ email: data.email, _id: { $ne: user._id } })) {
@@ -80,6 +88,18 @@ export async function setUserStatus(id, isActive, actor) {
   if (!isActive) await assertNotLastSuperadmin(user, 'deactivate');
   user.isActive = isActive;
   await user.save();
+  return user;
+}
+
+/** Full access ⇄ read-only for an administrator account (super admins only). */
+export async function setUserAccess(id, isReadOnly, actor) {
+  const user = await getUser(id);
+  if (user.role !== 'admin') throw new AppError('Only administrator accounts can be set to read-only', 400);
+  assertCanManageRole(actor, user.role);
+  if (String(user._id) === String(actor._id)) throw new AppError('You cannot change your own access level', 400);
+  user.isReadOnly = isReadOnly;
+  await user.save();
+  await notify({ type: 'user.updated', title: isReadOnly ? 'Admin set to read-only' : 'Admin given full access', message: `${user.name} (${user.email})`, link: `/users/${user.id}`, actor });
   return user;
 }
 

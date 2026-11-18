@@ -126,11 +126,13 @@ const userFields = {
   role: z.enum(ROLES).default('user'),
   phone: text(30),
   isActive: boolDefault(true),
+  isReadOnly: boolDefault(false),
   address: address.optional(),
 };
 export const createUserSchema = body({ ...userFields, password: z.string().min(8).max(128) });
 export const updateUserSchema = body({ ...userFields, password: z.preprocess((value) => (value === '' ? undefined : value), z.string().min(8).max(128).optional()) });
 export const userStatusSchema = body({ isActive: bool });
+export const userAccessSchema = body({ isReadOnly: bool });
 export const profileSchema = body({ name: requiredText(2, 80), phone: text(30), address: address.optional() });
 export const passwordSchema = body({ currentPassword: z.string().min(1).max(128), newPassword: z.string().min(8).max(128) });
 

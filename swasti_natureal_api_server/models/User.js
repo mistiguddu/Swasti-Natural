@@ -30,6 +30,8 @@ const userSchema = new mongoose.Schema({
   passwordHash: { type: String, required: true, select: false },
   role: { type: String, enum: ROLES, default: 'user', index: true },
   isActive: { type: Boolean, default: true },
+  /** Admins only: may open every dashboard page but cannot change anything (set by a super admin). */
+  isReadOnly: { type: Boolean, default: false },
   phone: { type: String, trim: true, maxlength: 30, default: '' },
   address: { type: addressSchema, default: () => ({}) },
   lastLoginAt: { type: Date, default: null },

@@ -20,6 +20,7 @@ import { CustomerTableSkeleton } from '../../components/ui/Skeleton.jsx';
 import { date, dateTime } from '../../lib/format.js';
 import { Avatar } from '../customers/CustomerListPage.jsx';
 import { t } from '../../i18n/index.js';
+import { AccessControl } from './AccessControl.jsx';
 
 export default function UserListPage({ preset }) {
   const navigate = useNavigate();
@@ -38,6 +39,19 @@ export default function UserListPage({ preset }) {
       await api.patch(`/users/${row.id}/status`, { isActive });
     } catch (requestError) {
       setData((current) => ({ ...current, items: current.items.map((item) => (item.id === row.id ? { ...item, isActive: row.isActive } : item)) }));
+      toast.error(requestError.message);
+    }
+  }
+
+  /** Full access <-> read-only for an admin (optimistic, rolled back on error). */
+  async function setAccess(row, isReadOnly) {
+    const patch = (value) => setData((current) => ({ ...current, items: current.items.map((item) => (item.id === row.id ? { ...item, isReadOnly: value } : item)) }));
+    patch(isReadOnly);
+    try {
+      await api.patch(`/users/${row.id}/access`, { isReadOnly });
+      toast.success(isReadOnly ? `${row.name} is now read-only` : `${row.name} now has full access`);
+    } catch (requestError) {
+      patch(Boolean(row.isReadOnly));
       toast.error(requestError.message);
     }
   }
@@ -70,10 +84,17 @@ export default function UserListPage({ preset }) {
       ),
     },
     { key: 'role', header: 'Role', sortKey: 'role', render: (row) => <StatusBadge status={row.role} /> },
+    {
+      key: 'access', header: 'Access', render: (row) => {
+        if (row.role === 'admin') return <AccessControl compact value={row.isReadOnly} disabled={!manageable(row)} onChange={(value) => setAccess(row, value)} />;
+        if (row.role === 'superadmin') return <span className="text-xs font-medium text-slate-500">{t('Full (always)')}</span>;
+        return <span className="text-slate-300">—</span>;
+      },
+    },
     { key: 'phone', header: 'Phone', render: (row) => row.phone || <span className="text-slate-300">—</span> },
     { key: 'lastLoginAt', header: 'Last login', sortKey: 'lastLoginAt', className: 'text-xs whitespace-nowrap text-slate-500', render: (row) => (row.lastLoginAt ? dateTime(row.lastLoginAt) : 'Never') },
     { key: 'createdAt', header: 'Created', sortKey: 'createdAt', className: 'text-xs whitespace-nowrap text-slate-500', render: (row) => date(row.createdAt) },
-    { key: 'status', header: 'Status', render: (row) => <Toggle size="sm" checked={row.isActive} disabled={!manageable(row)} onChange={(value) => setActive(row, value)} label={<span className="text-xs font-medium">{t(row.isActive ? 'Active' : 'Inactive')}</span>} /> },
+    { key: 'status', header: 'Status', render: (row) => <Toggle size="sm" checked={row.isActive} disabled={!manageable(row)} onChange={(value) => setActive(row, value)} label={<span className={`text-xs font-medium ${row.isActive ? '' : 'text-rose-600'}`}>{t(row.isActive ? 'Active' : 'Disabled')}</span>} /> },
     {
       key: 'actions', header: <span className="sr-only">{t('Actions')}</span>, className: 'text-right', render: (row) => (
         <div className="flex justify-end gap-0.5">
@@ -96,7 +117,7 @@ export default function UserListPage({ preset }) {
         <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 p-4">
           <SearchInput value={params.search ?? ''} onSearch={(search) => update({ search })} placeholder="Search name, email or phone…" className="w-full sm:w-80" />
           <FilterDropdown label="Role" value={params.role ?? ''} onChange={(role) => update({ role })} allLabel={preset ? 'All staff' : 'All'} options={[...(preset ? [] : [{ value: 'user', label: 'Customer' }, { value: 'staff', label: 'All staff' }]), { value: 'admin', label: 'Administrator' }, { value: 'superadmin', label: 'Super Administrator' }]} />
-          <FilterDropdown label="Status" value={params.status ?? ''} onChange={(status) => update({ status })} options={[{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }]} />
+          <FilterDropdown label="Status" value={params.status ?? ''} onChange={(status) => update({ status })} options={[{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Disabled' }]} />
         </div>
         <DataTable columns={columns} rows={data?.items} loading={loading} error={error} onRetry={reload} sort={{ sortBy: params.sortBy, sortOrder: params.sortOrder, onSort: toggleSort }} skeleton={<CustomerTableSkeleton />} empty={<EmptyState icon={UserCog} title="No users found" />} />
         <Pagination pagination={data?.pagination} onPageChange={(page) => update({ page }, { resetPage: false })} onLimitChange={(limit) => update({ limit })} />

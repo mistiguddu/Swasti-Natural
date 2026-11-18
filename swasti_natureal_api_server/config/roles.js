@@ -53,6 +53,14 @@ export function hasPermission(user, permission) {
   return Boolean(user && permissionsFor(user).includes(permission));
 }
 
+/**
+ * True when this request must not change anything: an administrator a super admin has set to
+ * read-only. A super admin acting "as admin" is never read-only.
+ */
+export function isReadOnly(user) {
+  return Boolean(user?.isReadOnly && user.role === 'admin');
+}
+
 export function isStaff(user) {
   return user?.role === 'admin' || user?.role === 'superadmin';
 }

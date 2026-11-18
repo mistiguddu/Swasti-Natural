@@ -22,6 +22,10 @@ export async function setStatus(req, res) {
   res.json({ data: await userService.setUserStatus(req.params.id, req.validated.body.isActive, req.user) });
 }
 
+export async function setAccess(req, res) {
+  res.json({ data: await userService.setUserAccess(req.params.id, req.validated.body.isReadOnly, req.user) });
+}
+
 export async function remove(req, res) {
   await userService.deleteUser(req.params.id, req.user);
   res.status(204).end();

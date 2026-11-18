@@ -9,7 +9,7 @@ const AuthContext = createContext(null);
 const OUTDATED_API = 'The API server is running an older version. Restart it (stop it, then run "npm run dev" in swasti_natureal_api_server) and try again.';
 
 /** Older API builds don't send `permissions`; never let that crash the app. */
-function sessionFrom({ user, permissions, activeRole, switchableRoles }) {
+function sessionFrom({ user, permissions, activeRole, switchableRoles, readOnly }) {
   if (!Array.isArray(permissions)) return { status: 'error', user: null, permissions: [], error: OUTDATED_API };
   return {
     status: 'signed-in',
@@ -17,6 +17,8 @@ function sessionFrom({ user, permissions, activeRole, switchableRoles }) {
     permissions,
     activeRole: activeRole ?? user?.role,
     switchableRoles: Array.isArray(switchableRoles) ? switchableRoles : [],
+    /** Read-only admin: can view everything, every change is refused by the API. */
+    readOnly: Boolean(readOnly),
     error: '',
   };
 }

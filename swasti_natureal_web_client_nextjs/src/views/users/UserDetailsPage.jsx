@@ -12,12 +12,18 @@ import { CategoryDetailsSkeleton } from '../../components/ui/Skeleton.jsx';
 import { ErrorState } from '../../components/ui/EmptyState.jsx';
 import { dateTime } from '../../lib/format.js';
 import { Avatar } from '../customers/CustomerListPage.jsx';
+import { useState } from 'react';
 import { t } from '../../i18n/index.js';
+import { useToast } from '../../context/ToastContext.jsx';
+import { Toggle } from '../../components/ui/Form.jsx';
+import { AccessControl, ReadOnlyBadge } from './AccessControl.jsx';
 
 export default function UserDetailsPage() {
   const { id } = useParams();
   const { user: me, can } = useAuth();
-  const { data: user, loading, error, reload } = useApi(() => api.get(`/users/${id}`), [id]);
+  const { data: user, loading, error, reload, setData } = useApi(() => api.get(`/users/${id}`), [id]);
+  const toast = useToast();
+  const [saving, setSaving] = useState(null);
   const roles = useApi(() => api.get('/users/roles'), []);
   const breadcrumb = [{ label: 'Users', to: '/users' }, { label: user?.name ?? 'Details' }];
 
@@ -28,6 +34,20 @@ export default function UserDetailsPage() {
   const role = roles.data?.roles.find((item) => item.key === user.role);
   const permissions = roles.data?.permissions.filter((permission) => role?.permissions.includes(permission.key)) ?? [];
   const editable = user.id === me.id || can('admins.manage') || user.role === 'user';
+  // Super admins can switch another admin between full / read-only access and enable / disable them here.
+  const controllable = user.id !== me.id && user.role !== 'user' && can('admins.manage');
+
+  async function change(kind, body, message) {
+    setSaving(kind);
+    try {
+      setData(await api.patch(`/users/${user.id}/${kind}`, body));
+      toast.success(message);
+    } catch (requestError) {
+      toast.error(requestError.message);
+    } finally {
+      setSaving(null);
+    }
+  }
   const address = [user.address?.line1, user.address?.city, user.address?.country].filter(Boolean).join(', ');
 
   return (
@@ -37,7 +57,18 @@ export default function UserDetailsPage() {
         <Card className="self-start p-6 text-center">
           <div className="flex justify-center"><Avatar name={user.name} size="h-20 w-20 text-3xl" /></div>
           <h2 className="mt-3 font-display text-lg font-bold text-slate-900">{user.name}</h2>
-          <div className="mt-2 flex justify-center gap-2"><StatusBadge status={user.role} /><StatusBadge status={user.isActive ? 'active' : 'inactive'} /></div>
+          <div className="mt-2 flex flex-wrap justify-center gap-2"><StatusBadge status={user.role} /><StatusBadge status={user.isActive ? 'active' : 'inactive'} label={user.isActive ? 'Active' : 'Disabled'} tone={user.isActive ? undefined : 'rose'} />{user.role === 'admin' && user.isReadOnly && <ReadOnlyBadge />}</div>
+          {controllable && (
+            <div className="mt-6 space-y-4 border-t border-slate-100 pt-5 text-left">
+              {user.role === 'admin' && (
+                <div>
+                  <p className="mb-2 text-[13px] font-semibold text-slate-700">{t('Dashboard access')}</p>
+                  <AccessControl value={user.isReadOnly} disabled={saving === 'access'} onChange={(value) => change('access', { isReadOnly: value }, value ? `${user.name} is now read-only` : `${user.name} now has full access`)} />
+                </div>
+              )}
+              <Toggle checked={user.isActive} disabled={saving === 'status'} onChange={(value) => change('status', { isActive: value }, value ? `${user.name} enabled` : `${user.name} disabled`)} label={user.isActive ? 'Account enabled' : 'Account disabled'} description="Disabled accounts can’t sign in and are signed out right away." />
+            </div>
+          )}
         </Card>
         <div className="space-y-6">
           <Card>

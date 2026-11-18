@@ -8,6 +8,23 @@ import { ViewAsBanner } from './RoleSwitcher.jsx';
 import { api } from '../../api.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { ChatRealtimeProvider } from '../../context/ChatRealtimeContext.jsx';
+import { Lock } from 'lucide-react';
+import { t } from '../../i18n/index.js';
+
+/** Shown to an administrator whom a super admin has set to read-only. */
+function ReadOnlyBanner() {
+  const { readOnly } = useAuth();
+  if (!readOnly) return null;
+  return (
+    <div role="status" className="flex items-center gap-2.5 border-b border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800 sm:px-6">
+      <Lock size={15} className="shrink-0" />
+      <p className="min-w-0 flex-1">
+        <span className="font-semibold">{t('Read-only access.')}</span>{' '}
+        <span className="hidden sm:inline">{t('You can view everything, but changes are disabled. Ask a super administrator for full access.')}</span>
+      </p>
+    </div>
+  );
+}
 
 /** Shared shell: collapsible sidebar, top bar, and a page outlet. Exposes `refreshBadges` via outlet context. */
 export default function AdminLayout() {
@@ -54,6 +71,7 @@ export default function AdminLayout() {
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="sticky top-0 z-30">
           <ViewAsBanner />
+          <ReadOnlyBanner />
           <Topbar onOpenMobile={() => setMobileOpen(true)} unread={badges.notifications} messages={badges.messages} />
         </div>
         {/* Remount pages when the active role changes so every screen refetches with the new permissions. */}

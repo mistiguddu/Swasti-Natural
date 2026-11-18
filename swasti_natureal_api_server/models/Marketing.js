@@ -74,6 +74,9 @@ const notificationSchema = new mongoose.Schema({
 }, { timestamps: true, toJSON: jsonOptions });
 notificationSchema.index({ createdAt: -1 });
 
+/** Colour themes for the customer storefront (the admin dashboard has its own, per-browser accent). */
+export const STORE_THEMES = ['forest', 'lagoon', 'ocean', 'royal', 'plum', 'berry', 'sunset', 'charcoal'];
+
 const settingSchema = new mongoose.Schema({
   _id: { type: String, default: 'store' },
   general: {
@@ -92,6 +95,8 @@ const settingSchema = new mongoose.Schema({
   branding: {
     logo: { type: String, default: '' },
     logoMark: { type: String, default: '' },
+    /** Storefront colour theme, chosen in Settings → Branding. */
+    storeTheme: { type: String, enum: STORE_THEMES, default: 'forest' },
   },
   store: {
     currency: { type: String, trim: true, uppercase: true, maxlength: 3, default: 'BDT' },

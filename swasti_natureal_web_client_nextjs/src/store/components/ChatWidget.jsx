@@ -340,7 +340,7 @@ export default function ChatWidget() {
     <>
       {/* Greeting teaser */}
       {teaser && !open && !peek && (
-        <div className={`fixed right-5 z-[55] hidden w-72 rounded-2xl bg-white p-4 pr-9 shadow-2xl shadow-emerald-950/15 ring-1 ring-stone-200 motion-safe:animate-fade-up sm:block ${raised ? 'bottom-44 lg:bottom-24' : 'bottom-24'}`}>
+        <div className={`fixed right-5 z-[55] hidden w-72 rounded-2xl bg-white p-4 pr-9 shadow-2xl shadow-emerald-950/15 ring-1 ring-stone-200 motion-safe:animate-fade-up sm:block ${raised ? 'bottom-44 lg:bottom-24' : 'bottom-[calc(6rem+var(--bottom-nav-h,0px))]'}`}>
           <button type="button" onClick={dismissTeaser} aria-label="Dismiss" className="absolute top-2 right-2 grid h-7 w-7 cursor-pointer place-items-center rounded-full text-stone-400 hover:bg-stone-100"><X size={15} /></button>
           <button type="button" onClick={() => { dismissTeaser(); setOpen(true); }} className="flex cursor-pointer items-start gap-3 text-left">
             <Avatar src={logoMarkUrl} name={storeName} className="h-9 w-9" />
@@ -354,7 +354,7 @@ export default function ChatWidget() {
 
       {/* New reply preview while the chat is closed */}
       {peek && !open && (
-        <div className={`fixed right-4 z-[55] w-[min(320px,calc(100vw-2rem))] motion-safe:animate-fade-up sm:right-5 ${raised ? 'bottom-44 lg:bottom-24' : 'bottom-24'}`}>
+        <div className={`fixed right-4 z-[55] w-[min(320px,calc(100vw-2rem))] motion-safe:animate-fade-up sm:right-5 ${raised ? 'bottom-44 lg:bottom-24' : 'bottom-[calc(6rem+var(--bottom-nav-h,0px))]'}`}>
           <div className="relative rounded-2xl bg-white p-3.5 pr-9 shadow-2xl shadow-emerald-950/20 ring-1 ring-stone-200">
             <button type="button" onClick={() => setPeek(null)} aria-label="Dismiss" className="absolute top-2 right-2 grid h-7 w-7 cursor-pointer place-items-center rounded-full text-stone-400 hover:bg-stone-100"><X size={15} /></button>
             <button type="button" onClick={() => setOpen(true)} className="flex w-full cursor-pointer items-start gap-3 text-left">
@@ -375,7 +375,7 @@ export default function ChatWidget() {
         onClick={() => { setOpen((value) => !value); dismissTeaser(); }}
         aria-label={open ? 'Close chat' : `Chat with us${unread ? ` (${unread} new)` : ''}`}
         aria-expanded={open}
-        className={`fixed right-4 z-[55] grid h-14 w-14 cursor-pointer place-items-center rounded-full bg-gradient-to-br from-emerald-700 to-emerald-900 text-white shadow-xl shadow-emerald-900/30 ring-4 ring-white transition hover:scale-105 active:scale-95 sm:right-5 ${raised ? 'bottom-24 lg:bottom-5' : 'bottom-4 sm:bottom-5'} ${open ? 'max-sm:hidden' : ''}`}
+        className={`fixed right-4 z-[55] grid h-14 w-14 cursor-pointer place-items-center rounded-full bg-gradient-to-br from-emerald-700 to-emerald-900 text-white shadow-xl shadow-emerald-900/30 ring-4 ring-white transition hover:scale-105 active:scale-95 sm:right-5 ${raised ? 'bottom-24 lg:bottom-5' : 'bottom-[calc(1rem+var(--bottom-nav-h,0px))] sm:bottom-[calc(1.25rem+var(--bottom-nav-h,0px))]'} ${open ? 'max-sm:hidden' : ''}`}
       >
         <span className={`absolute transition duration-300 ${open ? 'scale-50 rotate-90 opacity-0' : 'scale-100 opacity-100'}`}><MessageCircle size={24} /></span>
         <span className={`absolute transition duration-300 ${open ? 'scale-100 opacity-100' : 'scale-50 -rotate-90 opacity-0'}`}><ChevronDown size={26} /></span>

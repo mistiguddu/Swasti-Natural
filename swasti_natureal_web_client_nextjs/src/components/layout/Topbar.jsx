@@ -114,7 +114,7 @@ function AppearanceMenu() {
           </div>
 
           <p className="mt-4 mb-2 flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-slate-400 uppercase"><Palette size={12} /> {t('Accent colour')}</p>
-          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t('Accent colour')}>
+          <div className="grid grid-cols-5 justify-items-center gap-2" role="radiogroup" aria-label={t('Accent colour')}>
             {ACCENTS.map((item) => (
               <button key={item.key} type="button" role="radio" aria-checked={accent === item.key} onClick={() => setAccent(item.key)} title={t(item.label)} aria-label={t(item.label)} className={`grid h-9 w-9 cursor-pointer place-items-center rounded-full ring-2 ring-offset-2 ring-offset-surface transition ${accent === item.key ? 'ring-slate-400' : 'ring-transparent hover:ring-slate-200'}`} style={{ background: item.swatch }}>
                 {accent === item.key && <Check size={16} className="text-white" />}

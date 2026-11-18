@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { api } from '../api.js';
+import { openEventStream } from '../lib/eventStream.js';
 
 /** Bundled defaults (public/) used until an admin uploads their own. */
 export const DEFAULT_BRANDING = {
@@ -9,6 +10,7 @@ export const DEFAULT_BRANDING = {
   tagline: '',
   logo: '',
   logoMark: '',
+  storeTheme: 'forest',
 };
 export const DEFAULT_LOGO = '/logo.png';
 export const DEFAULT_LOGO_MARK = '/logo-mark.png';
@@ -42,6 +44,28 @@ export function BrandingProvider({ children }) {
   }, [setBranding]);
 
   useEffect(() => { refresh().catch(() => {}); }, [refresh]);
+
+  // Live updates: theme / logo changes appear without a page refresh.
+  //  - Server push (SSE) reaches every device with the site open.
+  //  - The `storage` event syncs other tabs of this browser instantly.
+  //  - Coming back to a hidden tab re-checks once, in case the stream was asleep.
+  useEffect(() => {
+    const close = openEventStream('/api/v1/settings/stream', {
+      onEvent: (event) => { if (event.type === 'branding' && event.data) setBranding(event.data); },
+    });
+    const onStorage = (event) => {
+      if (event.key !== CACHE_KEY || !event.newValue) return;
+      try { setBrandingState({ ...DEFAULT_BRANDING, ...JSON.parse(event.newValue) }); } catch { /* ignore */ }
+    };
+    const onVisible = () => { if (document.visibilityState === 'visible') refresh().catch(() => {}); };
+    window.addEventListener('storage', onStorage);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      close();
+      window.removeEventListener('storage', onStorage);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [setBranding, refresh]);
 
   // Browser tab title + icon follow the brand.
   useEffect(() => {

@@ -9,6 +9,11 @@ export const ACCENTS = [
   { key: 'violet', label: 'Violet', swatch: 'oklch(54.1% 0.281 293.009)' },
   { key: 'rose', label: 'Rose', swatch: 'oklch(58.6% 0.253 17.585)' },
   { key: 'amber', label: 'Amber', swatch: 'oklch(66.6% 0.179 58.318)' },
+  { key: 'emerald', label: 'Emerald', swatch: 'oklch(59.6% 0.145 163.225)' },
+  { key: 'cyan', label: 'Cyan', swatch: 'oklch(60.9% 0.126 221.723)' },
+  { key: 'indigo', label: 'Indigo', swatch: 'oklch(51.1% 0.262 276.966)' },
+  { key: 'fuchsia', label: 'Fuchsia', swatch: 'oklch(59.1% 0.293 322.896)' },
+  { key: 'orange', label: 'Orange', swatch: 'oklch(64.6% 0.222 41.116)' },
 ];
 export const MODES = ['light', 'dark', 'system'];
 

@@ -12,6 +12,8 @@ const presence = new Map(); // conversationId → open shopper streams
 let teamStreams = 0; // open admin inboxes
 
 export const emitAdmin = (event) => bus.emit('admin', event);
+/** Public `branding` channel: storefront and admin pages update theme/logo live. */
+export const emitBranding = (event) => bus.emit('branding', event);
 export const emitShopper = (conversationId, event) => bus.emit(`conv:${conversationId}`, event);
 export const isOnline = (conversationId) => (presence.get(String(conversationId)) ?? 0) > 0;
 export const isTeamOnline = () => teamStreams > 0;

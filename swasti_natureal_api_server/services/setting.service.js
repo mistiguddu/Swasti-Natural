@@ -1,6 +1,14 @@
 import { Setting } from '../models/Marketing.js';
 import { publicPath } from '../config/upload.js';
 import { deleteUnusedFiles } from './file.service.js';
+import { emitBranding } from './chat-events.js';
+
+/** Pushes the new public branding to every open page (SSE `branding` channel). */
+async function publishBranding() {
+  const data = await getPublicBranding();
+  emitBranding({ type: 'branding', data });
+  return data;
+}
 
 export async function getSettings() {
   return (await Setting.findById('store')) ?? Setting.create({ _id: 'store' });
@@ -21,8 +29,17 @@ export async function getPublicBranding() {
     tagline: settings.general.tagline,
     logo: settings.branding?.logo ?? '',
     logoMark: settings.branding?.logoMark ?? '',
+    storeTheme: settings.branding?.storeTheme ?? 'forest',
     updatedAt: settings.updatedAt,
   };
+}
+
+/** Sets the storefront colour theme. */
+export async function updateStoreTheme(storeTheme) {
+  const settings = await getSettings();
+  settings.set('branding.storeTheme', storeTheme);
+  await settings.save();
+  return publishBranding();
 }
 
 /** Updates the project name/tagline and the full logo + icon. Old files are deleted when replaced or removed. */
@@ -39,5 +56,5 @@ export async function updateBranding(data, files) {
   }
   await settings.save();
   await deleteUnusedFiles(replaced);
-  return getPublicBranding();
+  return publishBranding();
 }

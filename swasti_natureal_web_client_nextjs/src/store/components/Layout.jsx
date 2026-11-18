@@ -16,6 +16,7 @@ import { storeApi } from '../api.js';
 import { money } from '../../lib/format.js';
 import { Container, ProductImage, btn } from './ui.jsx';
 import ChatWidget, { openChat } from './ChatWidget.jsx';
+import BottomNav, { useBottomNavVisible } from './BottomNav.jsx';
 
 const NAV = [
   { to: '/', label: 'Home', end: true },
@@ -63,9 +64,9 @@ function SearchBox({ className = '', onDone }) {
   );
 }
 
-function IconLink({ to, label, count, children }) {
+function IconLink({ to, label, count, className = '', children }) {
   return (
-    <Link to={to} aria-label={`${label}${count ? ` (${count})` : ''}`} title={label} className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full text-emerald-950 transition hover:bg-emerald-50 sm:h-11 sm:w-11">
+    <Link to={to} aria-label={`${label}${count ? ` (${count})` : ''}`} title={label} className={`${className} relative grid h-10 w-10 shrink-0 place-items-center rounded-full text-emerald-950 transition hover:bg-emerald-50 sm:h-11 sm:w-11`}>
       {children}
       {count > 0 && <span className="absolute top-0.5 right-0.5 min-w-5 rounded-full bg-amber-400 px-1 text-center text-[11px] leading-5 font-bold text-emerald-950 ring-2 ring-white">{count > 99 ? '99+' : count}</span>}
     </Link>
@@ -203,6 +204,8 @@ function Header() {
   const [catOpen, setCatOpen] = useState(false);
   const { pathname } = useLocation();
   const closeMenu = useCallback(() => setMenuOpen(false), []);
+  // On phones the bottom nav already has Account and Cart, so the header keeps only Wishlist.
+  const tabBar = useBottomNavVisible() ? 'max-md:hidden' : '';
 
   useEffect(() => { setMenuOpen(false); setCatOpen(false); }, [pathname]);
 
@@ -243,9 +246,9 @@ function Header() {
         </nav>
         <SearchBox className="ml-auto hidden w-full max-w-xs md:block lg:hidden xl:block xl:max-w-sm" />
         <div className="ml-auto flex shrink-0 items-center gap-0 sm:gap-1 md:ml-0 lg:ml-auto xl:ml-0">
-          <IconLink to={isSignedIn ? '/account' : '/login'} label={isSignedIn ? `My account (${user?.name})` : 'Sign in'}><UserRound size={21} /></IconLink>
+          <IconLink className={tabBar} to={isSignedIn ? '/account' : '/login'} label={isSignedIn ? `My account (${user?.name})` : 'Sign in'}><UserRound size={21} /></IconLink>
           <IconLink to="/wishlist" label="Wishlist" count={wishlist.count}><Heart size={21} /></IconLink>
-          <IconLink to="/cart" label="Cart" count={cart.count}><ShoppingBag size={21} /></IconLink>
+          <IconLink className={tabBar} to="/cart" label="Cart" count={cart.count}><ShoppingBag size={21} /></IconLink>
         </div>
       </Container>
       <Container className="pb-3 md:hidden lg:block xl:hidden"><SearchBox /></Container>
@@ -301,7 +304,7 @@ function Footer() {
   ].filter(Boolean);
 
   return (
-    <footer className="bg-[#052e22] text-emerald-50/80">
+    <footer className="bg-[color-mix(in_oklab,var(--color-emerald-950)_80%,black)] text-emerald-50/80">
       <Container className="grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <div className="flex items-center gap-3">
@@ -370,6 +373,7 @@ export default function StoreLayout() {
       <main id="content" className="flex-1"><Outlet /></main>
       <Newsletter />
       <Footer />
+      <BottomNav />
       <ChatWidget />
     </div>
   );

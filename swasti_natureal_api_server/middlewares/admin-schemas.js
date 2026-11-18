@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { PAYMENT_METHODS, PAYMENT_STATUS, ORDER_STATUS } from '../models/Order.js';
 import { PRODUCT_STATUS, PRODUCT_TYPES, STOCK_STATUS } from '../models/Product.js';
 import { ROLES } from '../models/User.js';
+import { STORE_THEMES } from '../models/Marketing.js';
 
 /* ── Field helpers (accept JSON values or form strings) ── */
 const text = (max) => z.preprocess((value) => (value == null ? '' : String(value)), z.string().trim().max(max));
@@ -208,6 +209,7 @@ export const brandingSchema = body({
   removeLogo: bool,
   removeLogoMark: bool,
 });
+export const storeThemeSchema = body({ storeTheme: z.enum(STORE_THEMES) });
 export const storeSettingsSchema = body({
   currency: requiredText(3, 3).transform((value) => value.toUpperCase()),
   currencySymbol: text(5),

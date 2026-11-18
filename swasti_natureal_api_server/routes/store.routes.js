@@ -8,9 +8,10 @@ import { Banner, Coupon, Discount, ShippingMethod } from '../models/Marketing.js
 import * as reviews from '../services/review.service.js';
 import * as notifications from '../services/notification.service.js';
 import * as settings from '../services/setting.service.js';
+import { streamChannel } from '../services/chat-events.js';
 import { imageUpload, parseMultipartJson } from '../config/upload.js';
 import {
-  bannerSchema, brandingSchema, bulkIdsSchema, couponSchema, createReviewSchema, discountSchema, generalSettingsSchema,
+  bannerSchema, brandingSchema, storeThemeSchema, bulkIdsSchema, couponSchema, createReviewSchema, discountSchema, generalSettingsSchema,
   reviewModerationSchema, shippingSchema, storeSettingsSchema,
 } from '../middlewares/admin-schemas.js';
 
@@ -87,6 +88,8 @@ notificationRouter.delete('/:id', asyncHandler(async (req, res) => {
 /* Settings */
 export const settingRouter = Router();
 // Public: project name + logos for the login page and browser tab (no auth, no private data).
+/** Live branding updates (public, read-only): theme and logo changes reach open pages without a refresh. */
+settingRouter.get('/stream', (req, res) => streamChannel(req, res, 'branding'));
 settingRouter.get('/public', asyncHandler(async (req, res) => res.json({ data: await settings.getPublicBranding() })));
 settingRouter.put(
   '/branding',
@@ -96,6 +99,9 @@ settingRouter.put(
   validate(brandingSchema),
   asyncHandler(async (req, res) => res.json({ data: await settings.updateBranding(req.validated.body, req.files) })),
 );
+settingRouter.put('/store-theme', ...guard('settings.manage'), validate(storeThemeSchema), asyncHandler(async (req, res) => {
+  res.json({ data: await settings.updateStoreTheme(req.validated.body.storeTheme) });
+}));
 settingRouter.get('/', ...guard('dashboard.view'), asyncHandler(async (req, res) => res.json({ data: await settings.getSettings() })));
 settingRouter.put('/general', ...guard('settings.manage'), validate(generalSettingsSchema), asyncHandler(async (req, res) => {
   res.json({ data: await settings.updateSettings('general', req.validated.body) });

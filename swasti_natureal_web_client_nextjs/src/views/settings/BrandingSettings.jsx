@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Eye, Globe, ImageIcon, RotateCcw, Save, Sparkles, X } from 'lucide-react';
+import { Check, Eye, Globe, ImageIcon, Palette, RotateCcw, Save, Sparkles, X } from 'lucide-react';
+import { STORE_THEMES, storeThemeOf } from '../../store/themes.js';
 import { api, toFormData } from '../../api.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { DEFAULT_LOGO, DEFAULT_LOGO_MARK, useBranding } from '../../context/BrandingContext.jsx';
@@ -46,6 +47,85 @@ function SidebarPreview({ name, markUrl, dark }) {
         <p className="text-[10px] font-semibold tracking-[0.18em] text-teal-500">{t('ADMIN CONSOLE')}</p>
       </div>
     </div>
+  );
+}
+
+/** Storefront colour theme: saved on the server and shown to every customer (separate from the admin accent). */
+function StoreThemeSection() {
+  const branding = useBranding();
+  const toast = useToast();
+  const saved = storeThemeOf(branding.storeTheme).key;
+  const [selected, setSelected] = useState(saved);
+  const [saving, setSaving] = useState(false);
+  useEffect(() => { setSelected(saved); }, [saved]);
+  const preview = storeThemeOf(selected);
+  const [dark, mid, light] = preview.colors;
+
+  async function save() {
+    setSaving(true);
+    try {
+      const result = await api.put('/settings/store-theme', { storeTheme: selected });
+      branding.setBranding(result);
+      toast.success('Storefront theme updated');
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <FormSection title="Storefront theme" description="Colour of the customer website and mobile app bar. The admin dashboard keeps its own accent colour.">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_220px]">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4" role="radiogroup" aria-label={t('Storefront theme')}>
+          {STORE_THEMES.map((theme) => {
+            const active = selected === theme.key;
+            return (
+              <button
+                key={theme.key}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => setSelected(theme.key)}
+                className={`group relative cursor-pointer rounded-xl p-2.5 text-left ring-1 transition ${active ? 'bg-teal-50 ring-2 ring-teal-500' : 'ring-slate-200 hover:ring-slate-300'}`}
+              >
+                <span className="flex h-10 overflow-hidden rounded-lg">
+                  {theme.colors.map((color) => <span key={color} className="flex-1" style={{ background: color }} />)}
+                </span>
+                <span className="mt-2 block truncate text-xs font-semibold text-slate-700">{t(theme.label)}</span>
+                {saved === theme.key && <span className="block text-[10px] font-medium text-slate-400">{t('Current')}</span>}
+                {active && <span className="absolute top-1.5 right-1.5 grid h-5 w-5 place-items-center rounded-full bg-teal-600 text-white shadow"><Check size={12} /></span>}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Mini phone preview */}
+        <div className="mx-auto w-[200px] overflow-hidden rounded-[1.6rem] bg-white p-2 shadow-lg ring-1 ring-[#e2e8f0]">
+          <div className="rounded-[1.2rem] bg-[#fafaf9]">
+            <div className="flex items-center gap-1.5 px-3 pt-3"><span className="h-4 w-4 rounded-full" style={{ background: dark }} /><span className="h-2 w-16 rounded-full bg-[#d6d3d1]" /></div>
+            <div className="m-3 rounded-xl p-3" style={{ background: `linear-gradient(135deg, ${dark}, ${mid})` }}>
+              <span className="block h-2 w-20 rounded-full bg-white/80" />
+              <span className="mt-1.5 block h-2 w-14 rounded-full bg-white/50" />
+              <span className="mt-3 inline-block rounded-full bg-[#fbbf24] px-2 py-0.5 text-[8px] font-bold text-[#1c1917]">Shop now</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 px-3">
+              {[0, 1].map((i) => <span key={i} className="h-12 rounded-lg" style={{ background: light }} />)}
+            </div>
+            <div className="relative mt-4 flex items-end justify-around rounded-t-2xl bg-white px-2 pt-2 pb-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
+              {[0, 1].map((i) => <span key={i} className="h-3 w-3 rounded" style={{ background: i === 0 ? mid : '#d6d3d1' }} />)}
+              <span className="-mt-5 grid h-8 w-8 place-items-center rounded-full ring-2 ring-white" style={{ background: `linear-gradient(135deg, ${mid}, ${dark})` }}><span className="h-2.5 w-2.5 rounded-sm bg-white" /></span>
+              {[0, 1].map((i) => <span key={i} className="h-3 w-3 rounded bg-[#d6d3d1]" />)}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="mt-5 flex flex-wrap items-center justify-end gap-2">
+        {selected !== saved && <span className="mr-auto inline-flex items-center gap-1.5 text-xs font-medium text-amber-700"><span className="h-1.5 w-1.5 rounded-full bg-amber-500" /> {t('Unsaved changes')}</span>}
+        <Button variant="secondary" icon={X} disabled={selected === saved || saving} onClick={() => setSelected(saved)}>Discard</Button>
+        <Button icon={Palette} disabled={selected === saved} busy={saving} busyLabel="Saving…" onClick={save}>Apply theme</Button>
+      </div>
+    </FormSection>
   );
 }
 
@@ -162,6 +242,8 @@ export default function BrandingSettings() {
             </div>
           </div>
         </FormSection>
+
+        <StoreThemeSection />
 
         <div className="flex flex-wrap items-center justify-end gap-2 rounded-2xl bg-surface px-5 py-4 shadow-sm ring-1 ring-slate-200/70">
           {dirty && <span className="mr-auto inline-flex items-center gap-1.5 text-xs font-medium text-amber-700"><span className="h-1.5 w-1.5 rounded-full bg-amber-500" /> {t('Unsaved changes')}</span>}

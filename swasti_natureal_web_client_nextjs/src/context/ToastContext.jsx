@@ -33,7 +33,7 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-4 z-[70] flex flex-col items-center gap-2 px-4 sm:inset-x-auto sm:right-4 sm:items-end">
+      <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-[calc(1rem+var(--bottom-nav-h,0px))] z-[70] flex flex-col items-center gap-2 px-4 sm:inset-x-auto sm:right-4 sm:items-end">
         {toasts.map((toast) => {
           const Icon = ICONS[toast.type];
           return (

@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Devices with a real mouse (hover reveals). Phones and tablets get always-visible controls instead. */
+@custom-variant can-hover (@media (hover: hover) and (pointer: fine));
+
 /* Tailwind v4 theme config (replaces tailwind.config.js) — no custom CSS classes. */
 @theme {
   --font-display: "Manrope", "Hind Siliguri", sans-serif;

@@ -337,6 +337,7 @@ function Footer() {
             <li><Link to="/wishlist" className="hover:text-white">Wishlist</Link></li>
             <li><Link to="/about" className="hover:text-white">About us</Link></li>
             <li><Link to="/contact" className="hover:text-white">Contact us</Link></li>
+            <li><Link to="/privacy-policy" className="hover:text-white">Privacy policy</Link></li>
           </ul>
         </div>
         <div>
@@ -356,7 +357,7 @@ function Footer() {
       <div className="border-t border-white/10">
         <Container className="flex flex-col items-center justify-between gap-2 py-5 text-xs sm:flex-row">
           <p>© {new Date().getFullYear()} {storeName}. All rights reserved.</p>
-          <p className="flex gap-4"><Link to="/about" className="hover:text-white">About</Link><Link to="/contact" className="hover:text-white">Contact</Link></p>
+          <p className="flex flex-wrap justify-center gap-x-4 gap-y-1"><Link to="/about" className="hover:text-white">About</Link><Link to="/contact" className="hover:text-white">Contact</Link><Link to="/privacy-policy" className="hover:text-white">Privacy policy</Link></p>
         </Container>
       </div>
     </footer>

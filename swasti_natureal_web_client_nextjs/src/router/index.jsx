@@ -138,6 +138,38 @@ export const Link = forwardRef(function Link({ to, replace, state: _state, reloa
   return <NextLink ref={ref} href={href} replace={replace} scroll={false} {...props} />;
 });
 
+/** Changes the URL in place (native history; Next.js keeps usePathname/useSearchParams in sync). */
+export function shallowNavigate(href, { replace = false } = {}) {
+  if (replace) window.history.replaceState(null, '', href);
+  else window.history.pushState(null, '', href);
+}
+
+/**
+ * Like <Link>, but a plain click only updates the URL (no route transition, no remount, no
+ * scroll). Use it inside a view that renders the new URL itself, e.g. switching category in the
+ * product listing. Ctrl/⌘/middle-click still open a real link in a new tab.
+ */
+export const ShallowLink = forwardRef(function ShallowLink({ to, replace, onClick, state: _state, ...props }, ref) {
+  const base = useContext(BaseContext);
+  const location = useLocation();
+  const href = resolveHref(to, base, location);
+  return (
+    <NextLink
+      ref={ref}
+      href={href}
+      scroll={false}
+      prefetch={false}
+      {...props}
+      onClick={(event) => {
+        onClick?.(event);
+        if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        shallowNavigate(href, { replace });
+      }}
+    />
+  );
+});
+
 export const NavLink = forwardRef(function NavLink({ to, end = false, className, style, children, caseSensitive: _c, ...props }, ref) {
   const location = useLocation();
   const target = typeof to === 'string' ? splitPath(to)[0] || location.pathname : to?.pathname ?? location.pathname;

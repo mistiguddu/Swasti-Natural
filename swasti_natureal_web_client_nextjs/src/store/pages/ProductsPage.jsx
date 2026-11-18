@@ -1,15 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Link, useParams, useSearchParams } from '@/router';
+import { useEffect, useRef, useState } from 'react';
+import { Link, shallowNavigate, useLocation, useSearchParams } from '@/router';
 import { ChevronLeft, ChevronRight, LayoutGrid, List, PackageSearch, SlidersHorizontal, X } from 'lucide-react';
 import { storeApi } from '../api.js';
 import { useApi } from '../../hooks/useApi.js';
 import { useStore } from '../context/StoreContext.jsx';
 import { money } from '../../lib/format.js';
 import ProductCard, { ProductCardSkeleton } from '../components/ProductCard.jsx';
-import { Container, EmptyBlock, ErrorBlock, PageHeader, Skel, btn } from '../components/ui.jsx';
-import { CategoryHero, CategoryTree } from '../components/CategoryTree.jsx';
+import { Container, EmptyBlock, ErrorBlock, Skel, btn } from '../components/ui.jsx';
+import { CatalogHero, CategoryTree } from '../components/CategoryTree.jsx';
 import { usePageMeta } from '../lib/helpers.js';
 
 const SORTS = [
@@ -95,10 +95,27 @@ function Pagination({ pagination, onPage }) {
   );
 }
 
+/** /category/<slug> → slug. Read from the URL so in-place (shallow) category switches work. */
+function slugFrom(pathname) {
+  if (!pathname.startsWith('/category/')) return undefined;
+  const raw = pathname.slice('/category/'.length).split('/')[0];
+  try { return decodeURIComponent(raw) || undefined; } catch { return raw || undefined; }
+}
+
+/**
+ * Product listing for /products and /category/[slug]. Mounted once by (catalog)/layout.jsx:
+ * category, filter, sort and page changes update the URL in place and only refresh the grid.
+ */
 export default function ProductsPage() {
-  const { slug } = useParams();
+  const { pathname } = useLocation();
+  const slug = slugFrom(pathname);
   const { categories } = useStore();
-  const [params, setParams] = useSearchParams();
+  const [params] = useSearchParams();
+  const gridTop = useRef(null);
+  const go = (next) => {
+    const query = next.toString();
+    shallowNavigate(`${window.location.pathname}${query ? `?${query}` : ''}`);
+  };
   const [filtersOpen, setFiltersOpen] = useState(false);
   const view = params.get('view') === 'list' ? 'list' : 'grid';
   const query = Object.fromEntries([...params.entries()].filter(([key]) => key !== 'view'));
@@ -115,33 +132,29 @@ export default function ProductsPage() {
     const next = new URLSearchParams(params);
     Object.entries(changes).forEach(([key, value]) => (value ? next.set(key, value) : next.delete(key)));
     if (!('page' in changes)) next.delete('page');
-    setParams(next, { replace: false });
+    go(next);
   };
   const activeFilters = FILTER_KEYS.filter((key) => params.get(key));
-  const clearAll = () => setParams(new URLSearchParams(view === 'list' ? { view } : {}));
+  const clearAll = () => go(new URLSearchParams(view === 'list' ? { view } : {}));
   const total = data?.pagination?.total ?? 0;
 
   return (
     <>
-      {slug ? (
-        <CategoryHero slug={slug} categories={categories} fallback={category} params={params} />
-      ) : (
-        <PageHeader title={title} crumbs={[{ label: 'Products' }]} />
-      )}
-      <Container className="py-10">
+      <CatalogHero slug={slug} categories={categories} fallback={category} params={params} title={title} total={data && !loading ? total : undefined} />
+      <Container className="py-6 sm:py-8">
         <div className="lg:grid lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-10">
           <aside className="hidden lg:block" aria-label="Filters">
-            <div className="sticky top-32 -mr-3 max-h-[calc(100vh-9rem)] overflow-y-auto pr-3 [scrollbar-width:thin]"><Filters params={params} set={set} categories={categories} activeCategory={slug} priceRange={data?.priceRange ?? { min: 0, max: 0 }} /></div>
+            <div className="sticky top-28 -mr-3 max-h-[calc(100vh-8rem)] overflow-y-auto pr-3 pb-4 [scrollbar-width:thin]"><Filters params={params} set={set} categories={categories} activeCategory={slug} priceRange={data?.priceRange ?? { min: 0, max: 0 }} /></div>
           </aside>
 
-          <div className="min-w-0">
+          <div ref={gridTop} className="min-w-0 scroll-mt-36">
             <div className="mb-6 flex flex-wrap items-center gap-3">
-              <button type="button" onClick={() => setFiltersOpen(true)} className={`${btn.secondary} h-11 text-sm lg:hidden`}><SlidersHorizontal size={16} /> Filters{activeFilters.length ? ` (${activeFilters.length})` : ''}</button>
-              <p className="text-sm text-stone-600" aria-live="polite">{loading && !data ? <Skel className="h-4 w-32" /> : `${total} product${total === 1 ? '' : 's'}`}</p>
-              <div className="ml-auto flex items-center gap-2">
-                <label className="flex items-center gap-2 text-sm text-stone-600">
+              <button type="button" onClick={() => setFiltersOpen(true)} className={`${btn.secondary} h-11 flex-1 px-4 text-sm sm:flex-none lg:hidden`}><SlidersHorizontal size={16} /> Filters{activeFilters.length ? ` (${activeFilters.length})` : ''}</button>
+              <p className="order-last w-full text-sm text-stone-600 sm:order-none sm:w-auto" aria-live="polite">{loading && !data ? <Skel className="h-4 w-32" /> : `${total} product${total === 1 ? '' : 's'}`}</p>
+              <div className="flex flex-1 items-center gap-2 sm:ml-auto sm:flex-none">
+                <label className="flex flex-1 items-center gap-2 text-sm text-stone-600 sm:flex-none">
                   <span className="hidden sm:inline">Sort by</span>
-                  <select value={params.get('sort') ?? 'latest'} onChange={(event) => set({ sort: event.target.value === 'latest' ? '' : event.target.value })} className="h-11 cursor-pointer rounded-full border border-stone-200 bg-white px-4 text-sm font-medium text-stone-800 outline-none focus:border-emerald-700">
+                  <select value={params.get('sort') ?? 'latest'} onChange={(event) => set({ sort: event.target.value === 'latest' ? '' : event.target.value })} className="h-11 w-full cursor-pointer rounded-full border border-stone-200 bg-white px-4 text-sm font-medium sm:w-auto text-stone-800 outline-none focus:border-emerald-700">
                     {SORTS.map((sort) => <option key={sort.value} value={sort.value}>{sort.label}</option>)}
                   </select>
                 </label>
@@ -165,17 +178,17 @@ export default function ProductsPage() {
             )}
 
             {error ? <ErrorBlock error={error} onRetry={reload} /> : loading && !data ? (
-              <div className={view === 'list' ? 'space-y-4' : 'grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 md:grid-cols-3'}>
+              <div className={view === 'list' ? 'space-y-4' : 'grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-6 sm:gap-y-10 md:grid-cols-3'}>
                 {Array.from({ length: 6 }, (_, index) => (view === 'list' ? <Skel key={index} className="h-44 rounded-3xl" /> : <ProductCardSkeleton key={index} />))}
               </div>
             ) : !data.items.length ? (
               <EmptyBlock icon={PackageSearch} title="No products found" message="Try removing a filter or searching for something else." action={activeFilters.length ? <button type="button" onClick={clearAll} className={`${btn.primary} h-11`}>Clear filters</button> : <Link to="/products" className={`${btn.primary} h-11`}>Browse all products</Link>} />
             ) : (
-              <div className={`transition-opacity ${loading ? 'opacity-50' : ''} ${view === 'list' ? 'space-y-4' : 'grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 md:grid-cols-3'}`}>
+              <div aria-busy={loading || undefined} className={`transition-opacity duration-200 ${loading ? 'pointer-events-none opacity-40' : 'motion-safe:animate-fade-in'} ${view === 'list' ? 'space-y-4' : 'grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-6 sm:gap-y-10 md:grid-cols-3'}`}>
                 {data.items.map((product) => <ProductCard key={product.id} product={product} layout={view} />)}
               </div>
             )}
-            <Pagination pagination={data?.pagination} onPage={(page) => { set({ page: page > 1 ? String(page) : '' }); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
+            <Pagination pagination={data?.pagination} onPage={(page) => { set({ page: page > 1 ? String(page) : '' }); gridTop.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }} />
           </div>
         </div>
       </Container>

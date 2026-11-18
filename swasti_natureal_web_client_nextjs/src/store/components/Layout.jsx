@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from '@/router';
 import {
@@ -365,7 +365,14 @@ function Footer() {
 
 export default function StoreLayout() {
   const { pathname } = useLocation();
-  useEffect(() => { window.scrollTo({ top: 0 }); }, [pathname]);
+  const previous = useRef(pathname);
+  useEffect(() => {
+    // New page → start at the top. Moving between catalog views (/products ⇄ /category/x)
+    // only swaps the product grid, so the reader keeps their place.
+    const isCatalog = (path) => path === '/products' || path.startsWith('/category/');
+    if (!(isCatalog(previous.current) && isCatalog(pathname))) window.scrollTo({ top: 0 });
+    previous.current = pathname;
+  }, [pathname]);
   return (
     <div className="flex min-h-screen flex-col bg-white font-body text-stone-800 selection:bg-emerald-200">
       <a href="#content" className="sr-only z-[80] rounded-lg bg-white px-3 py-2 focus:not-sr-only focus:fixed focus:top-3 focus:left-3">Skip to content</a>

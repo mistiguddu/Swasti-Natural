@@ -60,9 +60,24 @@ const reviewSchema = new mongoose.Schema({
   title: { type: String, trim: true, maxlength: 150, default: '' },
   comment: { type: String, trim: true, maxlength: 3000, default: '' },
   adminReply: { type: String, trim: true, maxlength: 2000, default: '' },
+  adminReplyAt: { type: Date, default: null },
   status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending', index: true },
+  /** Customer photos (public /uploads/reviews/... paths), up to 4. */
+  images: { type: [String], default: [] },
+  /** The reviewer has a delivered order containing this product. */
+  verifiedPurchase: { type: Boolean, default: false },
+  helpfulCount: { type: Number, default: 0, min: 0 },
+  helpfulVoters: { type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], default: [], select: false },
+  reportCount: { type: Number, default: 0, min: 0, index: true },
+  reports: {
+    type: [{ user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, reason: { type: String, trim: true, maxlength: 300, default: '' }, createdAt: { type: Date, default: Date.now } }],
+    default: [],
+    select: false,
+  },
+  editedAt: { type: Date, default: null },
 }, { timestamps: true, toJSON: jsonOptions });
 reviewSchema.index({ product: 1, customer: 1 }, { unique: true });
+reviewSchema.index({ product: 1, status: 1, createdAt: -1 });
 
 const notificationSchema = new mongoose.Schema({
   type: { type: String, required: true, index: true },

@@ -10,6 +10,8 @@ import { shopperChatRouter } from './chat.routes.js';
 import {
   addressSchema, cartQuoteSchema, checkoutSchema, contactSchema, newsletterSchema, wishlistAddSchema,
 } from '../middlewares/store-schemas.js';
+import { listProductReviews } from '../services/review.service.js';
+import { optionalAuthenticate } from '../middlewares/auth.middleware.js';
 
 const ok = (fn) => asyncHandler(async (req, res) => res.json({ data: await fn(req) }));
 const created = (fn) => asyncHandler(async (req, res) => res.status(201).json({ data: await fn(req) }));
@@ -22,7 +24,7 @@ storefrontRouter.get('/categories', ok(() => store.listCategories()));
 storefrontRouter.get('/categories/:slug', ok((req) => store.getCategory(req.params.slug)));
 storefrontRouter.get('/products', ok((req) => store.listProducts(req.query)));
 storefrontRouter.get('/products/:slug', ok((req) => store.getProduct(req.params.slug)));
-storefrontRouter.get('/products/:id/reviews', ok((req) => store.listProductReviews(req.params.id, req.query)));
+storefrontRouter.get('/products/:id/reviews', optionalAuthenticate, ok((req) => listProductReviews(req.params.id, req.query, req.user)));
 storefrontRouter.post('/cart/quote', validate(cartQuoteSchema), ok((req) => quoteCart(req.validated.body)));
 storefrontRouter.post('/contact', validate(contactSchema), created((req) => store.submitContact(req.validated.body)));
 /* Live chat with the store team — guests and signed-in customers. */

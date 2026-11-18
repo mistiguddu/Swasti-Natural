@@ -1,19 +1,19 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { Link, useLocation, useNavigate, useParams } from '@/router';
-import { Banknote, Check, Heart, PackageX, Share2, ShoppingBag, Star, Truck, Zap } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useNavigate, useParams } from '@/router';
+import { Banknote, Check, Heart, PackageX, Share2, ShoppingBag, Truck, Zap } from 'lucide-react';
 import { storeApi } from '../api.js';
 import { useApi } from '../../hooks/useApi.js';
 import { useCart } from '../context/CartContext.jsx';
 import { useWishlist } from '../context/WishlistContext.jsx';
-import { useCustomer } from '../context/CustomerAuthContext.jsx';
 import { useStore } from '../context/StoreContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
-import { date, money } from '../../lib/format.js';
+import { money } from '../../lib/format.js';
 import { ProductGrid } from '../components/ProductCard.jsx';
 import { Container, EmptyBlock, Price, ProductImage, QuantityStepper, SaleBadge, SectionHeading, Skel, Stars, StockBadge, btn } from '../components/ui.jsx';
 import { recentlyViewed, rememberViewed, usePageMeta } from '../lib/helpers.js';
+import Reviews from '../components/Reviews.jsx';
 
 function Gallery({ product }) {
   const images = useMemo(() => [product.image, product.thumbnail, ...(product.gallery ?? [])].filter(Boolean).filter((url, index, list) => list.indexOf(url) === index), [product]);
@@ -50,94 +50,6 @@ function Gallery({ product }) {
   );
 }
 
-function ReviewForm({ product, onDone }) {
-  const toast = useToast();
-  const [rating, setRating] = useState(0);
-  const [title, setTitle] = useState('');
-  const [comment, setComment] = useState('');
-  const [busy, setBusy] = useState(false);
-  async function submit(event) {
-    event.preventDefault();
-    if (!rating) { toast.error('Please choose a star rating'); return; }
-    setBusy(true);
-    try {
-      const review = await storeApi.post('/reviews', { product: product.id, rating, title, comment });
-      toast.success(review.status === 'approved' ? 'Thanks for your review!' : 'Thanks! Your review will appear once it’s approved.');
-      onDone(review);
-    } catch (error) {
-      toast.error(error.message);
-    } finally {
-      setBusy(false);
-    }
-  }
-  return (
-    <form onSubmit={submit} className="rounded-3xl bg-stone-50 p-6 ring-1 ring-stone-200/70">
-      <h3 className="font-serif text-xl font-semibold text-emerald-950">Write a review</h3>
-      <div className="mt-3 flex gap-1" role="radiogroup" aria-label="Your rating">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <button key={star} type="button" role="radio" aria-checked={rating === star} aria-label={`${star} star${star > 1 ? 's' : ''}`} onClick={() => setRating(star)} className="cursor-pointer p-0.5">
-            <Star size={26} className={star <= rating ? 'fill-amber-400 text-amber-400' : 'text-stone-300 hover:text-amber-300'} />
-          </button>
-        ))}
-      </div>
-      <input value={title} onChange={(event) => setTitle(event.target.value)} maxLength={150} placeholder="Title (optional)" aria-label="Review title" className="mt-4 h-11 w-full rounded-xl border border-stone-200 bg-white px-4 text-sm outline-none focus:border-emerald-700" />
-      <textarea value={comment} onChange={(event) => setComment(event.target.value)} maxLength={3000} rows={4} placeholder="What did you like or dislike?" aria-label="Review" className="mt-3 w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-700" />
-      <button type="submit" disabled={busy} className={`${btn.primary} mt-4 h-11 text-sm`}>{busy ? 'Submitting…' : 'Submit review'}</button>
-    </form>
-  );
-}
-
-function Reviews({ product }) {
-  const { isSignedIn } = useCustomer();
-  const location = useLocation();
-  const [page, setPage] = useState(1);
-  const [items, setItems] = useState([]);
-  const [submitted, setSubmitted] = useState(false);
-  const { data, loading } = useApi(() => storeApi.get(`/store/products/${product.id}/reviews`, { page, limit: 5 }), [product.id, page]);
-  useEffect(() => { if (data) setItems((current) => (page === 1 ? data.items : [...current, ...data.items])); }, [data, page]);
-  const breakdown = product.ratingBreakdown ?? {};
-  const total = Object.values(breakdown).reduce((sum, count) => sum + count, 0);
-
-  return (
-    <div className="grid gap-10 lg:grid-cols-[300px_minmax(0,1fr)]">
-      <div>
-        <p className="font-serif text-5xl font-semibold text-emerald-950">{product.ratingAverage ? product.ratingAverage.toFixed(1) : '—'}</p>
-        <Stars value={product.ratingAverage} className="mt-2" size={18} />
-        <p className="mt-1 text-sm text-stone-500">{product.ratingCount} review{product.ratingCount === 1 ? '' : 's'}</p>
-        <ul className="mt-5 space-y-2">
-          {[5, 4, 3, 2, 1].map((star) => (
-            <li key={star} className="flex items-center gap-3 text-sm">
-              <span className="w-8 text-stone-600">{star}★</span>
-              <span className="h-2 flex-1 overflow-hidden rounded-full bg-stone-100"><span className="block h-full rounded-full bg-amber-400" style={{ width: `${total ? (breakdown[star] / total) * 100 : 0}%` }} /></span>
-              <span className="w-6 text-right text-stone-500 tabular-nums">{breakdown[star] ?? 0}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div className="space-y-6">
-        {isSignedIn ? (!submitted && <ReviewForm product={product} onDone={() => setSubmitted(true)} />) : (
-          <p className="rounded-2xl bg-stone-50 px-5 py-4 text-sm text-stone-700 ring-1 ring-stone-200/70"><Link to={`/login?next=${encodeURIComponent(location.pathname)}`} className="font-semibold text-emerald-800 underline">Sign in</Link> to write a review.</p>
-        )}
-        {loading && page === 1 ? <div className="space-y-4">{[0, 1].map((i) => <Skel key={i} className="h-24 rounded-2xl" />)}</div> : !items.length ? (
-          <p className="text-stone-600">No reviews yet. Be the first to share your experience.</p>
-        ) : (
-          <ul className="divide-y divide-stone-100">
-            {items.map((review) => (
-              <li key={review.id} className="py-5 first:pt-0">
-                <div className="flex flex-wrap items-center gap-3"><Stars value={review.rating} /><span className="text-sm font-semibold text-stone-900">{review.author}</span><span className="text-xs text-stone-400">{date(review.createdAt)}</span></div>
-                {review.title && <p className="mt-2 font-semibold text-stone-900">{review.title}</p>}
-                {review.comment && <p className="mt-1 leading-relaxed text-stone-700">{review.comment}</p>}
-                {review.adminReply && <p className="mt-3 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-900"><span className="font-semibold">Store reply: </span>{review.adminReply}</p>}
-              </li>
-            ))}
-          </ul>
-        )}
-        {data?.pagination?.hasNextPage && <button type="button" disabled={loading} onClick={() => setPage((value) => value + 1)} className={`${btn.secondary} h-11 text-sm`}>{loading ? 'Loading…' : 'Show more reviews'}</button>}
-      </div>
-    </div>
-  );
-}
-
 function InfoTable({ product }) {
   const dims = product.dimensions ?? {};
   const rows = [
@@ -167,20 +79,40 @@ function InfoTable({ product }) {
 const Prose = ({ text }) => <div className="max-w-3xl leading-relaxed whitespace-pre-line text-stone-700">{text}</div>;
 
 function Tabs({ product }) {
+  const [reviewCount, setReviewCount] = useState(product.ratingCount ?? 0);
+  useEffect(() => setReviewCount(product.ratingCount ?? 0), [product.id, product.ratingCount]);
   const tabs = [
     product.description && { key: 'description', label: 'Description', body: <Prose text={product.description} /> },
     { key: 'info', label: 'Product information', body: <InfoTable product={product} /> },
     product.ingredients && { key: 'ingredients', label: 'Ingredients', body: <Prose text={product.ingredients} /> },
     product.howToUse && { key: 'how', label: 'How to use', body: <Prose text={product.howToUse} /> },
     product.benefits && { key: 'benefits', label: 'Benefits', body: <Prose text={product.benefits} /> },
-    { key: 'reviews', label: `Reviews (${product.ratingCount})`, body: <Reviews product={product} /> },
+    { key: 'reviews', label: `Reviews (${reviewCount})`, body: <Reviews product={product} onCountChange={setReviewCount} /> },
   ].filter(Boolean);
   const [active, setActive] = useState(tabs[0].key);
   useEffect(() => setActive(tabs[0].key), [product.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  // "#reviews" (rating link under the title, shared links) opens the Reviews tab and scrolls to it.
+  useEffect(() => {
+    const open = () => {
+      if (window.location.hash !== '#reviews') return;
+      setActive('reviews');
+      requestAnimationFrame(() => document.getElementById('details')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    };
+    open();
+    window.addEventListener('hashchange', open);
+    return () => window.removeEventListener('hashchange', open);
+  }, [product.id]);
   const current = tabs.find((tab) => tab.key === active) ?? tabs[0];
+  const tablist = useRef(null);
+  // Keep the active tab visible in the scrollable tab strip (phones), without scrolling the page.
+  useEffect(() => {
+    const strip = tablist.current;
+    const tab = strip?.querySelector('[aria-selected="true"]');
+    if (strip && tab) strip.scrollTo({ left: tab.offsetLeft - strip.clientWidth / 2 + tab.clientWidth / 2, behavior: 'smooth' });
+  }, [current.key]);
   return (
-    <section className="mt-16" id="details">
-      <div role="tablist" aria-label="Product details" className="flex gap-1 overflow-x-auto border-b border-stone-200 [scrollbar-width:none]">
+    <section className="mt-16 scroll-mt-28" id="details">
+      <div ref={tablist} role="tablist" aria-label="Product details" className="flex gap-1 overflow-x-auto border-b border-stone-200 [scrollbar-width:none]">
         {tabs.map((tab) => (
           <button key={tab.key} type="button" role="tab" id={`tab-${tab.key}`} aria-selected={tab.key === current.key} aria-controls={`panel-${tab.key}`} onClick={() => setActive(tab.key)} className={`-mb-px shrink-0 cursor-pointer border-b-2 px-5 py-3.5 text-sm font-semibold transition ${tab.key === current.key ? 'border-emerald-800 text-emerald-900' : 'border-transparent text-stone-500 hover:text-stone-900'}`}>{tab.label}</button>
         ))}
@@ -296,7 +228,7 @@ export default function ProductPage() {
             {product.brand && <p className="text-sm font-semibold tracking-wider text-emerald-700 uppercase">{product.brand}</p>}
             <h1 className="mt-1 font-serif text-3xl leading-tight font-semibold text-emerald-950 sm:text-4xl">{product.name}</h1>
             <div className="mt-3 flex flex-wrap items-center gap-4 text-sm">
-              <a href="#details" className="inline-flex items-center gap-2"><Stars value={product.ratingAverage} size={16} /><span className="text-stone-600">{product.ratingCount} review{product.ratingCount === 1 ? '' : 's'}</span></a>
+              <a href="#reviews" onClick={(event) => { event.preventDefault(); window.history.replaceState(null, '', '#reviews'); window.dispatchEvent(new HashChangeEvent('hashchange')); }} className="inline-flex items-center gap-2 rounded-full transition hover:opacity-80"><Stars value={product.ratingAverage} size={16} /><span className="font-semibold text-stone-800 tabular-nums">{product.ratingAverage ? product.ratingAverage.toFixed(1) : ''}</span><span className="text-stone-600 underline-offset-2 hover:underline">{product.ratingCount ? `${product.ratingCount} review${product.ratingCount === 1 ? '' : 's'}` : 'Be the first to review'}</span></a>
               <span className="text-stone-400">SKU: {product.sku}</span>
             </div>
             <div className="mt-6 flex flex-wrap items-center gap-3">

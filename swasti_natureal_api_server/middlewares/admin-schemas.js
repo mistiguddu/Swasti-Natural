@@ -197,8 +197,17 @@ export const shippingSchema = body({
 export const reviewModerationSchema = body({
   status: z.enum(['pending', 'approved', 'rejected']).optional(),
   adminReply: text(2000).optional(),
+  clearReports: bool.optional(),
 });
-export const createReviewSchema = body({ product: objectId, rating: number({ min: 1, max: 5, int: true }), title: text(150), comment: text(3000) });
+const reviewFields = {
+  rating: number({ min: 1, max: 5, int: true }),
+  title: text(150),
+  comment: requiredText(10, 3000),
+};
+export const createReviewSchema = body({ product: objectId, ...reviewFields });
+/** Editing your own review: `keepImages` lists the existing photos to keep (new ones come as files). */
+export const updateOwnReviewSchema = body({ ...reviewFields, keepImages: z.array(z.string().max(300)).max(4).default([]) });
+export const reportReviewSchema = body({ reason: z.enum(['spam', 'offensive', 'irrelevant', 'fake', 'other']).default('other'), details: text(300) });
 
 const socialUrl = text(300).refine((value) => !value || /^https:\/\//.test(value), 'Use a full https:// link');
 export const generalSettingsSchema = body({

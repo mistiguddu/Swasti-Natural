@@ -12,7 +12,7 @@ import { streamChannel } from '../services/chat-events.js';
 import { imageUpload, parseMultipartJson } from '../config/upload.js';
 import {
   bannerSchema, brandingSchema, storeThemeSchema, bulkIdsSchema, couponSchema, createReviewSchema, discountSchema, generalSettingsSchema,
-  reviewModerationSchema, shippingSchema, storeSettingsSchema,
+  reviewModerationSchema, reportReviewSchema, updateOwnReviewSchema, shippingSchema, storeSettingsSchema,
 } from '../middlewares/admin-schemas.js';
 
 const guard = (permission) => [authenticate, requirePermission(permission)];
@@ -47,9 +47,24 @@ export const shippingRouter = mount('shipping.manage', createCrudRouter(createCr
 
 /* Reviews: customers create, staff moderate */
 export const reviewRouter = Router();
-reviewRouter.post('/', authenticate, validate(createReviewSchema), asyncHandler(async (req, res) => {
-  res.status(201).json({ data: await reviews.createReview(req.validated.body, req.user) });
+/* Customers: write, edit and delete their own review (with up to 4 photos), vote helpful, report. */
+const reviewPhotos = [imageUpload('reviews', [{ name: 'images', maxCount: 4 }]), parseMultipartJson];
+reviewRouter.post('/', authenticate, ...reviewPhotos, validate(createReviewSchema), asyncHandler(async (req, res) => {
+  res.status(201).json({ data: await reviews.createReview(req.validated.body, req.user, req.files) });
 }));
+reviewRouter.get('/mine/:productId', authenticate, asyncHandler(async (req, res) => res.json({ data: await reviews.myReview(req.params.productId, req.user) })));
+reviewRouter.put('/mine/:id', authenticate, ...reviewPhotos, validate(updateOwnReviewSchema), asyncHandler(async (req, res) => {
+  res.json({ data: await reviews.updateOwnReview(req.params.id, req.validated.body, req.user, req.files) });
+}));
+reviewRouter.delete('/mine/:id', authenticate, asyncHandler(async (req, res) => {
+  await reviews.deleteOwnReview(req.params.id, req.user);
+  res.status(204).end();
+}));
+reviewRouter.post('/:id/helpful', authenticate, asyncHandler(async (req, res) => res.json({ data: await reviews.toggleHelpful(req.params.id, req.user) })));
+reviewRouter.post('/:id/report', authenticate, validate(reportReviewSchema), asyncHandler(async (req, res) => {
+  res.json({ data: await reviews.reportReview(req.params.id, req.validated.body, req.user) });
+}));
+
 reviewRouter.use(...guard('reviews.manage'));
 reviewRouter.get('/', asyncHandler(async (req, res) => res.json({ data: await reviews.listReviews(req.query) })));
 reviewRouter.post('/bulk-delete', validate(bulkIdsSchema), asyncHandler(async (req, res) => res.json({ data: await reviews.bulkDeleteReviews(req.validated.body.ids) })));

@@ -214,24 +214,6 @@ export async function getProduct(slugOrId) {
 }
 
 /** Approved reviews for a product (customer first name only). */
-export async function listProductReviews(productId, query = {}) {
-  if (!isObjectId(String(productId))) throw new AppError('Invalid product', 400);
-  const page = Math.max(1, Number.parseInt(query.page, 10) || 1);
-  const limit = Math.min(20, Math.max(1, Number.parseInt(query.limit, 10) || 5));
-  const filter = { product: productId, status: 'approved' };
-  const [items, total] = await Promise.all([
-    Review.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).populate('customer', 'name').lean(),
-    Review.countDocuments(filter),
-  ]);
-  return {
-    items: items.map((review) => ({
-      id: String(review._id), rating: review.rating, title: review.title, comment: review.comment, adminReply: review.adminReply,
-      author: (review.customer?.name ?? 'Customer').split(' ')[0], createdAt: review.createdAt,
-    })),
-    pagination: paginationMeta(total, page, limit),
-  };
-}
-
 async function productSection(match, sort, limit, byId) {
   const items = await Product.find({ status: 'active', category: { $in: [...byId.keys()] }, ...match }).sort(sort).limit(limit).select(CARD_FIELDS).lean();
   return items.map((item) => toPublicProduct(item, byId));

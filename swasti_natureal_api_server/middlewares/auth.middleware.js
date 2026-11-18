@@ -29,6 +29,20 @@ export const authenticate = asyncHandler(async (req, res, next) => {
   next();
 });
 
+/** Sets req.user when a valid token is sent; otherwise continues as a guest (never fails). */
+export async function optionalAuthenticate(req, res, next) {
+  const [scheme, token] = (req.get('authorization') ?? '').split(' ');
+  if (scheme === 'Bearer' && token) {
+    try {
+      const user = await User.findById(verifyAccessToken(token).sub);
+      if (user?.isActive) req.user = user;
+    } catch {
+      // Expired or invalid token: treat as a guest.
+    }
+  }
+  next();
+}
+
 export function requirePermission(permission) {
   return (req, res, next) => {
     if (!hasPermission(req.user, permission)) {

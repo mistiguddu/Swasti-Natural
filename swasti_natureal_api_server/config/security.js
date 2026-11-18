@@ -77,7 +77,9 @@ const chatLimiter = rateLimit({
 
 export function configureSecurity(app) {
   app.disable('x-powered-by');
-  app.set('trust proxy', env.trustProxy ? 1 : false);
+  // The web client's Next.js proxy forwards /api from this machine and adds X-Forwarded-For;
+  // trusting it lets rate limits see each visitor's real IP instead of 127.0.0.1.
+  app.set('trust proxy', env.trustProxy);
   app.use(helmet());
   app.use(cors(httpCorsOptions));
   app.use('/api', apiLimiter);

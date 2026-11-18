@@ -11,7 +11,9 @@ const schema = z.object({
   JWT_SECRET: z.string().min(32),
   JWT_EXPIRES_IN: z.string().regex(/^[1-9]\d*(s|m|h|d|w|y)$/, 'Use a duration such as 15m or 1h').default('1h'),
   CORS_ORIGINS: z.string().default(''),
-  TRUST_PROXY: z.enum(['true', 'false']).default('false'),
+  // Which proxies may set X-Forwarded-For: 'loopback' (the Next.js web client on this machine, default),
+  // 'true' (one hop, e.g. nginx), a hop count, an IP/subnet list, or 'false' (none).
+  TRUST_PROXY: z.string().trim().min(1).default('loopback'),
   SUPERADMIN_NAME: z.string().trim().min(2).max(80).default('Super Administrator'),
   SUPERADMIN_EMAIL: z.string().trim().email().default('superadmin@gmail.com'),
   SUPERADMIN_PASSWORD: z.string().max(128).optional(),
@@ -29,6 +31,14 @@ const schema = z.object({
   SMTP_FROM: z.string().optional(),
 });
 
+/** Express 'trust proxy' value from TRUST_PROXY. */
+function parseTrustProxy(value) {
+  if (value === 'false') return false;
+  if (value === 'true') return 1;
+  if (/^\d+$/.test(value)) return Number(value);
+  return value; // 'loopback', 'uniquelocal', '10.0.0.1', '10.0.0.0/8, 127.0.0.1' …
+}
+
 const parsed = schema.safeParse(process.env);
 if (!parsed.success) {
   const details = parsed.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('; ');
@@ -43,7 +53,7 @@ export const env = {
   jwtSecret: parsed.data.JWT_SECRET,
   jwtExpiresIn: parsed.data.JWT_EXPIRES_IN,
   corsOrigins: parsed.data.CORS_ORIGINS,
-  trustProxy: parsed.data.TRUST_PROXY === 'true',
+  trustProxy: parseTrustProxy(parsed.data.TRUST_PROXY),
   clientUrl: parsed.data.CLIENT_URL.replace(/\/$/, ''),
   smtp: parsed.data.SMTP_HOST ? {
     host: parsed.data.SMTP_HOST,

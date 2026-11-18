@@ -1084,6 +1084,7 @@ const bn = {
   'Every collection in this backup will be replaced with the backup’s data. A backup of the current data is saved first, and everything is rolled back if the restore fails.': 'এই ব্যাকআপের প্রতিটি কালেকশন ব্যাকআপের ডেটা দিয়ে প্রতিস্থাপিত হবে। আগে বর্তমান ডেটার ব্যাকআপ রাখা হয়, আর রিস্টোর ব্যর্থ হলে সব ফিরিয়ে আনা হয়।',
   'Done': 'সম্পন্ন',
   'Back up, export, import & restore the database': 'ডাটাবেস ব্যাকআপ, এক্সপোর্ট, ইমপোর্ট ও রিস্টোর',
+  'Enter your password to confirm': 'নিশ্চিত করতে আপনার পাসওয়ার্ড দিন',
 };
 
 export default bn;

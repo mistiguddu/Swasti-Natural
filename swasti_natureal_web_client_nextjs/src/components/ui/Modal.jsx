@@ -8,19 +8,28 @@ import { t } from '../../i18n/index.js';
 
 function useDialog(open, onClose) {
   const panel = useRef(null);
+  // Keep the latest onClose in a ref: callers pass inline functions, and depending on them
+  // re-ran this effect on every keystroke, moving focus out of the dialog's inputs (and
+  // closing the phone keyboard) after each character.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
   useEffect(() => {
     if (!open) return undefined;
     const previous = document.activeElement;
-    const onKey = (event) => { if (event.key === 'Escape') onClose?.(); };
+    const onKey = (event) => { if (event.key === 'Escape') onCloseRef.current?.(); };
     document.addEventListener('keydown', onKey);
     document.body.style.overflow = 'hidden';
-    requestAnimationFrame(() => panel.current?.querySelector('[data-autofocus], input, select, textarea, button')?.focus());
+    // Prefer the field marked data-autofocus; otherwise the first field, then the first button.
+    requestAnimationFrame(() => {
+      const root = panel.current;
+      (root?.querySelector('[data-autofocus]') ?? root?.querySelector('input, select, textarea') ?? root?.querySelector('button'))?.focus();
+    });
     return () => {
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = '';
       previous?.focus?.();
     };
-  }, [open, onClose]);
+  }, [open]);
   return panel;
 }
 

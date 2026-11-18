@@ -282,6 +282,7 @@ function ImportCard({ onImported }) {
   };
 
   const runImport = async () => {
+    if (!password) { setPasswordError(t('Enter your password to confirm')); return; }
     setBusy(true); setPasswordError('');
     try {
       const data = await api.post('/database/import', { uploadId: preview.uploadId, mode, collections: [...selected], password }, { timeout: 0 });
@@ -380,11 +381,11 @@ function ImportCard({ onImported }) {
         footer={(
           <>
             <Button variant="secondary" onClick={() => setConfirming(false)} disabled={busy}>Cancel</Button>
-            <Button variant={mode === 'replace' ? 'danger' : 'primary'} icon={ArchiveRestore} busy={busy} busyLabel="Importing…" disabled={!password} onClick={runImport}>Import now</Button>
+            <Button variant={mode === 'replace' ? 'danger' : 'primary'} icon={ArchiveRestore} busy={busy} busyLabel="Importing…" onClick={runImport}>Import now</Button>
           </>
         )}
       >
-        <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); if (password && !busy) runImport(); }}>
+        <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); if (!busy) runImport(); }}>
           <ul className="space-y-1.5 text-sm text-slate-600">
             <li>• {t('{n} collection(s): {names}').replace('{n}', chosenCollections.length).replace('{names}', chosenCollections.map((item) => item.name).join(', '))}</li>
             <li>• {mode === 'replace' ? t('Replace: {n} current document(s) will be deleted first.').replace('{n}', number(willDelete)) : t('Merge: matching _id documents are overwritten; nothing is deleted.')}</li>
@@ -395,7 +396,7 @@ function ImportCard({ onImported }) {
               {t('This changes user accounts. If your own account is replaced, you may be signed out and need to sign in with the password from the backup.')}
             </p>
           )}
-          <FormInput label="Your password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} error={passwordError} required data-autofocus />
+          <FormInput label="Your password" type="password" autoComplete="current-password" value={password} onChange={(event) => { setPassword(event.target.value); if (passwordError) setPasswordError(''); }} error={passwordError} required data-autofocus />
         </form>
       </Modal>
     </Card>
@@ -415,6 +416,7 @@ function BackupsCard({ backups, onChanged }) {
   const open = (type, backup) => { setAction({ type, backup }); setPassword(''); setPasswordError(''); };
 
   const run = async () => {
+    if (!password) { setPasswordError(t('Enter your password to confirm')); return; }
     setBusy(true); setPasswordError('');
     try {
       const name = encodeURIComponent(action.backup.name);
@@ -509,19 +511,19 @@ function BackupsCard({ backups, onChanged }) {
         footer={(
           <>
             <Button variant="secondary" onClick={() => setAction(null)} disabled={busy}>Cancel</Button>
-            <Button variant="danger" icon={action?.type === 'delete' ? Trash2 : ArchiveRestore} busy={busy} busyLabel={action?.type === 'delete' ? 'Deleting…' : 'Restoring…'} disabled={!password} onClick={run}>
+            <Button variant="danger" icon={action?.type === 'delete' ? Trash2 : ArchiveRestore} busy={busy} busyLabel={action?.type === 'delete' ? 'Deleting…' : 'Restoring…'} onClick={run}>
               {action?.type === 'delete' ? 'Delete' : 'Restore now'}
             </Button>
           </>
         )}
       >
-        <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); if (password && !busy) run(); }}>
+        <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); if (!busy) run(); }}>
           <p className="text-sm text-slate-600">
             {action?.type === 'delete'
               ? t('The backup file will be removed from the server permanently.')
               : t('Every collection in this backup will be replaced with the backup’s data. A backup of the current data is saved first, and everything is rolled back if the restore fails.')}
           </p>
-          <FormInput label="Your password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} error={passwordError} required data-autofocus />
+          <FormInput label="Your password" type="password" autoComplete="current-password" value={password} onChange={(event) => { setPassword(event.target.value); if (passwordError) setPasswordError(''); }} error={passwordError} required data-autofocus />
         </form>
       </Modal>
     </Card>

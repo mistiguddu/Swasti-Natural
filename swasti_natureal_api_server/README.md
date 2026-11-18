@@ -143,6 +143,34 @@ Interactive OpenAPI documentation is at `http://localhost:3000/api/docs`. All ap
 2. Log in using `POST /api/v1/auth/login` with `{"email":"asha@example.com","password":"a-long-password-123"}`. Copy `data.accessToken` from the response.
 3. Request `GET http://localhost:3000/api/v1/auth/me` with that token under **Authorization > Bearer Token**.
 
+## Database Backup, Export And Import (super admin)
+
+Admin dashboard → **Database** (`/admin/database`). Only the `superadmin` role has the
+`database.manage` permission; admins (and a super admin "viewing as admin") get 403.
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /api/v1/database` | Collections, document counts, sizes and server backups |
+| `GET /api/v1/database/export?format=bson\|json&collections=a,b` | Download a ZIP |
+| `POST /api/v1/database/import/preview` (multipart `file`) | Upload and check a file; nothing changes |
+| `POST /api/v1/database/import` `{ uploadId, mode: merge\|replace, collections, password }` | Apply it |
+| `GET/POST /api/v1/database/backups`, `GET /backups/:name` | List, save on server, download |
+| `POST /backups/:name/restore`, `DELETE /backups/:name` (with `password`) | Restore / delete |
+
+Formats (real MongoDB tool formats, exact types preserved):
+
+- **bson** — mongodump layout `dump/<db>/<collection>.bson` + `.metadata.json` (indexes).
+  Unzip, then `mongorestore --uri="<connection string>" --dir=dump`.
+- **json** — mongoexport layout, canonical Extended JSON v2, one document per line.
+  `mongoimport --uri="<connection string>" --collection=<name> --file=<db>/<name>.json`.
+
+Import accepts these ZIPs (or ones made by mongodump/mongoexport and zipped), a single `.bson`,
+or a single `.json` (lines or `--jsonArray`), up to 250 MB. Safety: the password is asked again;
+the affected collections are backed up to `backups/` first (newest 20 automatic backups kept);
+any failure — or an import that would leave no active super admin — rolls everything back; only
+one import runs at a time. Backups contain password hashes and customer data: `backups/` is
+git-ignored, keep it private.
+
 ## Production
 
 For a Windows host, set production environment variables through the host's secret manager, ensure MongoDB is reachable, then run:

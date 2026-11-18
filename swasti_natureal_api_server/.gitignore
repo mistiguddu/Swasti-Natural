@@ -3,4 +3,7 @@ node_modules/
 .env.*
 !.env.example
 npm-debug.log*
-.DS_Storeuploads/
+.DS_Store
+uploads/
+# Database backups (contain customer data and password hashes)
+backups/

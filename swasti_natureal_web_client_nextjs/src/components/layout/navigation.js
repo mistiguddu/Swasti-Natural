@@ -1,5 +1,5 @@
 import {
-  BarChart3, Bell, Boxes, CreditCard, LayoutDashboard, Megaphone, MessagesSquare, Package, Settings, ShoppingCart, Star, Truck, UserCog, Users,
+  BarChart3, Bell, Boxes, CreditCard, Database, LayoutDashboard, Megaphone, MessagesSquare, Package, Settings, ShoppingCart, Star, Truck, UserCog, Users,
 } from 'lucide-react';
 
 /** Sidebar structure. `permission` hides an entry from roles that lack it. */
@@ -80,6 +80,8 @@ export const NAVIGATION = [
   { label: 'Payments', icon: CreditCard, to: '/payments', permission: 'orders.manage' },
   { label: 'Shipping Management', icon: Truck, to: '/shipping', permission: 'shipping.manage' },
   { label: 'Notifications', icon: Bell, to: '/notifications', permission: 'dashboard.view', badge: 'notifications' },
+  // Super administrators only (the API never grants database.manage to admins).
+  { label: 'Database', icon: Database, to: '/database', permission: 'database.manage' },
   {
     label: 'Settings', icon: Settings,
     children: [

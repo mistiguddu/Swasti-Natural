@@ -12,6 +12,7 @@ export const PERMISSIONS = [
   { key: 'settings.manage', group: 'Operations', label: 'Manage store settings' },
   { key: 'users.manage', group: 'Administration', label: 'Manage customer accounts' },
   { key: 'admins.manage', group: 'Administration', label: 'Manage admin & super admin accounts' },
+  { key: 'database.manage', group: 'Administration', label: 'Back up, export, import & restore the database' },
 ];
 
 const ALL = PERMISSIONS.map((permission) => permission.key);
@@ -24,8 +25,8 @@ export const ROLE_DEFINITIONS = {
   },
   admin: {
     label: 'Administrator',
-    description: 'Runs the store day to day. Cannot manage administrator accounts.',
-    permissions: ALL.filter((key) => key !== 'admins.manage'),
+    description: 'Runs the store day to day. Cannot manage administrator accounts or the database.',
+    permissions: ALL.filter((key) => key !== 'admins.manage' && key !== 'database.manage'),
   },
   user: {
     label: 'Customer',

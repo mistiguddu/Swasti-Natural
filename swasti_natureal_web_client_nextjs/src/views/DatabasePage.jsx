@@ -182,7 +182,7 @@ function ExportCard({ collections, onSaved }) {
         <div className="grid gap-3 md:grid-cols-2">
           {FORMATS.map((item) => <OptionCard key={item.key} active={format === item.key} onClick={() => setFormat(item.key)} icon={item.icon} title={item.title} badge={item.badge} description={item.description} />)}
         </div>
-        <div className="rounded-xl bg-slate-900 px-4 py-3 font-mono text-[12px] text-slate-100">
+        <div className="overflow-x-auto rounded-xl bg-slate-900 px-4 py-3 font-mono text-[12px] break-all text-slate-100">
           <span className="text-slate-400"># {t('Restore with MongoDB tools after unzipping')}</span>
           <br />
           {current.command}
@@ -330,7 +330,7 @@ function ImportCard({ onImported }) {
         ) : (
           <>
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl bg-slate-50 px-4 py-3 text-sm">
-              <span className="flex items-center gap-2 font-semibold text-slate-800"><FileArchive size={16} className="text-teal-600" />{preview.fileName}</span>
+              <span className="flex min-w-0 max-w-full items-start gap-2 font-semibold break-all text-slate-800"><FileArchive size={16} className="mt-0.5 shrink-0 text-teal-600" />{preview.fileName}</span>
               <span className="text-slate-500">{bytes(preview.size)}</span>
               <span className="text-slate-500">{preview.format === 'bson' ? t('BSON (mongodump)') : preview.format === 'json' ? t('Extended JSON (mongoexport)') : t('BSON + JSON')}</span>
               {preview.database && <span className="text-slate-500">{t('From database')} <span className="font-mono">{preview.database}</span></span>}
@@ -346,12 +346,12 @@ function ImportCard({ onImported }) {
               selected={selected}
               onChange={setSelected}
               extra={{
-                header: <><span className="w-24 text-right">{t('In file')}</span><span className="w-24 text-right">{t('Now')}</span></>,
+                header: <><span className="w-14 text-right sm:w-24">{t('In file')}</span><span className="w-14 text-right sm:w-24">{t('Now')}</span></>,
                 row: (item) => (
                   <>
                     {!item.exists && <StatusBadge tone="sky" label="New" />}
-                    <span className="w-24 text-right text-xs text-slate-700 tabular-nums">{number(item.documents)}</span>
-                    <span className="w-24 text-right text-xs text-slate-500 tabular-nums">{item.exists ? number(item.currentDocuments) : '—'}</span>
+                    <span className="w-14 shrink-0 text-right text-xs sm:w-24 text-slate-700 tabular-nums">{number(item.documents)}</span>
+                    <span className="w-14 shrink-0 text-right text-xs sm:w-24 text-slate-500 tabular-nums">{item.exists ? number(item.currentDocuments) : '—'}</span>
                   </>
                 ),
               }}
@@ -452,7 +452,26 @@ function BackupsCard({ backups, onChanged }) {
       {backups.length === 0 ? (
         <EmptyState icon={HardDrive} title="No backups yet" message="Use “Save backup on server” above to keep a copy on the server." />
       ) : (
-        <div className="overflow-x-auto">
+        <>
+        <ul className="divide-y divide-slate-100 sm:hidden">
+          {backups.map((backup) => (
+            <li key={backup.name} className="space-y-2 px-4 py-3.5">
+              <p className="font-mono text-[12px] break-all text-slate-800">{backup.name}</p>
+              <p className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500">
+                <span>{backup.format === 'bson' ? 'BSON' : 'Extended JSON'}</span>
+                <span>{bytes(backup.size)}</span>
+                <span>{dateTime(backup.createdAt)}</span>
+                {backup.automatic && <span className="text-amber-700">{t('Automatic, before an import or restore')}</span>}
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                <Button size="sm" variant="secondary" icon={Download} busy={downloading === backup.name} busyLabel="…" onClick={() => get(backup)}>Download</Button>
+                <Button size="sm" variant="soft" icon={ArchiveRestore} onClick={() => open('restore', backup)}>Restore</Button>
+                <Button size="sm" variant="danger-ghost" icon={Trash2} onClick={() => open('delete', backup)}>Delete</Button>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <div className="hidden overflow-x-auto sm:block">
           <table className="w-full min-w-[640px] text-sm">
             <thead className="border-b border-slate-100 text-left text-xs text-slate-500">
               <tr><th className="px-5 py-2.5">{t('File')}</th><th className="px-3 py-2.5">{t('Format')}</th><th className="px-3 py-2.5 text-right">{t('Size')}</th><th className="px-3 py-2.5">{t('Created')}</th><th className="px-5 py-2.5 text-right">{t('Actions')}</th></tr>
@@ -479,6 +498,7 @@ function BackupsCard({ backups, onChanged }) {
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       <Modal
@@ -527,7 +547,7 @@ export default function DatabasePage() {
         actions={<Button variant="secondary" icon={RefreshCw} onClick={reload}>Refresh</Button>}
       />
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard title="Database" value={data.database} icon={Database} />
+        <StatCard title="Database" value={<span className="block truncate text-xl sm:text-2xl" title={data.database}>{data.database}</span>} icon={Database} />
         <StatCard title="Collections" value={number(data.totals.collections)} icon={Layers} accent="sky" />
         <StatCard title="Documents" value={number(data.totals.documents)} icon={FileJson} accent="violet" />
         <StatCard title="Data size" value={data.stats ? bytes(data.stats.dataSize) : '—'} icon={HardDrive} accent="amber" footnote={data.stats ? `${t('Storage')} ${bytes(data.stats.storageSize)} · ${t('Indexes')} ${bytes(data.stats.indexSize)}` : undefined} />

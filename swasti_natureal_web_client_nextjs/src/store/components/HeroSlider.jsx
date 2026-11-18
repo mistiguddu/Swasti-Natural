@@ -2,16 +2,20 @@
 
 import { useCallback, useRef, useState } from 'react';
 import { Link } from '@/router';
-import { ArrowRight, ChevronLeft, ChevronRight, Flame, Leaf, Sparkles, Tag, Truck } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, Flame, Leaf, ShieldCheck, Sparkles, Star, Tag, Truck } from 'lucide-react';
 import { money } from '../../lib/format.js';
-import { Container, ProductImage, btn } from './ui.jsx';
+import { Container, ProductImage } from './ui.jsx';
 
-const THEMES = {
-  emerald: { bg: 'from-emerald-950 via-emerald-900 to-emerald-700', glow: 'bg-emerald-300/25', glow2: 'bg-lime-300/15' },
-  amber: { bg: 'from-stone-950 via-amber-950 to-amber-800', glow: 'bg-amber-300/25', glow2: 'bg-orange-300/15' },
-  teal: { bg: 'from-teal-950 via-teal-900 to-emerald-800', glow: 'bg-teal-200/20', glow2: 'bg-emerald-300/15' },
+/*
+ * Slide tones. `brand` uses emerald-*, which the storefront theme re-points, so slides follow
+ * the theme picked in Settings → Branding. `warm` is for offers; `fresh` for new arrivals.
+ */
+const TONES = {
+  brand: { bg: 'from-emerald-50 via-white to-emerald-100/70', blob: 'bg-emerald-200/60', blob2: 'bg-emerald-100', pill: 'text-emerald-800 ring-emerald-200' },
+  warm: { bg: 'from-amber-50 via-orange-50/60 to-amber-100/80', blob: 'bg-amber-200/60', blob2: 'bg-orange-100', pill: 'text-amber-800 ring-amber-200' },
+  fresh: { bg: 'from-lime-50 via-white to-emerald-50', blob: 'bg-lime-200/50', blob2: 'bg-emerald-100', pill: 'text-emerald-800 ring-lime-200' },
 };
-const THEME_ORDER = ['teal', 'emerald', 'amber'];
+const CATEGORY_TONES = ['brand', 'fresh', 'warm'];
 
 const isExternal = (link) => /^https?:\/\//.test(link ?? '');
 function SmartLink({ to, className, children, tabIndex }) {
@@ -24,32 +28,41 @@ function SmartLink({ to, className, children, tabIndex }) {
  * real store data (offers, new arrivals, top categories) — nothing is invented.
  */
 export function buildSlides(data) {
-  if (data.slides?.length) return data.slides.map((slide) => ({ ...slide, kind: 'image' }));
+  if (data.slides?.length) return data.slides.map((slide) => ({ ...slide, kind: 'image', label: slide.title }));
   const slides = [];
   if (data.onSale?.length) {
     const best = Math.max(...data.onSale.map((product) => Math.round(product.discountPercentage || 0)));
     slides.push({
-      id: 'offers', kind: 'products', theme: 'amber', icon: Tag, eyebrow: 'Special offers',
+      id: 'offers', kind: 'products', tone: 'warm', icon: Tag, eyebrow: 'Special offers', label: 'Offers',
       title: best > 0 ? `Save up to ${best}% on natural favourites` : 'Special prices on natural favourites',
       subtitle: 'Limited-time prices on selected products. Pay in cash when your order arrives.',
-      link: '/products?onSale=true', buttonText: 'Shop offers', products: data.onSale.slice(0, 3),
+      link: '/products?onSale=true', buttonText: 'Shop offers',
+      products: [...data.onSale].sort((a, b) => (b.discountPercentage || 0) - (a.discountPercentage || 0)).slice(0, 3),
     });
   }
   if (data.newArrivals?.length) {
     slides.push({
-      id: 'new', kind: 'products', theme: 'emerald', icon: Sparkles, eyebrow: 'Just arrived',
+      id: 'new', kind: 'products', tone: 'fresh', icon: Sparkles, eyebrow: 'Just arrived', label: 'New arrivals',
       title: 'Fresh additions to our natural collection',
-      subtitle: 'Discover the newest products on our shelves.',
+      subtitle: 'Discover the newest products on our shelves, picked for quality and purity.',
       link: '/products?sort=latest', buttonText: 'See what’s new', products: data.newArrivals.slice(0, 3),
+    });
+  }
+  if (data.bestSelling?.length && slides.length < 3) {
+    slides.push({
+      id: 'best', kind: 'products', tone: 'brand', icon: Flame, eyebrow: 'Customer favourites', label: 'Best sellers',
+      title: 'Loved by our customers, again and again',
+      subtitle: 'The natural products people come back for.',
+      link: '/products?sort=popular', buttonText: 'Shop best sellers', products: data.bestSelling.slice(0, 3),
     });
   }
   (data.categories ?? []).filter((category) => category.image).slice(0, 3).forEach((category, index) => {
     slides.push({
-      id: `category-${category.id}`, kind: 'category', theme: THEME_ORDER[index % THEME_ORDER.length], icon: Leaf,
-      eyebrow: `${category.productCount} product${category.productCount === 1 ? '' : 's'}`,
+      id: `category-${category.id}`, kind: 'category', tone: CATEGORY_TONES[index % CATEGORY_TONES.length], icon: Leaf,
+      eyebrow: `${category.productCount} product${category.productCount === 1 ? '' : 's'}`, label: category.name,
       title: category.name,
       subtitle: category.shortDescription || `Explore our ${category.name.toLowerCase()} collection.`,
-      link: `/category/${category.slug}`, buttonText: `Shop ${category.name}`, image: category.image,
+      link: `/category/${category.slug}`, buttonText: `Shop ${category.name}`, image: category.image, count: category.productCount,
     });
   });
   return slides;
@@ -97,41 +110,97 @@ function PromoTile({ promo }) {
   );
 }
 
-function ProductCollage({ products, hidden }) {
-  const positions = ['lg:translate-y-8', 'z-10 lg:-translate-y-3 lg:scale-110', 'lg:translate-y-12'];
+/** Staggered entrance for the active slide (restarts whenever the slide becomes active). */
+// Inactive slides keep their content visible, so the outgoing slide fades out whole (no blank flash).
+const enter = (active, delay) => (active ? { className: 'motion-safe:animate-fade-up', style: { animationDelay: `${delay}ms` } } : { className: '', style: undefined });
+
+function SlideText({ slide, active, hidden }) {
+  const Icon = slide.icon ?? Sparkles;
+  const tone = TONES[slide.tone] ?? TONES.brand;
+  const a = enter(active, 0);
+  const b = enter(active, 90);
+  const c = enter(active, 180);
+  const d = enter(active, 270);
   return (
-    <div className="grid grid-cols-3 items-end gap-2 sm:gap-4 lg:items-center">
-      {products.map((product, i) => (
-        <Link key={product.id} to={`/product/${product.slug}`} tabIndex={hidden ? -1 : undefined} draggable={false} className={`group rounded-2xl bg-white p-1.5 shadow-xl shadow-black/25 ring-1 ring-white/30 transition duration-300 hover:-translate-y-1 sm:p-2.5 lg:rounded-3xl ${positions[i] ?? ''}`}>
-          <div className="relative aspect-square overflow-hidden rounded-xl bg-stone-100 lg:rounded-2xl">
-            <ProductImage src={product.image} alt={product.name} imgClassName="transition duration-500 group-hover:scale-105" />
-            {product.onSale && <span className="absolute top-1.5 left-1.5 rounded-full bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-amber-950 sm:text-xs">−{Math.round(product.discountPercentage)}%</span>}
-          </div>
-          <div className="px-0.5 pt-1.5 pb-0.5 sm:px-1 sm:pt-2.5">
-            <p className="truncate text-[11px] font-semibold text-stone-900 sm:text-sm">{product.name}</p>
-            <p className="text-[11px] sm:text-sm">
-              <span className="font-bold text-emerald-800">{money(product.price)}</span>
-              {product.onSale && <span className="ml-1.5 hidden text-xs text-stone-400 line-through xl:inline">{money(product.regularPrice)}</span>}
-            </p>
-          </div>
-        </Link>
-      ))}
+    <div className="flex max-w-xl flex-col items-start">
+      {slide.eyebrow && (
+        <p className={`inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1 text-[10.5px] font-bold tracking-widest uppercase shadow-sm ring-1 ${tone.pill} ${a.className}`} style={a.style}>
+          <Icon size={13} /> {slide.eyebrow}
+        </p>
+      )}
+      <h2 className={`mt-3 line-clamp-2 font-serif text-[1.65rem] leading-[1.1] font-semibold tracking-tight text-emerald-950 sm:text-4xl md:line-clamp-3 md:text-[2rem] lg:mt-4 lg:text-[2.6rem] ${b.className}`} style={b.style}>{slide.title}</h2>
+      {slide.subtitle && <p className={`mt-2 line-clamp-2 max-w-md text-sm leading-relaxed text-stone-600 sm:text-base lg:mt-3 lg:text-lg ${c.className}`} style={c.style}>{slide.subtitle}</p>}
+      <div className={`mt-4 flex w-full flex-wrap items-center gap-2.5 sm:w-auto lg:mt-7 ${d.className}`} style={d.style}>
+        <SmartLink to={slide.link} tabIndex={hidden ? -1 : undefined} className="group/cta inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-emerald-800 px-6 text-sm font-semibold whitespace-nowrap text-white shadow-lg shadow-emerald-900/20 transition hover:bg-emerald-900 active:scale-[0.98] sm:h-12 sm:flex-none sm:text-[15px]">
+          {slide.buttonText || 'Shop now'} <ArrowRight size={17} className="transition group-hover/cta:translate-x-0.5" />
+        </SmartLink>
+        <Link to="/products" tabIndex={hidden ? -1 : undefined} draggable={false} className="hidden h-12 items-center rounded-full bg-white/80 px-6 text-[15px] font-semibold whitespace-nowrap text-emerald-900 ring-1 ring-emerald-900/10 transition hover:bg-white sm:inline-flex md:hidden lg:inline-flex">All products</Link>
+      </div>
+      <ul className={`mt-6 hidden items-center gap-5 text-[13px] font-medium whitespace-nowrap text-stone-600 xl:flex ${d.className}`} style={d.style}>
+        <li className="flex items-center gap-1.5"><Truck size={16} className="text-emerald-700" /> Cash on delivery</li>
+        <li className="flex items-center gap-1.5"><ShieldCheck size={16} className="text-emerald-700" /> Quality checked</li>
+      </ul>
     </div>
   );
 }
 
-function SlideText({ slide, hidden, active, secondary = true }) {
-  const Icon = slide.icon ?? Sparkles;
+/** Discount pill + name/price bar shown inside the bottom of a picture card. */
+function InfoBar({ title, children, to, hidden }) {
   return (
-    <div key={active ? 'on' : 'off'} className="max-w-xl text-white motion-safe:animate-fade-up">
-      {slide.eyebrow && <p className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[10px] font-bold tracking-widest text-amber-200 uppercase ring-1 ring-white/15 backdrop-blur sm:text-[11px]"><Icon size={13} /> {slide.eyebrow}</p>}
-      <h2 className="mt-3 line-clamp-2 font-serif text-[1.75rem] leading-[1.1] font-semibold tracking-tight sm:text-4xl lg:mt-4 lg:line-clamp-3 lg:text-5xl">{slide.title}</h2>
-      {slide.subtitle && <p className="mt-2.5 line-clamp-2 max-w-md text-sm text-white/80 sm:text-base lg:mt-4 lg:text-lg">{slide.subtitle}</p>}
-      <div className="mt-5 flex flex-wrap gap-2.5 lg:mt-7">
-        <SmartLink to={slide.link} tabIndex={hidden ? -1 : undefined} className={`${btn.accent} h-11 px-5 text-sm shadow-lg shadow-amber-500/25 sm:h-12 sm:px-6 sm:text-[15px]`}>
-          {slide.buttonText || 'Shop now'} <ArrowRight size={17} />
-        </SmartLink>
-        {secondary && <Link to="/products" tabIndex={hidden ? -1 : undefined} draggable={false} className="hidden h-12 items-center rounded-full px-6 text-[15px] font-semibold text-white ring-1 ring-white/30 transition hover:bg-white/10 sm:inline-flex">All products</Link>}
+    <div className="absolute inset-x-2.5 bottom-2.5 flex items-center gap-3 rounded-2xl bg-white/92 px-3.5 py-2.5 shadow-lg ring-1 ring-black/5 backdrop-blur-md sm:inset-x-3 sm:bottom-3">
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-[13px] font-semibold text-stone-800 sm:text-sm">{title}</p>
+        {children}
+      </div>
+      {to && <span aria-hidden="true" tabIndex={hidden ? -1 : undefined} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-emerald-800 text-white transition group-hover:translate-x-0.5 group-hover:bg-emerald-900"><ArrowRight size={16} /></span>}
+    </div>
+  );
+}
+
+/*
+ * Picture area. The box is a size container, so the square card is as large as fits
+ * (min of width and height) and never spills over the text or the controls.
+ */
+const PICTURE_BOX = 'flex h-full w-full items-center justify-center [container-type:size]';
+const SQUARE = 'relative aspect-square w-[min(100cqw,100cqh)] shrink-0 overflow-hidden rounded-[1.75rem] bg-white shadow-xl shadow-emerald-950/10 ring-1 ring-black/5';
+
+/** Product slide: the top product as one large card (discount + name + price inside it). */
+function ProductVisual({ products, active, hidden }) {
+  const hero = products[0];
+  if (!hero) return null;
+  return (
+    <div className={PICTURE_BOX}>
+      <Link
+        to={`/product/${hero.slug}`}
+        tabIndex={hidden ? -1 : undefined}
+        draggable={false}
+        aria-label={`${hero.name}, ${money(hero.price)}`}
+        className={`group ${SQUARE} ${active ? 'motion-safe:animate-hero-img' : ''}`}
+      >
+        <ProductImage src={hero.image} alt={hero.name} imgClassName="transition duration-700 group-hover:scale-105" />
+        {hero.onSale && hero.discountPercentage > 0 && (
+          <span className="absolute top-3 left-3 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-extrabold text-amber-950 shadow-md sm:text-sm">−{Math.round(hero.discountPercentage)}%</span>
+        )}
+        <InfoBar title={hero.name} to hidden={hidden}>
+          <p className="flex items-baseline gap-1.5">
+            <span className="text-base font-bold text-emerald-800 tabular-nums">{money(hero.price)}</span>
+            {hero.onSale && <span className="text-xs text-stone-400 line-through tabular-nums">{money(hero.regularPrice)}</span>}
+          </p>
+        </InfoBar>
+      </Link>
+    </div>
+  );
+}
+
+/** Category slide: the category photo with its product count inside the card. */
+function CategoryVisual({ slide, active }) {
+  return (
+    <div className={PICTURE_BOX}>
+      <div className={`group ${SQUARE} ${active ? 'motion-safe:animate-hero-img' : ''}`}>
+        <img src={slide.image} alt="" draggable={false} className={`h-full w-full object-cover ${active ? 'motion-safe:animate-ken-burns' : ''}`} />
+        <InfoBar title={slide.title}>
+          <p className="flex items-center gap-1.5 text-xs font-medium text-stone-500"><Star size={12} className="fill-amber-400 text-amber-400" /> <span className="tabular-nums">{slide.count}</span> products in this collection</p>
+        </InfoBar>
       </div>
     </div>
   );
@@ -139,45 +208,44 @@ function SlideText({ slide, hidden, active, secondary = true }) {
 
 function Slide({ slide, active, first }) {
   const hidden = !active;
-  const theme = THEMES[slide.theme] ?? THEMES.emerald;
+  const tone = TONES[slide.tone] ?? TONES.brand;
 
-  // Admin-made image slides and category slides: full-bleed photo with a readable shade.
-  if (slide.kind === 'image' || slide.kind === 'category') {
+  // Admin-made image slides: full-bleed photo with a readable shade.
+  if (slide.kind === 'image') {
+    const t = enter(active, 0);
     return (
-      <div className={`absolute inset-0 bg-gradient-to-br ${theme.bg}`}>
+      <div className="absolute inset-0 bg-emerald-950">
         {slide.image && <img src={slide.image} alt="" draggable={false} loading={first ? 'eager' : 'lazy'} className={`absolute inset-0 h-full w-full object-cover ${active ? 'motion-safe:animate-ken-burns' : ''}`} />}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent sm:bg-gradient-to-r sm:from-black/75 sm:via-black/35 sm:to-transparent" />
-        <div className="relative flex h-full items-end p-5 pb-14 sm:items-center sm:p-10 lg:p-14">
-          <SlideText slide={slide} hidden={hidden} active={active} secondary={slide.kind === 'category'} />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent sm:bg-gradient-to-r sm:from-black/70 sm:via-black/30" />
+        <div className={`relative flex h-full max-w-xl flex-col items-start justify-end p-6 pb-16 text-white sm:justify-center sm:p-12 ${t.className}`} style={t.style}>
+          <h2 className="line-clamp-2 font-serif text-3xl leading-tight font-semibold sm:text-5xl">{slide.title}</h2>
+          {slide.subtitle && <p className="mt-3 line-clamp-2 text-white/85 sm:text-lg">{slide.subtitle}</p>}
+          <SmartLink to={slide.link} tabIndex={hidden ? -1 : undefined} className="mt-6 inline-flex h-12 items-center gap-2 rounded-full bg-white px-6 font-semibold text-emerald-950 shadow-lg transition hover:bg-emerald-50">{slide.buttonText || 'Shop now'} <ArrowRight size={17} /></SmartLink>
         </div>
-        {slide.kind === 'category' && (
-          <div className="absolute top-5 right-5 hidden items-center gap-2.5 rounded-2xl bg-white/95 px-3.5 py-2.5 shadow-xl backdrop-blur md:flex">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-emerald-100 text-emerald-800"><Truck size={17} /></span>
-            <div><p className="text-sm font-semibold text-stone-900">Cash on delivery</p><p className="text-xs text-stone-500">All over Bangladesh</p></div>
-          </div>
-        )}
       </div>
     );
   }
 
   return (
-    <div className={`absolute inset-0 bg-gradient-to-br ${theme.bg}`}>
-      <div aria-hidden="true" className={`absolute -top-24 -right-16 h-72 w-72 rounded-full blur-3xl lg:h-96 lg:w-96 ${theme.glow}`} />
-      <div aria-hidden="true" className={`absolute -bottom-32 -left-16 h-72 w-72 rounded-full blur-3xl ${theme.glow2}`} />
-      <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.07)_1px,transparent_1px)] [background-size:20px_20px]" />
-      <div className="relative grid h-full grid-rows-[auto_1fr] gap-5 p-5 pb-14 sm:p-8 sm:pb-16 lg:grid-cols-[1.1fr_1fr] lg:grid-rows-1 lg:items-center lg:gap-10 lg:p-12">
-        <SlideText slide={slide} hidden={hidden} active={active} />
-        <div className="flex items-end lg:block">
-          <div className="w-full"><ProductCollage products={slide.products} hidden={hidden} /></div>
+    <div className={`absolute inset-0 bg-gradient-to-br ${tone.bg}`}>
+      <div aria-hidden="true" className={`absolute top-1/2 right-[-10%] h-[120%] w-[70%] -translate-y-1/2 rounded-full blur-3xl ${tone.blob}`} />
+      <div aria-hidden="true" className={`absolute -bottom-24 -left-20 h-72 w-72 rounded-full blur-3xl ${tone.blob2}`} />
+      <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(rgba(6,78,59,0.07)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(to_right,black,transparent_60%)]" />
+      {/* Phones: picture on top, text below. Desktop: text left, picture right. */}
+      <div className="relative grid h-full grid-rows-[minmax(0,1fr)_auto] gap-3 px-5 pt-9 pb-14 sm:px-10 sm:pt-10 md:grid-cols-[1.05fr_1fr] md:grid-rows-1 md:items-center md:gap-6 md:pt-12 lg:gap-8 lg:px-14 lg:pt-8 lg:pb-20">
+        <div className="min-h-0 md:order-2 md:h-[80%] lg:h-[84%]">
+          {slide.kind === 'category' ? <CategoryVisual slide={slide} active={active} /> : <ProductVisual products={slide.products ?? []} active={active} hidden={hidden} />}
         </div>
+        <div className="md:order-1"><SlideText slide={slide} active={active} hidden={hidden} /></div>
       </div>
     </div>
   );
 }
 
 /**
- * Home hero: rounded card slider with finger-following swipe/drag, autoplay with progress
- * (pauses on mouse hover, keyboard focus and while dragging), arrows, dots, keyboard — plus promo tiles.
+ * Home hero: light, theme-coloured slides that cross-fade with a staggered entrance.
+ * Swipe/drag, autoplay with progress (pauses on hover, keyboard focus and while dragging),
+ * arrows and keyboard. Desktop shows labelled tabs; phones show story-style progress bars.
  */
 export default function HeroSlider({ slides, promos = [] }) {
   const [index, setIndex] = useState(0);
@@ -190,7 +258,6 @@ export default function HeroSlider({ slides, promos = [] }) {
   const go = useCallback((next) => setIndex((next + count) % count), [count]);
 
   if (!count) return null;
-  const current = slides[index];
   const paused = hovered || focused || drag !== null;
 
   function onPointerDown(event) {
@@ -216,18 +283,28 @@ export default function HeroSlider({ slides, promos = [] }) {
     gesture.current = null;
     if (g.axis === 'x') {
       const dx = event.clientX - g.x;
-      if (Math.abs(dx) > Math.min(80, g.width * 0.18)) go(index + (dx < 0 ? 1 : -1));
+      if (Math.abs(dx) > Math.min(70, g.width * 0.15)) go(index + (dx < 0 ? 1 : -1));
     }
     setDrag(null);
   }
 
-  const arrow = 'pointer-events-auto grid h-10 w-10 cursor-pointer place-items-center rounded-full bg-white/90 text-emerald-950 shadow-lg ring-1 ring-black/5 transition hover:scale-105 hover:bg-white';
+  // Autoplay: the active progress bar's animation end advances the slide.
+  const progress = (i) => (i === index ? (
+    <span
+      key={`${slides[i].id}-${index}`}
+      onAnimationEnd={() => go(index + 1)}
+      style={{ animationPlayState: paused ? 'paused' : 'running' }}
+      className="absolute inset-0 origin-left rounded-full bg-emerald-700 motion-safe:animate-slide-progress"
+    />
+  ) : null);
+
+  const arrow = 'grid h-10 w-10 cursor-pointer place-items-center rounded-full bg-white/90 text-emerald-950 shadow-md ring-1 ring-black/5 backdrop-blur transition hover:bg-white active:scale-90';
 
   return (
-    <section className="bg-gradient-to-b from-emerald-50/80 via-stone-50 to-white pt-3 pb-6 sm:pt-5 sm:pb-8 lg:pt-6 lg:pb-10">
+    <section className="bg-gradient-to-b from-emerald-50/70 via-stone-50 to-white pt-3 pb-6 sm:pt-5 sm:pb-8 lg:pt-6 lg:pb-10">
       <Container className={`grid gap-3 sm:gap-4 ${promos.length ? 'lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_340px]' : ''}`}>
         <div
-          className="group/slider relative overflow-hidden rounded-3xl bg-emerald-950 shadow-xl shadow-emerald-950/15 lg:rounded-[2rem]"
+          className="group/slider relative overflow-hidden rounded-3xl bg-white shadow-[0_20px_50px_-24px_rgba(6,78,59,0.35)] ring-1 ring-emerald-900/5 lg:rounded-[2rem]"
           aria-roledescription="carousel"
           aria-label="Highlights"
           onPointerEnter={(event) => { if (event.pointerType === 'mouse') setHovered(true); }}
@@ -239,9 +316,9 @@ export default function HeroSlider({ slides, promos = [] }) {
             if (event.key === 'ArrowRight') go(index + 1);
           }}
         >
-          {/* Track: follows the finger/mouse while dragging, eases into place on release. */}
+          {/* Slides are stacked and cross-fade; while dragging, the active one follows the finger a little. */}
           <div
-            className={`relative h-[470px] touch-pan-y select-none sm:h-[440px] lg:h-[480px] ${count > 1 ? 'cursor-grab active:cursor-grabbing' : ''}`}
+            className={`relative h-[560px] touch-pan-y select-none sm:h-[520px] md:h-[440px] lg:h-[500px] ${count > 1 ? 'cursor-grab active:cursor-grabbing' : ''}`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerEnd}
@@ -249,55 +326,53 @@ export default function HeroSlider({ slides, promos = [] }) {
             onDragStart={(event) => event.preventDefault()}
             onClickCapture={(event) => { if (suppressClick.current) { event.preventDefault(); event.stopPropagation(); suppressClick.current = false; } }}
           >
-            <div
-              className={`flex h-full ${drag === null ? 'transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]' : ''}`}
-              style={{ transform: `translateX(calc(${-index * 100}% + ${drag ?? 0}px))` }}
-            >
-              {slides.map((slide, i) => (
-                <div
-                  key={slide.id}
-                  role="group"
-                  aria-roledescription="slide"
-                  aria-label={`${i + 1} of ${count}`}
-                  aria-hidden={i !== index}
-                  inert={i !== index}
-                  className="relative h-full w-full shrink-0 overflow-hidden"
-                >
-                  <Slide slide={slide} active={i === index} first={i === 0} />
-                </div>
-              ))}
-            </div>
+            {slides.map((slide, i) => (
+              <div
+                key={slide.id}
+                role="group"
+                aria-roledescription="slide"
+                aria-label={`${i + 1} of ${count}`}
+                aria-hidden={i !== index}
+                inert={i !== index}
+                className={`absolute inset-0 transition-opacity duration-700 ease-out ${i === index ? 'z-10 opacity-100' : 'z-0 opacity-0'}`}
+                style={i === index && drag !== null ? { transform: `translateX(${drag * 0.35}px)`, opacity: Math.max(0.55, 1 - Math.abs(drag) / 600) } : undefined}
+              >
+                <Slide slide={slide} active={i === index} first={i === 0} />
+              </div>
+            ))}
           </div>
 
           {count > 1 && (
             <>
-              <div className="pointer-events-none absolute inset-y-0 right-4 left-4 z-20 hidden items-center justify-between opacity-0 transition duration-300 group-focus-within/slider:opacity-100 group-hover/slider:opacity-100 sm:flex">
-                <button type="button" aria-label="Previous slide" onClick={() => go(index - 1)} className={arrow}><ChevronLeft size={20} /></button>
-                <button type="button" aria-label="Next slide" onClick={() => go(index + 1)} className={arrow}><ChevronRight size={20} /></button>
+              {/* Phones/tablets: story-style progress bars along the top */}
+              <div className="absolute inset-x-5 top-3.5 z-20 flex gap-1.5 lg:hidden" role="tablist" aria-label="Choose slide">
+                {slides.map((slide, i) => (
+                  <button key={slide.id} type="button" role="tab" aria-selected={i === index} aria-label={`Slide ${i + 1}: ${slide.label ?? slide.title}`} onClick={() => go(i)} className="flex-1 cursor-pointer py-1.5">
+                    <span className={`relative block h-1 overflow-hidden rounded-full ${i < index ? 'bg-emerald-700' : 'bg-emerald-900/15'}`}>{progress(i)}</span>
+                  </button>
+                ))}
               </div>
 
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex items-center justify-between px-4 pb-2 sm:px-8 sm:pb-3 lg:px-12">
-                <div className="pointer-events-auto -ml-1 flex items-center" role="tablist" aria-label="Choose slide">
+              {/* Desktop: labelled tabs along the bottom, arrows on the right */}
+              <div className="absolute inset-x-0 bottom-0 z-20 hidden items-end gap-6 px-14 pb-6 lg:flex">
+                <div className="flex min-w-0 flex-1 gap-5" role="tablist" aria-label="Choose slide">
                   {slides.map((slide, i) => (
-                    <button key={slide.id} type="button" role="tab" aria-selected={i === index} aria-label={`Slide ${i + 1}: ${slide.title}`} onClick={() => go(i)} className="group cursor-pointer px-1 py-3">
-                      <span className={`relative block h-1.5 overflow-hidden rounded-full transition-all duration-300 ${i === index ? 'w-10 bg-white/25 sm:w-12' : 'w-1.5 bg-white/45 group-hover:bg-white/70 sm:w-6'}`}>
-                        {i === index && (
-                          <span
-                            key={`${current.id}-${index}`}
-                            onAnimationEnd={() => go(index + 1)}
-                            // Inline so it overrides the animation shorthand (pausing also pauses autoplay).
-                            style={{ animationPlayState: paused ? 'paused' : 'running' }}
-                            className="absolute inset-0 origin-left rounded-full bg-amber-300 motion-safe:animate-slide-progress"
-                          />
-                        )}
-                      </span>
+                    <button key={slide.id} type="button" role="tab" aria-selected={i === index} onClick={() => go(i)} className="group min-w-0 flex-1 cursor-pointer text-left">
+                      <span className={`relative block h-[3px] overflow-hidden rounded-full transition-colors ${i < index ? 'bg-emerald-700/70' : 'bg-emerald-900/10 group-hover:bg-emerald-900/20'}`}>{progress(i)}</span>
+                      <span className={`mt-2 block truncate text-xs font-semibold transition-colors ${i === index ? 'text-emerald-900' : 'text-stone-500 group-hover:text-stone-800'}`}>{slide.label ?? slide.title}</span>
                     </button>
                   ))}
                 </div>
-                <span className="rounded-full bg-black/25 px-2.5 py-1 font-serif text-xs tabular-nums text-white/70 backdrop-blur">
-                  <span className="text-white">{String(index + 1).padStart(2, '0')}</span> / {String(count).padStart(2, '0')}
-                </span>
+                <div className="flex shrink-0 gap-2">
+                  <button type="button" aria-label="Previous slide" onClick={() => go(index - 1)} className={arrow}><ChevronLeft size={19} /></button>
+                  <button type="button" aria-label="Next slide" onClick={() => go(index + 1)} className={arrow}><ChevronRight size={19} /></button>
+                </div>
               </div>
+
+              {/* Phones: slide counter, bottom right */}
+              <span className="absolute right-5 bottom-4 z-20 rounded-full bg-white/80 px-2.5 py-1 font-serif text-xs text-stone-500 tabular-nums shadow-sm ring-1 ring-black/5 backdrop-blur lg:hidden">
+                <span className="text-emerald-900">{String(index + 1).padStart(2, '0')}</span> / {String(count).padStart(2, '0')}
+              </span>
             </>
           )}
         </div>

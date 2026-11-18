@@ -28,6 +28,9 @@
   /* Home slider: progress bar of the active slide (its end advances the slider). */
   --animate-slide-progress: slide-progress 6s linear both;
   --animate-ken-burns: ken-burns 7s ease-out both;
+  /* Home slider: product picture settles in when its slide becomes active. */
+  --animate-hero-img: hero-img 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  @keyframes hero-img { from { opacity: 0; transform: translateY(18px) scale(0.94); } to { opacity: 1; transform: none; } }
 
   @keyframes slide-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
   @keyframes ken-burns { from { transform: scale(1.08); } to { transform: scale(1); } }
